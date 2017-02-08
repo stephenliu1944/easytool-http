@@ -1,0 +1,6 @@
+﻿/node_modules
+/build
+/bin/*.log
+/.idea
+/.project
+/.settings
