@@ -1,5 +1,5 @@
 {
-  "name": "higgs-request",
+  "name": "@beanutils/http-request",
   "version": "0.1.7",
   "description": "用于http请求的库, 依赖axios模块并对其进行了一些扩展",
   "main": "dist/index.cjs.js",
@@ -7,7 +7,7 @@
   "browser": "dist/index.umd.js",
   "author": {
     "name": "Stephen Liu",
-    "url": "http://git.bbdops.com/frontend-public/js-libraries/higgs-request.git"
+    "url": "https://github.com/stephenliu1944/beanutils-http-request.git"
   },
   "license": "ISC",
   "scripts": {
@@ -17,7 +17,7 @@
     "watch:dist": "cross-env NODE_ENV=production rollup -w -c rollup.config.prod.js",
     "test": "jest",
     "lint": "eslint -c .eslintrc.json --fix --ext .js,.jsx src/",
-    "package": "npm run build:prod",
+    "package": "cross-env BUILD_PATH=dist npm run build:prod",
     "publish:patch": "npm run package && gulp version-patch && npm publish && npm run git:push",
     "publish:minor": "npm run package && gulp version-minor && npm publish && npm run git:push",
     "publish:major": "npm run package && gulp version-major && npm publish && npm run git:push",
@@ -79,5 +79,5 @@
       "port": 8888
     }
   },
-  "libraryName": "HiggsRequest"
+  "libraryName": "HttpRequest"
 }

@@ -24,8 +24,8 @@ export default [{
     plugins: [
         del({ targets: `${BUILD_PATH}/*` }),
         alias({
-            utils: 'src/utils',
-            constants: 'src/constants'
+            constants: 'src/_constants',
+            utils: 'src/_utils'
         }),
         babel({
             exclude: 'node_modules/**' // only transpile our source code

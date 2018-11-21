@@ -1,1 +1,1 @@
-export default from './higgsRequest';
+export default from './httpRequest';

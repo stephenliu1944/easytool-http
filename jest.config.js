@@ -22,15 +22,8 @@ module.exports = {
     moduleFileExtensions: ['js', 'json', 'jsx'],
     // A map from regular expressions to module names that allow to stub out resources with a single module
     moduleNameMapper: {
-        '^conf(.*)$': '<rootDir>/src/conf$1',
-        '^styles(.*)$': '<rootDir>/src/styles$1',
         '^utils(.*)$': '<rootDir>/src/utils$1',
-        '^images(.*)$': '<rootDir>/src/images$1',
-        '^constants(.*)$': '<rootDir>/src/constants$1',
-        '^services(.*)$': '<rootDir>/src/services$1',
-        '^components(.*)$': '<rootDir>/src/components$1',
-        '^containers(.*)$': '<rootDir>/src/containers$1',
-        '\\.(css|less|scss)$': 'identity-obj-proxy'
+        '^constants(.*)$': '<rootDir>/src/constants$1'
     },
     // A map from regular expressions to paths to transformers
     transform: {

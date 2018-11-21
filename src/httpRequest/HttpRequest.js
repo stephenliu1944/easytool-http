@@ -78,7 +78,7 @@ const globalConfig = {
  * @param {boolean} isMock 是否为 mock 模式.
  * @return {object} - 返回一个promise的实例对象.
  */
-function HiggsRequest(options) {
+function HttpRequest(options) {
     var _options = Object.assign({}, globalConfig, options);
 
     var {
@@ -290,8 +290,8 @@ Promise.prototype.finally = function(callback) {
  * @desc 设置全局默认选项
  * @param {object} options 需要覆盖默认配置的参数
  */
-HiggsRequest.setup = function(options) {
+HttpRequest.setup = function(options) {
     Object.assign(globalConfig, options);
 };
 
-export default HiggsRequest;
+export default HttpRequest;

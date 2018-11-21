@@ -1,16 +1,15 @@
-# HiggsRequest
+# @beanutils/http-request
 通用 HTTP 请求模块, 依赖 axios 库并对其进行了一些扩展.
 
 ## 模块引入
-切换到公司内网npm服务
 ```
-npm i -S higgs-request
+npm install --save @beanutils/http-request
 ```
 
 ## 示例
 ```
-import HiggsRequest from 'higgs-request';
-var promise = HiggsRequest({
+import HttpRequest from '@beanutils/http-request';
+var promise = HttpRequest({
     method: xxx,
     url: 'xxx',
     params: xxx,
@@ -21,7 +20,7 @@ promise.then((data) => {}, (error) =>{});
 ## 设置全局默认选项
 ```
 // 需要在入口文件中最先配置.
-HiggsRequest.setup({
+HttpRequest.setup({
     method: ...,
     cache: ....,
     isDev: ...,

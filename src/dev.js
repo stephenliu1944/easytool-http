@@ -1,7 +1,7 @@
 // 该类用于测试模块
-import HiggsRequest from './index';
+import HttpRequest from './index';
 
-HiggsRequest({
+HttpRequest({
     url: '/service/getIpInfo.php',
     baseURL: 'http://ip.taobao.com',
     params: {

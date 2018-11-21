@@ -8,7 +8,7 @@ import del from 'rollup-plugin-delete';
 import alias from 'rollup-plugin-alias';
 import pkg from './package.json';
 
-const BUILD_PATH = 'dist';
+const BUILD_PATH = process.env.BUILD_PATH || 'build';
 const FILE_NAME = 'index';
 
 export default [{
@@ -32,8 +32,8 @@ export default [{
     plugins: [
         del({ targets: `${BUILD_PATH}/*` }),
         alias({
-            utils: 'src/utils',
-            constants: 'src/constants'
+            constants: 'src/_constants',
+            utils: 'src/_utils'
         }),
         babel({
             exclude: 'node_modules/**'  // only transpile our source code
