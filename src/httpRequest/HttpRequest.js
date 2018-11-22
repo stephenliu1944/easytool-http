@@ -4,7 +4,7 @@ import { HttpMethod, ContentType } from 'constants/enum';
 import { isString, isFormData, isIE, isEmpty, isNotEmpty, isFunction, log } from 'utils/util';
 
 // 全局默认配置
-const globalConfig = {
+const _config = {
     // axios的默认参数
     method: HttpMethod.GET,                      
     headers: {
@@ -49,7 +49,7 @@ const globalConfig = {
  * @return {object} - 返回一个promise的实例对象.
  */
 function HttpRequest(options) {
-    var _options = Object.assign({}, globalConfig, options);
+    var _options = Object.assign({}, _config, HttpRequest.defaults, options);
 
     var {
         // axios参数
@@ -224,15 +224,6 @@ Promise.prototype.finally = function(callback) {
             throw reason;
         })
     );
-};
-
-/**
- *
- * @desc 设置全局默认选项
- * @param {object} options 需要覆盖默认配置的参数
- */
-HttpRequest.setup = function(options) {
-    Object.assign(globalConfig, options);
 };
 
 export default HttpRequest;

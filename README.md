@@ -17,14 +17,15 @@ var promise = HttpRequest({
 });
 promise.then((data) => {}, (error) =>{});
 ```
+
 ## 设置全局默认选项
 ```
-// 需要在入口文件中最先配置.
-HttpRequest.setup({
-    method: ...,
-    cache: ....,
-    isDev: ...,
-    isMock: ...
+// 需要在请求调用前设置.
+HttpRequest.defaults = {
+    method: 'GET',
+    contentType: 'application/json',
+    cache: true,
+    isDev: true
 });
 ```
 

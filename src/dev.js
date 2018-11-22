@@ -1,14 +1,14 @@
 // 该类用于测试模块
 import HttpRequest from './index';
 
-HttpRequest.setup({
+HttpRequest.defaults = {
     requestInterceptor: function(config) {
         console.log('requestInterceptor', config);
     },
     responseInterceptor: function(data) {
         console.log('responseInterceptor', data);
     }
-});
+};
 
 HttpRequest({
     url: '/service/getIpInfo.php',
