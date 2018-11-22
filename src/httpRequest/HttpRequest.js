@@ -3,35 +3,6 @@ import axios from 'axios';
 import { HttpMethod, ContentType } from 'constants/enum';
 import { isString, isFormData, isIE, isEmpty, isNotEmpty, isFunction, log } from 'utils/util';
 
-// 全局默认配置
-const _config = {
-    // axios的默认参数
-    method: HttpMethod.GET,                      
-    headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-    },
-    paramsSerializer: function(params) {
-        return qs.stringify(params, { allowDots: true });
-    },
-    // withCredentials: true,                    // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
-    transformResponse: [
-        // 默认转成json格式
-        function(data) {
-            if (isString(data)) {
-                try {
-                    data = JSON.parse(data);
-                } catch (e) {
-                    console.error('无法将响应数据转换为 json 对象', e, data);
-                }
-            }
-
-            return data;
-        }
-    ],
-    // 扩展的默认参数
-    contentType: ContentType.JSON             
-};
-
 /**
  * @author Stephen Liu
  * @desc 使用axios第三方库访问后台服务器, 返回封装过后的Promise对象.
@@ -49,7 +20,34 @@ const _config = {
  * @return {object} - 返回一个promise的实例对象.
  */
 function HttpRequest(options) {
-    var _options = Object.assign({}, _config, HttpRequest.defaults, options);
+    // 默认配置
+    var _options = Object.assign({
+        // axios的默认参数
+        method: HttpMethod.GET,                      
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        paramsSerializer: function(params) {
+            return qs.stringify(params, { allowDots: true });
+        },
+        // withCredentials: true,                    // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
+        transformResponse: [
+            // 默认转成json格式
+            function(data) {
+                if (isString(data)) {
+                    try {
+                        data = JSON.parse(data);
+                    } catch (e) {
+                        console.error('无法将响应数据转换为 json 对象', e, data);
+                    }
+                }
+    
+                return data;
+            }
+        ],
+        // 扩展的默认参数
+        contentType: ContentType.JSON             
+    }, HttpRequest.defaults, options);
 
     var {
         // axios参数

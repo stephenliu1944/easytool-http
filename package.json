@@ -1,15 +1,26 @@
 {
   "name": "@beanutils/http-request",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "用于http请求的库, 依赖axios模块并对其进行了一些扩展",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
-  "browser": "dist/index.umd.js",
-  "author": {
-    "name": "Stephen Liu",
+  "browser": "dist/xhr.umd.js",
+  "author": "Stephen Liu",
+  "repository": {
+    "type": "git",
     "url": "https://github.com/stephenliu1944/beanutils-http-request.git"
   },
-  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stephenliu1944/beanutils-http-request/issues"
+  },
+  "homepage": "https://github.com/stephenliu1944/beanutils-http-request",
+  "keywords": [
+    "xhr",
+    "http",
+    "ajax",
+    "promise"
+  ],
+  "license": "MIT",
   "scripts": {
     "build:dev": "cross-env NODE_ENV=development rollup -c rollup.config.dev.js",
     "build:prod": "cross-env NODE_ENV=production rollup -c rollup.config.prod.js",
@@ -80,5 +91,5 @@
       "port": 8888
     }
   },
-  "libraryName": "HttpRequest"
+  "libraryName": "xhr"
 }
