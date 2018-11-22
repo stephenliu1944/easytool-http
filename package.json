@@ -5,6 +5,7 @@
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "browser": "dist/xhr.umd.js",
+  "libraryName": "xhr",
   "license": "MIT",
   "author": "Stephen Liu",
   "repository": {
@@ -90,6 +91,5 @@
       "host": "http://localhost",
       "port": 8888
     }
-  },
-  "libraryName": "xhr"
+  }
 }
