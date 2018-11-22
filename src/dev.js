@@ -22,7 +22,6 @@ HttpRequest({
     console.log('fail', e);
 });
 
-
 HttpRequest({
     url: '/service/getIpInfo.php',
     baseURL: 'http://ip.taobao.com',

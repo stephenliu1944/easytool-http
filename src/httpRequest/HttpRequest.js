@@ -10,7 +10,7 @@ const globalConfig = {
     headers: {
         'X-Requested-With': 'XMLHttpRequest'
     },
-    paramsSerializer: function (params) {
+    paramsSerializer: function(params) {
         return qs.stringify(params, { allowDots: true });
     },
     // withCredentials: true,                    // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
@@ -128,7 +128,7 @@ function HttpRequest(options) {
             if (requestInterceptor) {
                 instance.interceptors.request.use(function(config) {
                     return requestInterceptor(config) || config;
-                }, function (error) {
+                }, function(error) {
                     return reject(error);
                 });
             }
@@ -136,7 +136,7 @@ function HttpRequest(options) {
             if (responseInterceptor) {
                 instance.interceptors.response.use(function(response) {
                     return responseInterceptor(response) || response;
-                }, function (error) {
+                }, function(error) {
                     return reject(error);
                 });
             }
