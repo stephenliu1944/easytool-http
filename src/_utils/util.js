@@ -27,6 +27,10 @@ export function isNumber(obj) {
     return _getClass(obj).toLowerCase() === 'number';
 }
 
+export function isFunction(obj) {
+    return _getClass(obj).toLowerCase() === 'function';
+}
+
 export function isFormData(obj) {
     try {
         if (obj instanceof FormData) {
