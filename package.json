@@ -5,22 +5,27 @@
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "browser": "dist/xhr.umd.js",
+  "license": "MIT",
   "author": "Stephen Liu",
   "repository": {
     "type": "git",
     "url": "https://github.com/stephenliu1944/beanutils-http-request.git"
   },
+  "homepage": "https://github.com/stephenliu1944/beanutils-http-request",
   "bugs": {
     "url": "https://github.com/stephenliu1944/beanutils-http-request/issues"
   },
-  "homepage": "https://github.com/stephenliu1944/beanutils-http-request",
   "keywords": [
     "xhr",
     "http",
     "ajax",
     "promise"
   ],
-  "license": "MIT",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "build:dev": "cross-env NODE_ENV=development rollup -c rollup.config.dev.js",
     "build:prod": "cross-env NODE_ENV=production rollup -c rollup.config.prod.js",
@@ -74,11 +79,6 @@
     "rollup-plugin-serve": "^0.6.0",
     "rollup-plugin-uglify": "^4.0.0"
   },
-  "files": [
-    "dist",
-    "LICENSE",
-    "README.md"
-  ],
   "pre-commit": [
     "lint"
   ],
