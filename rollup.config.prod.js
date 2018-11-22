@@ -10,23 +10,27 @@ import pkg from './package.json';
 
 const BUILD_PATH = process.env.BUILD_PATH || 'build';
 const FILE_NAME = 'index';
+var { main, module, browser, libraryName } = pkg;
+var cjsName = main.split('/')[1];
+var esmName = module.split('/')[1];
+var umdName = browser.split('/')[1];
 
 export default [{
     input: 'src/index.js',
     external: ['qs', 'axios'],    // 打包时排除外部依赖包
     output: [{
-        name: pkg.libraryName,
-        file: `${BUILD_PATH}/${FILE_NAME}.umd.js`,
+        name: libraryName,
+        file: `${BUILD_PATH}/${umdName}`,
         format: 'umd',
         globals: {
             qs: 'qs',
             axios: 'axios'
         }
     }, {
-        file: `${BUILD_PATH}/${FILE_NAME}.cjs.js`,
+        file: `${BUILD_PATH}/${cjsName}`,
         format: 'cjs'
     }, {
-        file: `${BUILD_PATH}/${FILE_NAME}.esm.js`,
+        file: `${BUILD_PATH}/${esmName}`,
         format: 'es'
     }],
     plugins: [
