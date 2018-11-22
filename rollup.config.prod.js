@@ -9,7 +9,6 @@ import alias from 'rollup-plugin-alias';
 import pkg from './package.json';
 
 const BUILD_PATH = process.env.BUILD_PATH || 'build';
-const FILE_NAME = 'index';
 var { main, module, browser, libraryName } = pkg;
 var cjsName = main.split('/')[1];
 var esmName = module.split('/')[1];
