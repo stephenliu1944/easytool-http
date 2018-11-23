@@ -1,7 +1,7 @@
 import qs from 'qs';
 import axios from 'axios';
 import { HttpMethod, ContentType } from 'constants/enum';
-import { isString, isFormData, isIE, isEmpty, isNotEmpty, isFunction, log } from 'utils/util';
+import { isString, isObject, isBlank, isFormData, isIE, isEmpty, isNotEmpty, isNotBlank, isFunction, log } from 'utils/util';
 
 /**
  * @author Stephen Liu
@@ -15,7 +15,8 @@ import { isString, isFormData, isIE, isEmpty, isNotEmpty, isFunction, log } from
  * @param {function} resolveInterceptor 在resolve之前拦截resolve, 可进一步根据返回数据决定是resolve还是reject.
  * @param {function} serverError 在服务端返回异常时调用.
  * @param {function} browserError 在浏览器抛出异常时调用.
- * @param {string | function} proxyPath 配置请求代理服务器的前缀, 可以是字符串也可以是一个返回字符串的方法, 方法接收一个配置参数.
+ * @param {boolean} enableProxy 是否开启代理服务, 会将 baseURL 设置为null,并且在 url 上添加代理信息, 默认 false.
+ * @param {string | function} proxyPath 代理的路径, 可以为方法返回一个string, 默认为"/proxy."
  * @param {boolean} isDev 是否为调试模式, 调试模式会打一些log.
  * @return {object} - 返回一个promise的实例对象.
  */
@@ -41,12 +42,13 @@ function HttpRequest(options) {
                         console.error('无法将响应数据转换为 json 对象', e, data);
                     }
                 }
-    
+                
                 return data;
             }
         ],
         // 扩展的默认参数
-        contentType: ContentType.JSON             
+        contentType: ContentType.JSON,             
+        proxyPath: '/proxy'
     }, HttpRequest.defaults, options);
 
     var {
@@ -67,6 +69,7 @@ function HttpRequest(options) {
         resolveInterceptor,
         serverError,
         browserError,
+        enableProxy,
         proxyPath,
         isDev,
         // axios其他参数
@@ -75,7 +78,10 @@ function HttpRequest(options) {
 
     if (isEmpty(url)) {
         return Promise.reject();
-    } else if (!/^\//.test(url)) {
+    }
+
+    url = url.trim();
+    if (!/^\//.test(url)) {
         url = '/' + url;
     }
     
@@ -89,10 +95,14 @@ function HttpRequest(options) {
     }
     
     // 为 url 增加代理服务拦截的path
-    if (proxyPath && contentType !== ContentType.URL) {
-        baseURL = null;
+    if (enableProxy && contentType !== ContentType.URL) {
         let prefix = isFunction(proxyPath) ? proxyPath(_options) : proxyPath;
-        url = `/${ prefix + url }`;
+        if (isNotBlank(prefix) && !/^\//.test(prefix)) {
+            prefix = '/' + prefix;
+        }
+
+        url = prefix + url;
+        baseURL = null;     // 请求当前dev服务器.
     }
 
     var promise = new Promise(function(resolve, reject) {
@@ -168,7 +178,7 @@ function HttpRequest(options) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
                 if (error.response) {
-                    errMsg = error.response;
+                    errorMsg = error.response;
 
                     if (serverError) {
                         serverError(errorMsg);
@@ -223,5 +233,52 @@ Promise.prototype.finally = function(callback) {
         })
     );
 };
+// 根据 prefix + domain 动态设置url路径
+export function dynamicPath(options) {
+    var { baseURL } = options;
+
+    if (isBlank(baseURL)) {
+        return '';
+    }
+
+    let domain = baseURL.replace(/(^http[s]?:\/\/)/, '')
+                        .replace(/(:\d*)?(\/)?$/, '');
+
+    return `/proxy/${domain}`;
+}
+// 根据 prefix + domain 动态匹配代理服务
+export function createDynamicProxy(servers = [], prefix = 'proxy') {
+    var config = {};
+
+    servers.forEach((server) => {
+        let key = server.replace(/(^http[s]?:\/\/)/, '')
+                        .replace(/(:\d*)?(\/)?$/, '');
+                        
+        config[`/${prefix}/${key}`] = server;
+    });
+
+    return mixinProxy(config);
+}
+// 为代理配置初始值
+export function mixinProxy(options = {}) {
+    var config = {};
+
+    for (let key in options) {
+        if (options.hasOwnProperty(key)) {
+            let opt = options[key];
+            
+            config[key] = {
+                target: isString(opt) && opt,
+                changeOrigin: true,
+                cookieDomainRewrite: "",
+                cookiePathRewrite: "/",
+                pathRewrite: (_path) => _path.replace(key, '')
+            };
+            isObject(opt) && Object.assign(config[key], opt);
+        }
+    }
+
+    return config;
+}
 
 export default HttpRequest;

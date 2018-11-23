@@ -15,7 +15,8 @@ HttpRequest({
     baseURL: 'http://ip.taobao.com',
     params: {
         ip: '210.75.225.254'
-    }
+    },
+    enableProxy: true
 }).then((e) => {
     console.log('success', e);
 }, (e) => {
