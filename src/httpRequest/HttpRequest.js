@@ -171,7 +171,7 @@ function HttpRequest(options) {
                 } else {
                     resolve(response.data);
                 }
-            }, function(error) {
+            }).catch(function(error) {
                 var errorMsg;
                 
                 // 服务端异常
@@ -242,7 +242,7 @@ export function dynamicPath(options) {
     }
 
     let domain = baseURL.replace(/(^http[s]?:\/\/)/, '')
-                        .replace(/(:\d*)?(\/)?$/, '');
+        .replace(/(:\d*)?(\/)?$/, '');
 
     return `/proxy/${domain}`;
 }
@@ -252,7 +252,7 @@ export function createDynamicProxy(servers = [], prefix = 'proxy') {
 
     servers.forEach((server) => {
         let key = server.replace(/(^http[s]?:\/\/)/, '')
-                        .replace(/(:\d*)?(\/)?$/, '');
+            .replace(/(:\d*)?(\/)?$/, '');
                         
         config[`/${prefix}/${key}`] = server;
     });
@@ -270,8 +270,8 @@ export function mixinProxy(options = {}) {
             config[key] = {
                 target: isString(opt) && opt,
                 changeOrigin: true,
-                cookieDomainRewrite: "",
-                cookiePathRewrite: "/",
+                cookieDomainRewrite: '',
+                cookiePathRewrite: '/',
                 pathRewrite: (_path) => _path.replace(key, '')
             };
             isObject(opt) && Object.assign(config[key], opt);
