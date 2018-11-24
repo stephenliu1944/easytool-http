@@ -233,8 +233,8 @@ export function dynamicPath(options) {
     }
 
     let domain = baseURL.replace(/(^http[s]?:\/\/)/, '')
-                        .replace(':', '_')
-                        .replace(/(\/)?$/, '');
+        .replace(':', '_')
+        .replace(/(\/)?$/, '');
 
     return `/proxy/${domain}`;
 }
@@ -244,8 +244,8 @@ export function createDynamicProxy(servers = [], prefix = 'proxy') {
 
     servers.forEach((server) => {
         let key = server.replace(/(^http[s]?:\/\/)/, '')
-                        .replace(':', '_')
-                        .replace(/(\/)?$/, '');
+            .replace(':', '_')
+            .replace(/(\/)?$/, '');
                         
         config[`/${prefix}/${key}`] = server;
     });

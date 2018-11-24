@@ -1,6 +1,6 @@
 {
   "name": "@beanutils/http-request",
-  "version": "0.1.18-alpha.1",
+  "version": "0.1.18-alpha.4",
   "description": "用于http请求的库, 依赖axios模块并对其进行了一些扩展",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -19,6 +19,7 @@
   "keywords": [
     "xhr",
     "http",
+    "request",
     "ajax",
     "promise"
   ],
