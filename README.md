@@ -6,7 +6,7 @@ General HTTP Request module, extension from axios.
 npm install --save @beanutils/http-request
 ```
 
-## Demo
+## Usage
 ```
 import HttpRequest from '@beanutils/http-request';
 var promise = HttpRequest({
