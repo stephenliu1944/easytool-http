@@ -86,12 +86,6 @@
     "lint"
   ],
   "devServer": {
-    "local": {
-      "port": 8080
-    },
-    "mock": {
-      "host": "http://localhost",
-      "port": 8888
-    }
+    "local": 8080
   }
 }

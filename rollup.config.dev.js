@@ -10,7 +10,7 @@ import alias from 'rollup-plugin-alias';
 import json from 'rollup-plugin-json';
 import pkg from './package.json';
 
-const { local, mock } = pkg.devServer;
+const { local } = pkg.devServer;
 const BUILD_PATH = 'build';
 const FILE_NAME = 'index';
 
@@ -49,7 +49,7 @@ export default [{
         // web服务
         serve({ 				
             host: '0.0.0.0',
-            port: local.port,
+            port: local,
             contentBase: [BUILD_PATH],
             openPage: 'index.html',
             historyApiFallback: 'index.html'
