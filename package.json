@@ -1,6 +1,6 @@
 {
   "name": "@beanutils/http-request",
-  "version": "0.1.16",
+  "version": "0.1.18-alpha.1",
   "description": "用于http请求的库, 依赖axios模块并对其进行了一些扩展",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -35,6 +35,7 @@
     "test": "jest",
     "lint": "eslint -c .eslintrc.json --fix --ext .js src/",
     "package": "cross-env BUILD_PATH=dist npm run build:prod",
+    "publish:prerelease": "npm run package && gulp version-prerelease && npm publish --access=public && npm run git:push",
     "publish:patch": "npm run package && gulp version-patch && npm publish --access=public && npm run git:push",
     "publish:minor": "npm run package && gulp version-minor && npm publish --access=public && npm run git:push",
     "publish:major": "npm run package && gulp version-major && npm publish --access=public && npm run git:push",

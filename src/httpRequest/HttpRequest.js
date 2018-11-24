@@ -13,8 +13,7 @@ import { isString, isObject, isBlank, isFormData, isIE, isEmpty, isNotEmpty, isN
  * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
  * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
  * @param {function} resolveInterceptor 在resolve之前拦截resolve, 可进一步根据返回数据决定是resolve还是reject.
- * @param {function} serverError 在服务端返回异常时调用.
- * @param {function} browserError 在浏览器抛出异常时调用.
+ * @param {function} onError 在请求返回异常时调用.
  * @param {boolean} enableProxy 是否开启代理服务, 会将 baseURL 设置为null,并且在 url 上添加代理信息, 默认 false.
  * @param {string | function} proxyPath 代理的路径, 可以为方法返回一个string, 默认为"/proxy."
  * @param {boolean} isDev 是否为调试模式, 调试模式会打一些log.
@@ -67,8 +66,7 @@ function HttpRequest(options) {
         requestInterceptor,
         responseInterceptor,
         resolveInterceptor,
-        serverError,
-        browserError,
+        onError,
         enableProxy,
         proxyPath,
         isDev,
@@ -173,37 +171,30 @@ function HttpRequest(options) {
                 }
             }).catch(function(error) {
                 var errorMsg;
-                
                 // 服务端异常
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
                 if (error.response) {
                     errorMsg = error.response;
-
-                    if (serverError) {
-                        serverError(errorMsg);
-                    }
                 // 浏览器抛出的异常, 比如请求超时, 不同浏览器可能有不同的行为.
                 // The request was made but no response was received
                 // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
                 } else if (error.request) {
                     errorMsg = error.request;
-                    if (browserError) {
-                        browserError(errorMsg);
-                    }
                 // 浏览器抛出的异常, 比如请求超时, 不同浏览器可能有不同的行为.
                 // Something happened in setting up the request that triggered an Error
                 } else {
                     errorMsg = error.message;
-                    if (browserError) {
-                        browserError(errorMsg);
-                    }
-                }                
+                }          
                 
                 if (isIE()) {
                     console.error(JSON.stringify(errorMsg));
                 } else {
                     console.error(errorMsg);
+                }
+
+                if (onError) {
+                    onError(errorMsg);
                 }
 
                 reject(errorMsg);
@@ -242,7 +233,8 @@ export function dynamicPath(options) {
     }
 
     let domain = baseURL.replace(/(^http[s]?:\/\/)/, '')
-        .replace(/(:\d*)?(\/)?$/, '');
+                        .replace(':', '_')
+                        .replace(/(\/)?$/, '');
 
     return `/proxy/${domain}`;
 }
@@ -252,7 +244,8 @@ export function createDynamicProxy(servers = [], prefix = 'proxy') {
 
     servers.forEach((server) => {
         let key = server.replace(/(^http[s]?:\/\/)/, '')
-            .replace(/(:\d*)?(\/)?$/, '');
+                        .replace(':', '_')
+                        .replace(/(\/)?$/, '');
                         
         config[`/${prefix}/${key}`] = server;
     });

@@ -4,6 +4,14 @@ var bump = require('gulp-bump');
 var { execSync } = require('child_process');
 
 // 更新 Z 版本号, 修复bug, 兼容老版本
+gulp.task('version-prerelease', () => {
+    return gulp.src('./package.json')
+        .pipe(bump({
+            type: 'prerelease'
+        }))
+        .pipe(gulp.dest('./'));
+});
+// 更新 Z 版本号, 修复bug, 兼容老版本
 gulp.task('version-patch', () => {
     return gulp.src('./package.json')
         .pipe(bump({

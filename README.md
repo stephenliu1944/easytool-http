@@ -1,12 +1,12 @@
 # @beanutils/http-request
-通用 HTTP 请求模块, 依赖 axios 库并对其进行了一些扩展.
+General HTTP Request module, extension from axios.
 
-## 模块引入
+## Install
 ```
 npm install --save @beanutils/http-request
 ```
 
-## 示例
+## Demo
 ```
 import HttpRequest from '@beanutils/http-request';
 var promise = HttpRequest({
@@ -15,21 +15,53 @@ var promise = HttpRequest({
     params: xxx,
     data: xxx
 });
-promise.then((data) => {}, (error) =>{});
+promise.then((data) => {}, (error) => {});
 ```
 
-## 设置全局默认选项
+## Setup global options
 ```
-// 需要在请求调用前设置.
+// need setup before request.
+// 需要在http请求前设置.
 HttpRequest.defaults = {
     method: 'GET',
     contentType: 'application/json',
     cache: true,
+    proxyPath: '/proxy',
+    enableProxy: true,
     isDev: true
 });
 ```
+## Use Proxy
+index.js
+```
+import HttpRequest, { dynamicPath } from '@beanutils/http-request';
+HttpRequest.defaults = {
+    proxyPath: dynamicPath,
+    ...
+};
+```
+webpack.config.dev.js
+```
+import { createDynamicProxy } from '@beanutils/http-request';
+{
+    devServer: {
+        host: '0.0.0.0',
+        port: 8080,
+        ....
+        proxy: createDynamicProxy([
+            'http://localhost:3001',     // mock
+            'http://api1.xxxx.net',      // api
+            'http://api2.xxx.net',       // api2
+            'http://api3.xxx.net',       // api3
+            ...
+        ])
+    }
+    ...
+}
+```
 
-## 参数配置
+
+## Options
 ```
  * @desc 使用axios第三方库访问后台服务器, 返回封装过后的Promise对象.
  * @param {axios.options...} 支持全系axios参数.
@@ -39,9 +71,9 @@ HttpRequest.defaults = {
  * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
  * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
  * @param {function} resolveInterceptor 在resolve之前拦截resolve, 可进一步根据返回数据决定是resolve还是reject.
- * @param {function} serverError 在服务端返回异常时调用.
- * @param {function} browserError 在浏览器抛出异常时调用.
- * @param {string | function} proxyPath 配置请求代理服务器的前缀, 可以是字符串也可以是一个返回字符串的方法, 方法接收一个配置参数.
+ * @param {function} onError 在请求发生异常时调用, 可以用于统一错误处理.
+ * @param {boolean} enableProxy 是否开启代理服务, 会将 baseURL 设置为null,并且在 url 上添加代理信息, 默认 false.
+ * @param {string | function} proxyPath 代理的路径, 可以为方法返回一个string, 默认为"/proxy."
  * @param {boolean} isDev 是否为调试模式, 调试模式会打一些log.
  * @return {object} - 返回一个promise的实例对象.
 ```
