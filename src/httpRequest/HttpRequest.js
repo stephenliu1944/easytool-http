@@ -24,9 +24,6 @@ function HttpRequest(options) {
     var _options = Object.assign({
         // axios的默认参数
         method: HttpMethod.GET,                      
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        },
         paramsSerializer: function(params) {
             return qs.stringify(params, { allowDots: true });
         },
@@ -114,6 +111,8 @@ function HttpRequest(options) {
             }
         } else {
             const instance = axios.create();
+            
+            headers['X-Requested-With'] = 'XMLHttpRequest';
 
             if (method === HttpMethod.POST) {
                 headers['Content-Type'] = contentType;
