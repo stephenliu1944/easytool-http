@@ -224,6 +224,16 @@ Promise.prototype.finally = function(callback) {
         })
     );
 };
+/**
+ * 修剪路径
+ * http://localhost:3001 > localhost_3001
+ * http://ynreport.bbdservice.net > ynreport.bbdservice.net
+ */ 
+function clipPath(path = '') {
+    return path.replace(/(^http[s]?:\/\/)/, '')
+               .replace(/(\/)?$/, '')
+               .replace(':', '_');
+}
 // 根据 prefix + domain 动态设置url路径
 export function dynamicPath(options) {
     var { baseURL } = options;
@@ -232,9 +242,7 @@ export function dynamicPath(options) {
         return '';
     }
 
-    let domain = baseURL.replace(/(^http[s]?:\/\/)/, '')
-        .replace(/(\/)?$/, '')
-        .replace(':', '_');
+    let domain = clipPath(baseURL);
 
     return `/proxy/${domain}`;
 }
@@ -243,16 +251,21 @@ export function createDynamicProxy(servers = [], prefix = 'proxy') {
     var config = {};
 
     servers.forEach((server) => {
-        let key = server.replace(/(^http[s]?:\/\/)/, '')
-            .replace(/(\/)?$/, '')
-            .replace(':', '_');
-                        
-        config[`/${prefix}/${key}`] = server;
+        let match;
+        if (isString(server)) {
+            match = server;
+        } else if (isObject(server)) {
+            match = Object.keys(server)[0];
+        } else {
+            throw new Error('proxy options type error, only support string and object type');
+        }
+        let key = `/${prefix}/${clipPath(match)}`;
+        config[key] = server[match] || server;
     });
 
     return mixinProxy(config);
 }
-// 为代理配置初始值
+// 为代理配置默认值
 export function mixinProxy(options = {}) {
     var config = {};
 
@@ -261,13 +274,19 @@ export function mixinProxy(options = {}) {
             let opt = options[key];
             
             config[key] = {
-                target: isString(opt) && opt,
                 changeOrigin: true,
                 cookieDomainRewrite: '',
                 cookiePathRewrite: '/',
                 pathRewrite: (_path) => _path.replace(key, '')
             };
-            isObject(opt) && Object.assign(config[key], opt);
+
+            if (isString(opt)) {
+                config[key].target = opt;
+            } else if (isObject(opt)) {
+                Object.assign(config[key], opt);
+            } else {
+                throw new Error('proxy options type error, only support string and object type');
+            }
         }
     }
 
