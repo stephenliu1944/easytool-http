@@ -225,14 +225,14 @@ Promise.prototype.finally = function(callback) {
     );
 };
 /**
- * 修剪路径
+ * 修剪路径匹配
  * http://localhost:3001 > localhost_3001
  * http://ynreport.bbdservice.net > ynreport.bbdservice.net
  */ 
 function clipPath(path = '') {
     return path.replace(/(^http[s]?:\/\/)/, '')
-               .replace(/(\/)?$/, '')
-               .replace(':', '_');
+        .replace(/(\/)?$/, '')
+        .replace(':', '_');
 }
 // 根据 prefix + domain 动态设置url路径
 export function dynamicPath(options) {
