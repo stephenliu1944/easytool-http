@@ -112,6 +112,7 @@ function HttpRequest(options) {
         } else {
             const instance = axios.create();
             
+            headers = headers || {};
             headers['X-Requested-With'] = 'XMLHttpRequest';
 
             if (method === HttpMethod.POST) {
