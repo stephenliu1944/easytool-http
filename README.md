@@ -21,7 +21,6 @@ promise.then((data) => {}, (error) => {});
 ## Setup global options
 ```
 // need setup before request.
-// 需要在http请求前设置.
 HttpRequest.defaults = {
     method: 'GET',
     contentType: 'application/json',
@@ -32,34 +31,59 @@ HttpRequest.defaults = {
 });
 ```
 ## Use Proxy
-index.js
+```
+npm install --save @beanutils/proxy
+```
+app.js
 ```
 import HttpRequest, { dynamicPath } from '@beanutils/http-request';
+import Proxy from '@beanutils/proxy';
 HttpRequest.defaults = {
-    proxyPath: dynamicPath,
+    proxyPath: Proxy.hostPath,
     ...
 };
 ```
+package.json
+```
+...
+"devServer": {
+    "local": 8080,
+    // proxy suport three data types, string, array or object.
+    "proxy": "http://api1.xxxx.com"
+     or
+    "proxy": [
+        "http://api1.xxxx.com"      // api1
+        "http://api2.xxxx.com"      // api2
+        "http://api3.xxxx.com"      // api3
+    ]
+     or
+    "proxy": {
+        "http://api1.xxx.com": "http://localhost:3001",     // mock
+        or
+        "http://api2.xxx.com": {
+            target: "http://localhost:3002"
+            (http-proxy-middleware options)...
+        }
+    }
+}
+...
+```
 webpack.config.dev.js
 ```
-import { createDynamicProxy } from '@beanutils/http-request';
+import Proxy from '@beanutils/proxy';
+import pkg from './package.json';
+const { local, proxy } = pkg.devServer;
+
 {
     devServer: {
         host: '0.0.0.0',
-        port: 8080,
+        port: local,
         ....
-        proxy: createDynamicProxy([
-            'http://localhost:3001',     // mock
-            'http://api1.xxxx.net',      // api
-            'http://api2.xxx.net',       // api2
-            'http://api3.xxx.net',       // api3
-            ...
-        ])
+        proxy: Proxy.createProxy(proxy)
     }
     ...
 }
 ```
-
 
 ## Options
 ```

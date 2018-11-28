@@ -1,7 +1,7 @@
 import qs from 'qs';
 import axios from 'axios';
 import { HttpMethod, ContentType } from 'constants/enum';
-import { isString, isObject, isBlank, isFormData, isIE, isEmpty, isNotEmpty, isNotBlank, isFunction, log } from 'utils/util';
+import { isString, isArray, isObject, isBlank, isFormData, isIE, isEmpty, isNotEmpty, isNotBlank, isFunction, log } from 'utils/util';
 
 /**
  * @author Stephen Liu
@@ -224,16 +224,21 @@ Promise.prototype.finally = function(callback) {
         })
     );
 };
+
 /**
+ * @desc deprecated use @beanutils/proxy instead
  * 修剪路径匹配
  * http://localhost:3001 > localhost_3001
  * http://ynreport.bbdservice.net > ynreport.bbdservice.net
  */ 
 function clipPath(path = '') {
     return path.replace(/(^http[s]?:\/\/)/, '')
-        .replace(/(\/)?$/, '')
-        .replace(':', '_');
+               .replace(/(\/.*)$/, '')
+               .replace(':', '_');
 }
+/**
+ * @desc deprecated use @beanutils/proxy instead
+ */
 // 根据 prefix + domain 动态设置url路径
 export function dynamicPath(options) {
     var { baseURL } = options;
@@ -246,25 +251,42 @@ export function dynamicPath(options) {
 
     return `/proxy/${domain}`;
 }
+/**
+ * @desc deprecated use @beanutils/proxy instead
+ */
 // 根据 prefix + domain 动态匹配代理服务
-export function createDynamicProxy(servers = [], prefix = 'proxy') {
+export function createDynamicProxy(servers, prefix = 'proxy') {
+    if (!servers) {
+        return;
+    }
+
     var config = {};
 
-    servers.forEach((server) => {
-        let match;
-        if (isString(server)) {
-            match = server;
-        } else if (isObject(server)) {
-            match = Object.keys(server)[0];
-        } else {
-            throw new Error('proxy options type error, only support string and object type');
+    function setConfig(match, target) {
+        var path = `/${prefix}/${clipPath(match)}`;
+        config[path] = target;
+    }
+
+    if (isString(servers)) {
+        setConfig(servers, servers);
+    } else if (isArray(servers) || isObject(servers)) {
+        for (let key in servers) {
+            if (servers.hasOwnProperty(key)) {
+                let target = servers[key];
+                // key is NaN means object otherwise array
+                let match = isNaN(key) ? key : target;
+                setConfig(match, target);
+            }
         }
-        let key = `/${prefix}/${clipPath(match)}`;
-        config[key] = server[match] || server;
-    });
+    } else {
+        throw new Error('proxy options type error, only support string, object or array type');
+    }
 
     return mixinProxy(config);
 }
+/**
+ * @desc deprecated use @beanutils/proxy instead
+ */
 // 为代理配置默认值
 export function mixinProxy(options = {}) {
     var config = {};
