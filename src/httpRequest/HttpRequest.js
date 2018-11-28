@@ -1,7 +1,8 @@
 import qs from 'qs';
 import axios from 'axios';
 import { HttpMethod, ContentType } from 'constants/enum';
-import { isString, isArray, isObject, isBlank, isFormData, isIE, isEmpty, isNotEmpty, isNotBlank, isFunction, log } from 'utils/util';
+import { isString, isArray, isObject, isBlank, isFormData, isIE, isEmpty, isNotEmpty, isNotBlank, isFunction } from '@beanutils/common';
+import { log } from 'utils/util';
 
 /**
  * @author Stephen Liu
