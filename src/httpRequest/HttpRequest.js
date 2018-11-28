@@ -233,8 +233,8 @@ Promise.prototype.finally = function(callback) {
  */ 
 function clipPath(path = '') {
     return path.replace(/(^http[s]?:\/\/)/, '')
-               .replace(/(\/.*)$/, '')
-               .replace(':', '_');
+        .replace(/(\/.*)$/, '')
+        .replace(':', '_');
 }
 /**
  * @desc deprecated use @beanutils/proxy instead
