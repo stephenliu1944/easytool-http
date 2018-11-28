@@ -2,7 +2,6 @@ import qs from 'qs';
 import axios from 'axios';
 import { HttpMethod, ContentType } from 'constants/enum';
 import { isString, isArray, isObject, isBlank, isFormData, isIE, isEmpty, isNotEmpty, isNotBlank, isFunction } from '@beanutils/common';
-import { log } from 'utils/util';
 
 /**
  * @author Stephen Liu
@@ -225,6 +224,24 @@ Promise.prototype.finally = function(callback) {
         })
     );
 };
+
+function log(data, title) {
+    /* eslint-disable no-console */
+    if (title) {
+        console.log(title + ' start');
+    }
+
+    if (isIE()) {
+        console.log(JSON.stringify(data));
+    } else {
+        console.log(data);
+    }
+
+    if (title) {
+        console.log(title + ' end');
+    }
+    /* eslint-enable no-console */
+}
 
 /**
  * @desc deprecated use @beanutils/proxy instead
