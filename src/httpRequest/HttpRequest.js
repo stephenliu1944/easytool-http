@@ -177,14 +177,9 @@ function HttpRequest(options) {
                 if (error.response) {
                     errorMsg = error.response;
                 // 浏览器抛出的异常, 比如请求超时, 不同浏览器可能有不同的行为.
-                // The request was made but no response was received
-                // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-                } else if (error.request) {
-                    errorMsg = error.request;
-                // 浏览器抛出的异常, 比如请求超时, 不同浏览器可能有不同的行为.
                 // Something happened in setting up the request that triggered an Error
                 } else {
-                    errorMsg = error.message;
+                    errorMsg = error.stack || error.message;
                 }          
                 
                 if (isIE()) {

@@ -20,7 +20,7 @@ export default [rollupMerge(base(umdName), {
         }
     },
     plugins: [
-        uglify()	                     
+        // uglify()	                     
     ]
 }), rollupMerge(base(cjsName), {
     output: {
