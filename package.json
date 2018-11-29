@@ -1,6 +1,6 @@
 {
   "name": "@beanutils/http-request",
-  "version": "0.1.33",
+  "version": "0.1.34",
   "description": "General HTTP Request module, extension from axios.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
