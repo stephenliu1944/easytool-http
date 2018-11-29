@@ -15,10 +15,14 @@ var promise = HttpRequest({
     params: xxx,
     data: xxx
 });
-promise.then((data) => {}, (error) => {});
+promise.then((data) => {
+
+}, (error) => {
+
+});
 ```
 
-## Setup global options
+## Setup global options(optional)
 ```
 // need setup before request.
 HttpRequest.defaults = {
@@ -30,7 +34,7 @@ HttpRequest.defaults = {
     isDev: true
 });
 ```
-## Use Proxy
+## Use Proxy(optional)
 ```
 npm install --save @beanutils/proxy
 ```
