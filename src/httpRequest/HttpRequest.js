@@ -188,9 +188,7 @@ function HttpRequest(options) {
                     console.error(errorMsg);
                 }
 
-                if (onError) {
-                    onError(errorMsg);
-                }
+                onError?.(errorMsg);
 
                 reject(errorMsg);
             });
