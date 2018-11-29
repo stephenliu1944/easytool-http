@@ -40,10 +40,10 @@ npm install --save @beanutils/proxy
 ```
 app.js
 ```
-import HttpRequest, { dynamicPath } from '@beanutils/http-request';
-import Proxy from '@beanutils/proxy';
+import HttpRequest from '@beanutils/http-request';
+import { proxyPath } from '@beanutils/proxy';
 HttpRequest.defaults = {
-    proxyPath: Proxy.hostPath,
+    proxyPath: proxyPath,
     ...
 };
 ```
@@ -74,7 +74,7 @@ package.json
 ```
 webpack.config.dev.js
 ```
-import Proxy from '@beanutils/proxy';
+import { configProxy } from '@beanutils/proxy';
 import pkg from './package.json';
 const { local, proxy } = pkg.devServer;
 
@@ -83,14 +83,15 @@ const { local, proxy } = pkg.devServer;
         host: '0.0.0.0',
         port: local,
         ....
-        proxy: Proxy.createProxy(proxy)
+        proxy: configProxy(proxy)
     }
     ...
 }
 ```
 
-## Options
+## API
 ```
+/**
  * @desc 使用axios第三方库访问后台服务器, 返回封装过后的Promise对象.
  * @param {axios.options...} 支持全系axios参数.
  * @param {boolean} cache 是否开启缓存, 开起后每次请求会在url后加一个时间搓, 默认false.
@@ -99,9 +100,11 @@ const { local, proxy } = pkg.devServer;
  * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
  * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
  * @param {function} resolveInterceptor 在resolve之前拦截resolve, 可进一步根据返回数据决定是resolve还是reject.
- * @param {function} onError 在请求发生异常时调用, 可以用于统一错误处理.
+ * @param {function} onError 在请求返回异常时调用.
  * @param {boolean} enableProxy 是否开启代理服务, 会将 baseURL 设置为null,并且在 url 上添加代理信息, 默认 false.
  * @param {string | function} proxyPath 代理的路径, 可以为方法返回一个string, 默认为"/proxy."
  * @param {boolean} isDev 是否为调试模式, 调试模式会打一些log.
  * @return {object} - 返回一个promise的实例对象.
+ */
+HttpRequest(options)
 ```
