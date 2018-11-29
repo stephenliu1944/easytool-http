@@ -22,7 +22,7 @@ promise.then((data) => {
 });
 ```
 
-## Setup global options(optional)
+## Setup global options
 ```
 // need setup before request.
 HttpRequest.defaults = {
@@ -34,7 +34,7 @@ HttpRequest.defaults = {
     isDev: true
 });
 ```
-## Use Proxy(optional)
+## Use Proxy
 ```
 npm install --save @beanutils/proxy
 ```
