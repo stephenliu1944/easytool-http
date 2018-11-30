@@ -7,7 +7,7 @@ npm install --save @beanutils/http-request
 ```
 
 ## Usage
-```
+```js
 import HttpRequest from '@beanutils/http-request';
 var promise = HttpRequest({
     method: xxx,
@@ -23,23 +23,24 @@ promise.then((data) => {
 ```
 
 ## Setup global options
-```
+```js
 // need setup before request.
 HttpRequest.defaults = {
-    method: 'GET',
-    contentType: 'application/json',
+    method: 'POST',
+    contentType: 'application/json',    // default
     cache: true,
-    proxyPath: '/proxy',
+    proxyPath: '/proxy',                // default
     enableProxy: true,
     isDev: true
-});
+};
 ```
 ## Use Proxy
+@beanutils/proxy is Easy to config webpack devServer proxy or http-proxy-middleware options.
 ```
 npm install --save @beanutils/proxy
 ```
 app.js
-```
+```js
 import HttpRequest from '@beanutils/http-request';
 import { proxyPath } from '@beanutils/proxy';
 HttpRequest.defaults = {
@@ -47,24 +48,40 @@ HttpRequest.defaults = {
     ...
 };
 ```
-package.json
-```
+package.json  
+It support three data types: string, array or object.
+```js
+"dependencies": {
 ...
-"devServer": {
+},
+"devDependencies": {
+...
+},
+// custom field, whatever you want
+"devServer": {          
     "local": 8080,
-    // proxy suport three data types, string, array or object.
-    "proxy": "http://api1.xxxx.com"
+    // proxy http://api1.xxxx.com to http://api1.xxxx.com
+    "proxy": "http://api1.xxxx.com"                           
      or
     "proxy": [
-        "http://api1.xxxx.com"      // api1
-        "http://api2.xxxx.com"      // api2
-        "http://api3.xxxx.com"      // api3
+        // proxy http://api1.xxxx.com to http://api1.xxxx.com
+        "http://api1.xxxx.com",                               
+        // proxy http://api2.xxxx.com to http://localhost:3002
+        { 
+            "http://api2.xxxx.com": "http://localhost:3002"   
+        },
+        // proxy http://api3.xxxx.com to http://localhost:3003 and more custom options
+        { 
+            "http://api3.xxx.com": {                          
+                target: "http://localhost:3003"
+                (http-proxy-middleware options)...
+            }
+        }
     ]
      or
     "proxy": {
-        "http://api1.xxx.com": "http://localhost:3001",     // mock
-        or
-        "http://api2.xxx.com": {
+        "http://api1.xxx.com": "http://localhost:3001",       
+        "http://api2.xxx.com": {                              
             target: "http://localhost:3002"
             (http-proxy-middleware options)...
         }
@@ -73,7 +90,7 @@ package.json
 ...
 ```
 webpack.config.dev.js
-```
+```js
 import { configProxy } from '@beanutils/proxy';
 import pkg from './package.json';
 const { local, proxy } = pkg.devServer;
@@ -90,20 +107,20 @@ const { local, proxy } = pkg.devServer;
 ```
 
 ## API
-```
+```js
 /**
  * @desc 使用axios第三方库访问后台服务器, 返回封装过后的Promise对象.
- * @param {axios.options...} 支持全系axios参数.
- * @param {boolean} cache 是否开启缓存, 开起后每次请求会在url后加一个时间搓, 默认false.
- * @param {function} cancel 封装了CancelToken
- * @param {string} contentType HTTP请求头的 Content-Type, 默认为'application/json'
+ * @param {axios.options...} fully support axios options.
+ * @param {boolean} cache 是否开启缓存, 开起后每次请求会在url后加一个时间搓, default false.
+ * @param {function} cancel 封装了CancelToken, function receive a cancel parameter.
+ * @param {string} contentType HTTP请求头的 Content-Type, default 'application/json'
  * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
  * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
- * @param {function} resolveInterceptor 在resolve之前拦截resolve, 可进一步根据返回数据决定是resolve还是reject.
- * @param {function} onError 在请求返回异常时调用.
+ * @param {function} resolveInterceptor interceptor default behavior before resolve, which may decide whether result's resolve or reject by response data.
+ * @param {function} onError when response error occur.
  * @param {boolean} enableProxy 是否开启代理服务, 会将 baseURL 设置为null,并且在 url 上添加代理信息, 默认 false.
  * @param {string | function} proxyPath 代理的路径, 可以为方法返回一个string, 默认为"/proxy."
- * @param {boolean} isDev 是否为调试模式, 调试模式会打一些log.
+ * @param {boolean} isDev 是否为调试模式, which print some log.
  * @return {object} - 返回一个promise的实例对象.
  */
 HttpRequest(options)
