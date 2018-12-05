@@ -1,6 +1,6 @@
 {
-  "name": "@beanutils/http-request",
-  "version": "0.1.38",
+  "name": "@beancommons/http",
+  "version": "0.1.39",
   "description": "General HTTP Request module, extension from axios.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -10,11 +10,11 @@
   "author": "Stephen Liu",
   "repository": {
     "type": "git",
-    "url": "https://github.com/stephenliu1944/beanutils-http-request.git"
+    "url": "https://github.com/stephenliu1944/beancommons-http.git"
   },
-  "homepage": "https://github.com/stephenliu1944/beanutils-http-request",
+  "homepage": "https://github.com/stephenliu1944/beancommons-http",
   "bugs": {
-    "url": "https://github.com/stephenliu1944/beanutils-http-request/issues"
+    "url": "https://github.com/stephenliu1944/beancommons-http/issues"
   },
   "keywords": [
     "xhr",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.0.0",
-    "@beanutils/common": "^0.1.11",
+    "@beancommons/utils": "^0.1.11",
     "axios": "^0.18.0",
     "qs": "^6.5.2"
   },

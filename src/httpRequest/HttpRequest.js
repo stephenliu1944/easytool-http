@@ -1,7 +1,7 @@
 import qs from 'qs';
 import axios from 'axios';
 import { HttpMethod, ContentType } from 'constants/enum';
-import { isString, isArray, isObject, isBlank, isFormData, isIE, isEmpty, isNotEmpty, isNotBlank, isFunction } from '@beanutils/common';
+import { isString, isArray, isObject, isBlank, isFormData, isIE, isEmpty, isNotEmpty, isNotBlank, isFunction } from '@beancommons/common';
 
 /**
  * @author Stephen Liu
@@ -234,96 +234,6 @@ function log(data, title) {
         console.log(title + ' end');
     }
     /* eslint-enable no-console */
-}
-
-/**
- * @desc deprecated use @beanutils/proxy instead
- * 修剪路径匹配
- * http://localhost:3001 > localhost_3001
- * http://ynreport.bbdservice.net > ynreport.bbdservice.net
- */ 
-function clipPath(path = '') {
-    return path.replace(/(^http[s]?:\/\/)/, '')
-        .replace(/(\/.*)$/, '')
-        .replace(':', '_');
-}
-/**
- * @desc deprecated use @beanutils/proxy instead
- */
-// 根据 prefix + domain 动态设置url路径
-export function dynamicPath(options) {
-    var { baseURL } = options;
-
-    if (isBlank(baseURL)) {
-        return '';
-    }
-
-    let domain = clipPath(baseURL);
-
-    return `/proxy/${domain}`;
-}
-/**
- * @desc deprecated use @beanutils/proxy instead
- */
-// 根据 prefix + domain 动态匹配代理服务
-export function createDynamicProxy(servers, prefix = 'proxy') {
-    if (!servers) {
-        return;
-    }
-
-    var config = {};
-
-    function setConfig(match, target) {
-        var path = `/${prefix}/${clipPath(match)}`;
-        config[path] = target;
-    }
-
-    if (isString(servers)) {
-        setConfig(servers, servers);
-    } else if (isArray(servers) || isObject(servers)) {
-        for (let key in servers) {
-            if (servers.hasOwnProperty(key)) {
-                let target = servers[key];
-                // key is NaN means object otherwise array
-                let match = isNaN(key) ? key : target;
-                setConfig(match, target);
-            }
-        }
-    } else {
-        throw new Error('proxy options type error, only support string, object or array type');
-    }
-
-    return mixinProxy(config);
-}
-/**
- * @desc deprecated use @beanutils/proxy instead
- */
-// 为代理配置默认值
-export function mixinProxy(options = {}) {
-    var config = {};
-
-    for (let key in options) {
-        if (options.hasOwnProperty(key)) {
-            let opt = options[key];
-            
-            config[key] = {
-                changeOrigin: true,
-                cookieDomainRewrite: '',
-                cookiePathRewrite: '/',
-                pathRewrite: (_path) => _path.replace(key, '')
-            };
-
-            if (isString(opt)) {
-                config[key].target = opt;
-            } else if (isObject(opt)) {
-                Object.assign(config[key], opt);
-            } else {
-                throw new Error('proxy options type error, only support string and object type');
-            }
-        }
-    }
-
-    return config;
 }
 
 export default HttpRequest;

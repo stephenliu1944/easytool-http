@@ -1,14 +1,14 @@
-# @beanutils/http-request
+# @beancommons/http
 General HTTP Request module, extension from axios.
 
 ## Install
 ```
-npm install --save @beanutils/http-request
+npm install --save @beancommons/http
 ```
 
 ## Usage
 ```js
-import HttpRequest from '@beanutils/http-request';
+import HttpRequest from '@beancommons/http';
 var promise = HttpRequest({
     method: xxx,
     url: 'xxx',
@@ -35,14 +35,14 @@ HttpRequest.defaults = {
 };
 ```
 ## Use Proxy
-@beanutils/proxy is Easy to config webpack devServer proxy or http-proxy-middleware options.
+@beancommons/proxy is Easy to config webpack devServer proxy or http-proxy-middleware options.
 ```
-npm install --save @beanutils/proxy
+npm install --save @beancommons/proxy
 ```
 app.js
 ```js
-import HttpRequest from '@beanutils/http-request';
-import { proxyPath } from '@beanutils/proxy';
+import HttpRequest from '@beancommons/http';
+import { proxyPath } from '@beancommons/proxy';
 HttpRequest.defaults = {
     proxyPath: proxyPath,
     ...
@@ -91,7 +91,7 @@ It support three data types: string, array or object.
 ```
 webpack.config.dev.js
 ```js
-import { configProxy } from '@beanutils/proxy';
+import { configProxy } from '@beancommons/proxy';
 import pkg from './package.json';
 const { local, proxy } = pkg.devServer;
 
