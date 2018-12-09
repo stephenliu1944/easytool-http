@@ -1,11 +1,11 @@
 {
   "name": "@beancommons/http",
-  "version": "0.1.39",
+  "version": "0.1.40",
   "description": "General HTTP Request module, extension from axios.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "browser": "dist/xhr.umd.js",
-  "libraryName": "xhr",
+  "libraryName": "http",
   "license": "MIT",
   "author": "Stephen Liu",
   "repository": {
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.0.0",
-    "@beancommons/utils": "^0.1.11",
+    "@beancommons/utils": "^0.1.14",
     "axios": "^0.18.0",
     "qs": "^6.5.2"
   },

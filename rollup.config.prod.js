@@ -16,7 +16,7 @@ export default [rollupMerge(base(umdName), {
         globals: {
             qs: 'qs',
             axios: 'axios',
-            '@beancommons/common': 'Common'
+            '@beancommons/utils': 'Utils'
         }
     },
     plugins: [

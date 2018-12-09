@@ -1,7 +1,7 @@
 import qs from 'qs';
 import axios from 'axios';
-import { HttpMethod, ContentType } from 'constants/enum';
-import { isString, isArray, isObject, isBlank, isFormData, isIE, isEmpty, isNotEmpty, isNotBlank, isFunction } from '@beancommons/common';
+import { HttpMethod, ContentType, ReturnType } from 'constants/enum';
+import { isString, isFormData, isIE, isEmpty, isNotEmpty, isNotBlank, isFunction } from '@beancommons/utils';
 
 /**
  * @author Stephen Liu
@@ -10,6 +10,7 @@ import { isString, isArray, isObject, isBlank, isFormData, isIE, isEmpty, isNotE
  * @param {boolean} cache 是否开启缓存, 开起后每次请求会在url后加一个时间搓, 默认false.
  * @param {function} cancel 封装了CancelToken
  * @param {string} contentType HTTP请求头的 Content-Type, 默认为'application/json'
+ * @param {string} returnType 方法返回的数据类型, 可选: 'promise', 'url', 默认为 promise.
  * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
  * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
  * @param {function} resolveInterceptor 在resolve之前拦截resolve, 可进一步根据返回数据决定是resolve还是reject.
@@ -20,7 +21,7 @@ import { isString, isArray, isObject, isBlank, isFormData, isIE, isEmpty, isNotE
  * @return {object} - 返回一个promise的实例对象.
  */
 function HttpRequest(options) {
-    // 默认配置
+    // 方法默认配置参数
     var _options = Object.assign({
         // axios的默认参数
         method: HttpMethod.GET,                      
@@ -35,16 +36,19 @@ function HttpRequest(options) {
                     try {
                         data = JSON.parse(data);
                     } catch (e) {
-                        console.error('无法将响应数据转换为 json 对象', e, data);
+                        console.error('Can not parse response data to json object, please check the data format: ', e, data);
                     }
                 }
                 
                 return data;
             }
-        ],
-        // 扩展的默认参数
+        ],        
+        // 扩展的属性默认值
         contentType: ContentType.JSON,             
-        proxyPath: '/proxy'
+        returnType: ReturnType.PROMISE,
+        proxyPath: '/proxy',
+        enableProxy: false,
+        isDev: false
     }, HttpRequest.defaults, options);
 
     var {
@@ -60,6 +64,7 @@ function HttpRequest(options) {
         cache,
         cancel,
         contentType,
+        returnType,
         requestInterceptor,
         responseInterceptor,
         resolveInterceptor,
@@ -90,7 +95,7 @@ function HttpRequest(options) {
     }
     
     // 为 url 增加代理服务拦截的path
-    if (enableProxy && contentType !== ContentType.URL) {
+    if (enableProxy) {
         let prefix = isFunction(proxyPath) ? proxyPath(_options) : proxyPath;
         if (isNotBlank(prefix) && !/^\//.test(prefix)) {
             prefix = '/' + prefix;
@@ -100,99 +105,95 @@ function HttpRequest(options) {
         baseURL = null;     // 请求当前dev服务器.
     }
 
+    // 请求一个二进制文件
+    if (returnType.toLowerCase() === ReturnType.URL) {
+        url += `?${qs.stringify(params, { allowDots: true })}`;
+        return url;
+    }
+
     var promise = new Promise(function(resolve, reject) {
-        // 请求一个二进制文件
-        if (contentType === ContentType.URL) {
-            try {
-                url += `?${qs.stringify(params, { allowDots: true })}`;
-                resolve(url);
-            } catch (e) {
-                reject(e);
-            }
-        } else {
-            const instance = axios.create();
-            
-            headers = headers || {};
-            headers['X-Requested-With'] = 'XMLHttpRequest';
+        const instance = axios.create();
+        
+        headers = headers || {};
+        headers['X-Requested-With'] = 'XMLHttpRequest';
 
-            if (method === HttpMethod.POST) {
-                headers['Content-Type'] = contentType;
+        if (method === HttpMethod.POST) {
+            headers['Content-Type'] = contentType;
 
-                if (isNotEmpty(data)) {
-                    switch (contentType) {
-                        // contentType 为 'application/x-www-form-urlencoded' 的请求将参数转化为 formData 传递
-                        case ContentType.FORM_URLENCODED:
-                            if (!isFormData(data)) {
-                                data = qs.stringify(data, { allowDots: true });
-                            }
-                            // TODO: 更多兼容性处理.
-                            break;
-                    }
+            if (isNotEmpty(data)) {
+                switch (contentType) {
+                    // contentType 为 'application/x-www-form-urlencoded' 的请求将参数转化为 formData 传递
+                    case ContentType.FORM_URLENCODED:
+                        if (!isFormData(data)) {
+                            data = qs.stringify(data, { allowDots: true });
+                        }
+                        // TODO: 更多兼容性处理.
+                        break;
                 }
             }
-            
-            if (requestInterceptor) {
-                instance.interceptors.request.use(function(config) {
-                    return requestInterceptor(config) || config;
-                }, function(error) {
-                    return reject(error);
-                });
-            }
-
-            if (responseInterceptor) {
-                instance.interceptors.response.use(function(response) {
-                    return responseInterceptor(response) || response;
-                }, function(error) {
-                    return reject(error);
-                });
-            }
-
-            // 调用 axios 库
-            instance.request({
-                method,
-                baseURL,
-                url,
-                params,
-                paramsSerializer: params && paramsSerializer,
-                data,
-                headers,
-                cancelToken: cancel && new axios.CancelToken(cancel),
-                other
-            }).then(function(response) {
-                if (isDev) {
-                    log(response.data, 'Response');
-                }
-
-                // 配置了响应拦截器, 自行处理 resolve 和 reject 状态.
-                if (resolveInterceptor) {
-                    resolveInterceptor(response.data, _options, resolve, reject);
-                } else {
-                    resolve(response.data);
-                }
-            }).catch(function(error) {
-                var errorMsg;
-                // 服务端异常
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
-                if (error.response) {
-                    errorMsg = error.response;
-                // 浏览器抛出的异常, 比如请求超时, 不同浏览器可能有不同的行为.
-                // Something happened in setting up the request that triggered an Error
-                } else {
-                    errorMsg = error.stack || error.message;
-                }          
-                
-                if (isIE()) {
-                    console.error(JSON.stringify(errorMsg));
-                } else {
-                    console.error(errorMsg);
-                }
-
-                onError?.(errorMsg);
-
-                reject(errorMsg);
+        }
+        
+        if (requestInterceptor) {
+            instance.interceptors.request.use(function(config) {
+                return requestInterceptor(config) || config;
+            }, function(error) {
+                return reject(error);
             });
         }
+
+        if (responseInterceptor) {
+            instance.interceptors.response.use(function(response) {
+                return responseInterceptor(response) || response;
+            }, function(error) {
+                return reject(error);
+            });
+        }
+
+        // 调用 axios 库
+        instance.request({
+            method,
+            baseURL,
+            url,
+            params,
+            paramsSerializer: params && paramsSerializer,
+            data,
+            headers,
+            cancelToken: cancel && new axios.CancelToken(cancel),
+            other
+        }).then(function(response) {
+            if (isDev) {
+                log(response.data, 'Response');
+            }
+
+            // 配置了响应拦截器, 自行处理 resolve 和 reject 状态.
+            if (resolveInterceptor) {
+                resolveInterceptor(response.data, _options, resolve, reject);
+            } else {
+                resolve(response.data);
+            }
+        }).catch(function(error) {
+            var errorMsg;
+            // 服务端异常
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            if (error.response) {
+                errorMsg = error.response;
+            // 浏览器抛出的异常, 比如请求超时, 不同浏览器可能有不同的行为.
+            // Something happened in setting up the request that triggered an Error
+            } else {
+                errorMsg = error.stack || error.message;
+            }          
+            
+            if (isIE()) {
+                console.error(JSON.stringify(errorMsg));
+            } else {
+                console.error(errorMsg);
+            }
+
+            onError?.(errorMsg);
+
+            reject(errorMsg);
+        });
     });
 
     return promise;

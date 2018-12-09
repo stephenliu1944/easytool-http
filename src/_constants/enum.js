@@ -9,3 +9,8 @@ export const ContentType = {
     JSON: 'application/json',
     FORM_URLENCODED: 'application/x-www-form-urlencoded'
 };
+// 方法返回的类型
+export const ReturnType = {
+    PROMISE: 'promise',
+    URL: 'url'
+};

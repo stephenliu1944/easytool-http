@@ -34,3 +34,15 @@ HttpRequest({
 }, (e) => {
     console.log('fail', e);
 });
+
+var url = HttpRequest({
+    url: '/service/getIpInfo.php',
+    baseURL: 'http://ip.taobao.com',
+    params: {
+        ip: '210.75.225.254'
+    },
+    enableProxy: true,
+    returnType: 'url'
+});
+
+console.log(url);
