@@ -8,8 +8,8 @@ npm install --save @beancommons/http
 
 ## Usage
 ```js
-import HttpRequest from '@beancommons/http';
-var promise = HttpRequest({
+import http from '@beancommons/http';
+var promise = http({
     method: xxx,
     url: 'xxx',
     params: xxx,
@@ -20,12 +20,20 @@ promise.then((data) => {
 }, (error) => {
 
 });
+
+// return a proxy url
+var url = http({
+    url: 'xxx',
+    params: xxx,
+    returnType: 'url',
+    enableProxy: true
+});
 ```
 
 ## Setup global options
 ```js
 // need setup before request.
-HttpRequest.defaults = {
+http.defaults = {
     method: 'POST',
     contentType: 'application/json',    // default
     cache: true,
@@ -41,9 +49,9 @@ npm install --save @beancommons/proxy
 ```
 app.js
 ```js
-import HttpRequest from '@beancommons/http';
+import http from '@beancommons/http';
 import { proxyPath } from '@beancommons/proxy';
-HttpRequest.defaults = {
+http.defaults = {
     proxyPath: proxyPath,
     ...
 };
@@ -112,8 +120,9 @@ const { local, proxy } = pkg.devServer;
  * @desc 使用axios第三方库访问后台服务器, 返回封装过后的Promise对象.
  * @param {axios.options...} fully support axios options.
  * @param {boolean} cache 是否开启缓存, 开起后每次请求会在url后加一个时间搓, default false.
- * @param {function} cancel 封装了CancelToken, function receive a cancel parameter.
- * @param {string} contentType HTTP请求头的 Content-Type, default 'application/json'
+ * @param {function} cancel wrap axios's CancelToken, function property receive a cancel parameter.
+ * @param {string} contentType HTTP Content-Type, default 'application/json'
+ * @param {string} returnType method return type, options: 'promise', 'url'; default 'promise'.
  * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
  * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
  * @param {function} resolveInterceptor interceptor default behavior before resolve, which may decide whether result's resolve or reject by response data.
@@ -123,5 +132,5 @@ const { local, proxy } = pkg.devServer;
  * @param {boolean} isDev 是否为调试模式, which print some log.
  * @return {object} - 返回一个promise的实例对象.
  */
-HttpRequest(options)
+http(options)
 ```
