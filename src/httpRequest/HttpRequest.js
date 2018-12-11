@@ -4,8 +4,8 @@ import { HttpMethod, ContentType, ReturnType } from 'constants/enum';
 import { isString, isFormData, isIE, isEmpty, isNotEmpty, isBlank, isNotBlank, isFunction } from '@beancommons/utils';
 
 // url增加起始或末尾斜杠"/"
-function fixSlash(url, suffix) {
-    if(isBlank(url)) {
+function appendSlash(url, suffix) {
+    if (isBlank(url)) {
         return url;
     }
     
@@ -13,6 +13,20 @@ function fixSlash(url, suffix) {
         url += '/';
     } else if (!/^\//.test(url)) {
         url = '/' + url;
+    }
+
+    return url;
+}
+// url 移除起始或末尾斜杠"/"
+function removeSlash(url, suffix) {
+    if (isBlank(url)) {
+        return url;
+    }
+    
+    if (suffix && /\/$/.test(url)) {
+        url = url.slice(0, -1);
+    } else if (/^\//.test(url)) {
+        url = url.slice(1);
     }
 
     return url;
@@ -97,7 +111,7 @@ function HttpRequest(options) {
 
     url = url?.trim() || '';
 
-    url = fixSlash(url);
+    url = appendSlash(url);
     
     if (isDev) {
         log({ url, baseURL, method, data, params }, 'Request');
@@ -111,7 +125,7 @@ function HttpRequest(options) {
     // 为 url 增加代理服务拦截的path
     if (enableProxy) {
         let prefix = isFunction(proxyPath) ? proxyPath(_options) : proxyPath;
-        prefix = fixSlash(prefix);
+        prefix = appendSlash(prefix);
         url = prefix + url;
 
         // 请求当前dev服务器
@@ -121,7 +135,7 @@ function HttpRequest(options) {
     // 请求一个二进制文件
     if (returnType.toLowerCase() === ReturnType.URL) {
         if (isNotBlank(baseURL)) {
-            url = baseURL + url;
+            url = removeSlash(baseURL, true) + url;
         }
 
         if (params) {
