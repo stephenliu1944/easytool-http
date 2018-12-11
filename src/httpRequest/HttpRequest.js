@@ -1,7 +1,22 @@
 import qs from 'qs';
 import axios from 'axios';
 import { HttpMethod, ContentType, ReturnType } from 'constants/enum';
-import { isString, isFormData, isIE, isEmpty, isNotEmpty, isNotBlank, isFunction } from '@beancommons/utils';
+import { isString, isFormData, isIE, isEmpty, isNotEmpty, isBlank, isNotBlank, isFunction } from '@beancommons/utils';
+
+// url增加起始或末尾斜杠"/"
+function fixSlash(url, suffix) {
+    if(isBlank(url)) {
+        return url;
+    }
+    
+    if (suffix && !/\/$/.test(url)) {
+        url += '/';
+    } else if (!/^\//.test(url)) {
+        url = '/' + url;
+    }
+
+    return url;
+}
 
 /**
  * @author Stephen Liu
@@ -53,7 +68,7 @@ function HttpRequest(options) {
 
     var {
         // axios参数
-        url,
+        url = '',
         baseURL,
         method,
         headers,
@@ -76,14 +91,13 @@ function HttpRequest(options) {
         ...other
     } = _options;
 
-    if (isEmpty(url)) {
+    if (isEmpty(url) && returnType.toLowerCase() !== ReturnType.URL) {
         return Promise.reject();
     }
 
-    url = url.trim();
-    if (!/^\//.test(url)) {
-        url = '/' + url;
-    }
+    url = url?.trim() || '';
+
+    url = fixSlash(url);
     
     if (isDev) {
         log({ url, baseURL, method, data, params }, 'Request');
@@ -97,17 +111,27 @@ function HttpRequest(options) {
     // 为 url 增加代理服务拦截的path
     if (enableProxy) {
         let prefix = isFunction(proxyPath) ? proxyPath(_options) : proxyPath;
-        if (isNotBlank(prefix) && !/^\//.test(prefix)) {
-            prefix = '/' + prefix;
-        }
-
+        prefix = fixSlash(prefix);
         url = prefix + url;
-        baseURL = null;     // 请求当前dev服务器.
+
+        // 请求当前dev服务器
+        baseURL = null;     // TODO: baseURL可能不止含有域名, 可能还有路径信息
     }
 
     // 请求一个二进制文件
     if (returnType.toLowerCase() === ReturnType.URL) {
-        url += `?${qs.stringify(params, { allowDots: true })}`;
+        if (isNotBlank(baseURL)) {
+            url = baseURL + url;
+        }
+
+        if (params) {
+            url += `?${qs.stringify(params, { allowDots: true })}`;
+        }
+
+        if (isDev) {
+            console.log('Proxy URL: ', url);
+        }
+
         return url;
     }
 
