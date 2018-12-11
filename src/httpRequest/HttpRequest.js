@@ -117,7 +117,8 @@ function HttpRequest(options) {
         log({ url, baseURL, method, data, params }, 'Request');
     }
 
-    if (!cache) {
+    // 不缓存请求, 则在末尾增加时间搓
+    if (!cache && isNotBlank(url)) {
         params = params || {};
         params.t = new Date().getTime();
     }
@@ -129,10 +130,10 @@ function HttpRequest(options) {
         url = prefix + url;
 
         // 请求当前dev服务器
-        baseURL = null;     // TODO: baseURL可能不止含有域名, 可能还有路径信息
+        baseURL = null;     // TODO: baseURL可能不止含有域名, 可能还有路径信息, 只清除域名部分
     }
 
-    // 请求一个二进制文件
+    // 只返回一个经过处理的url, 请求一个二进制文件
     if (returnType.toLowerCase() === ReturnType.URL) {
         if (isNotBlank(baseURL)) {
             url = removeSlash(baseURL, true) + url;
