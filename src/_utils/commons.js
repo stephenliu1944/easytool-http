@@ -1,4 +1,4 @@
-import { isBlank } from '@beancommons/utils';
+import { isIE, isBlank } from '@beancommons/utils';
 // url增加起始或末尾斜杠"/"
 function appendSlash(url, suffix) {
     if (isBlank(url)) {
