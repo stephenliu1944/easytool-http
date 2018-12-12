@@ -1,6 +1,6 @@
 {
   "name": "@beancommons/http",
-  "version": "0.1.45",
+  "version": "0.1.46",
   "description": "General HTTP Request module, extension from axios.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -35,7 +35,7 @@
     "start": "cross-env NODE_ENV=development rollup -c rollup.config.dev.js -w",
     "watch:dist": "cross-env BUILD_PATH=dist NODE_ENV=production rollup -w -c rollup.config.prod.js",
     "test": "jest",
-    "lint:js": "eslint -c .eslintrc.json --fix",
+    "lint:js": "eslint -c .eslintrc.prod.json --fix",
     "package": "cross-env BUILD_PATH=dist npm run build:prod",
     "publish:prerelease": "npm run package && gulp version-prerelease && npm publish --access=public && npm run git:push",
     "publish:patch": "npm run package && gulp version-patch && npm publish --access=public && npm run git:push",

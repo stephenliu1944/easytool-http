@@ -119,7 +119,9 @@ function HttpRequest(options) {
         let returnURL = removeSuffixSlash(baseURL) + url;
 
         if (isDev) {
+            /* eslint-disable no-console */
             console.log('Return URL: ', returnURL);
+            /* eslint-enable no-console */
         }
         return returnURL;
     }
