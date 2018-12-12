@@ -1,6 +1,6 @@
 {
   "name": "@beancommons/http",
-  "version": "0.1.48",
+  "version": "0.1.50",
   "description": "General HTTP Request module, extension from axios.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -53,7 +53,8 @@
     "src/**/*.js": [
       "npm run lint:js",
       "git add"
-    ]
+    ],
+    "ignore": ["src/dev.js"]
   },
   "dependencies": {
     "@babel/runtime": "^7.0.0",

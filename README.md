@@ -23,6 +23,7 @@ promise.then((data) => {
 
 // return a proxy url
 var url = http({
+    baseURL: 'http://ip.taobao.com/service',
     url: 'xxx',
     params: xxx,
     returnType: 'url',
@@ -42,6 +43,7 @@ http.defaults = {
     isDev: true
 };
 ```
+
 ## Use Proxy
 @beancommons/proxy is Easy to config webpack devServer proxy or http-proxy-middleware options.
 ```
@@ -49,10 +51,10 @@ npm install --save @beancommons/proxy
 ```
 app.js
 ```js
-import http from '@beancommons/http';
-import { proxyPath } from '@beancommons/proxy';
+import http, { proxyBaseURL } from '@beancommons/http';
 http.defaults = {
-    proxyPath: proxyPath,
+    proxyPath: proxyBaseURL,
+    enableProxy: true,
     ...
 };
 ```
@@ -99,16 +101,19 @@ It support three data types: string, array or object.
 ```
 webpack.config.dev.js
 ```js
-import { configProxy } from '@beancommons/proxy';
+import { proxy } from '@beancommons/proxy';
 import pkg from './package.json';
-const { local, proxy } = pkg.devServer;
+
+const { local, proxy: proxyOpts } = pkg.devServer;
 
 {
     devServer: {
         host: '0.0.0.0',
         port: local,
         ....
-        proxy: configProxy(proxy)
+        proxy: {
+            ...proxy(proxyOpts)
+        }
     }
     ...
 }
@@ -118,18 +123,18 @@ const { local, proxy } = pkg.devServer;
 ```js
 /**
  * @desc 使用axios第三方库访问后台服务器, 返回封装过后的Promise对象.
- * @param {axios.options...} fully support axios options.
- * @param {boolean} cache 是否开启缓存, 开起后每次请求会在url后加一个时间搓, default false.
- * @param {function} cancel wrap axios's CancelToken, function property receive a cancel parameter.
- * @param {string} contentType HTTP Content-Type, default 'application/json'
- * @param {string} returnType method return type, options: 'promise', 'url'; default 'promise'.
+ * @param {axios.options...} 支持全系axios参数.
+ * @param {boolean} cache 是否开启缓存, 开起后每次请求会在url后加一个时间搓, 默认false.
+ * @param {function} cancel 封装了CancelToken
+ * @param {string} contentType HTTP请求头的 Content-Type, 默认为'application/json'
+ * @param {string} returnType 方法返回的数据类型, 可选: 'promise', 'url', 默认为 promise.
  * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
  * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
- * @param {function} resolveInterceptor interceptor default behavior before resolve, which may decide whether result's resolve or reject by response data.
- * @param {function} onError when response error occur.
- * @param {boolean} enableProxy 是否开启代理服务, 会将 baseURL 设置为null,并且在 url 上添加代理信息, 默认 false.
- * @param {string | function} proxyPath 代理的路径, 可以为方法返回一个string, 默认为"/proxy."
- * @param {boolean} isDev 是否为调试模式, which print some log.
+ * @param {function} resolveInterceptor 在resolve之前拦截resolve, 可进一步根据返回数据决定是resolve还是reject.
+ * @param {function} onError 在请求返回异常时调用.
+ * @param {boolean} enableProxy 是否开启代理服务, will replace baseURL with proxyPath, default is false.
+ * @param {string | function} proxyPath proxy path, can be string or function, the function receive a options args and return a string, default is "/proxy."
+ * @param {boolean} isDev 是否为调试模式, 调试模式会打一些log.
  * @return {object} - 返回一个promise的实例对象.
  */
 http(options)

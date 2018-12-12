@@ -28,6 +28,7 @@ HttpRequest({
 
 var url = HttpRequest({
     baseURL: 'http://ip.taobao.com/service/',
+    url: '/getIpInfo.php',
     // params: {
     //     ip: '210.75.225.254'
     // },
@@ -35,4 +36,4 @@ var url = HttpRequest({
     returnType: 'url'
 });
 
-console.log('url', url);
+console.log('url ', url);
