@@ -1,6 +1,6 @@
 {
   "name": "@beancommons/http",
-  "version": "0.1.44",
+  "version": "0.1.45",
   "description": "General HTTP Request module, extension from axios.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -35,7 +35,7 @@
     "start": "cross-env NODE_ENV=development rollup -c rollup.config.dev.js -w",
     "watch:dist": "cross-env BUILD_PATH=dist NODE_ENV=production rollup -w -c rollup.config.prod.js",
     "test": "jest",
-    "lint": "eslint -c .eslintrc.json --fix --ext .js src/",
+    "lint:js": "eslint -c .eslintrc.json --fix",
     "package": "cross-env BUILD_PATH=dist npm run build:prod",
     "publish:prerelease": "npm run package && gulp version-prerelease && npm publish --access=public && npm run git:push",
     "publish:patch": "npm run package && gulp version-patch && npm publish --access=public && npm run git:push",
@@ -43,6 +43,17 @@
     "publish:major": "npm run package && gulp version-major && npm publish --access=public && npm run git:push",
     "unpublish": "npm unpublish -f",
     "git:push": "gulp git-push"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.js": [
+      "npm run lint:js",
+      "git add"
+    ]
   },
   "dependencies": {
     "@babel/runtime": "^7.0.0",
@@ -68,9 +79,10 @@
     "gulp-bump": "^3.1.1",
     "gulp-sftp": "^0.1.5",
     "gulp-zip": "^4.2.0",
+    "husky": "^1.2.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^23.6.0",
-    "pre-commit": "^1.2.2",
+    "lint-staged": "^8.1.0",
     "rollup": "^0.66.0",
     "rollup-plugin-alias": "^1.4.0",
     "rollup-plugin-babel": "^4.0.3",

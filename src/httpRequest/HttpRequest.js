@@ -1,37 +1,12 @@
 import qs from 'qs';
 import axios from 'axios';
-import { HttpMethod, ContentType, ReturnType } from 'constants/enum';
 import { isString, isFormData, isIE, isEmpty, isNotEmpty, isBlank, isNotBlank, isFunction } from '@beancommons/utils';
+import { HttpMethod, ContentType, ReturnType } from 'constants/enum';
+import { appendPrefixSlash, removeSuffixSlash, log } from 'utils/commons';
 
-// url增加起始或末尾斜杠"/"
-function appendSlash(url, suffix) {
-    if (isBlank(url)) {
-        return url;
-    }
-    
-    if (suffix && !/\/$/.test(url)) {
-        url += '/';
-    } else if (!/^\//.test(url)) {
-        url = '/' + url;
-    }
-
-    return url;
-}
-// url 移除起始或末尾斜杠"/"
-function removeSlash(url, suffix) {
-    if (isBlank(url)) {
-        return url;
-    }
-    
-    if (suffix && /\/$/.test(url)) {
-        url = url.slice(0, -1);
-    } else if (/^\//.test(url)) {
-        url = url.slice(1);
-    }
-
-    return url;
-}
-
+// 正则获取baseURL中的 protocol, host, port, rootPath 部分.
+// TODO: 如果baseURL格式为 '/xxx'则不能匹配到, 但是'xxx'和'xxx/'可以匹配到.
+// const BASE_URL_REG = /^(https?:\/\/)?([\w-\.]+)(:[\d]{1,})?(\/[\/\w-\.\?#=%]*)*/;
 /**
  * @author Stephen Liu
  * @desc 使用axios第三方库访问后台服务器, 返回封装过后的Promise对象.
@@ -44,8 +19,8 @@ function removeSlash(url, suffix) {
  * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
  * @param {function} resolveInterceptor 在resolve之前拦截resolve, 可进一步根据返回数据决定是resolve还是reject.
  * @param {function} onError 在请求返回异常时调用.
- * @param {boolean} enableProxy 是否开启代理服务, 会将 baseURL 设置为null,并且在 url 上添加代理信息, 默认 false.
- * @param {string | function} proxyPath 代理的路径, 可以为方法返回一个string, 默认为"/proxy."
+ * @param {boolean} enableProxy 是否开启代理服务, will replace baseURL with proxyPath, default is false.
+ * @param {string | function} proxyPath proxy path, can be string or function, the function receive a options args and return a string, default is "/proxy."
  * @param {boolean} isDev 是否为调试模式, 调试模式会打一些log.
  * @return {object} - 返回一个promise的实例对象.
  */
@@ -77,9 +52,9 @@ function HttpRequest(options) {
         returnType: ReturnType.PROMISE,
         proxyPath: '/proxy',
         enableProxy: false,
-        isDev: false
+        isDev: false    
     }, HttpRequest.defaults, options);
-
+    
     var {
         // axios参数
         url = '',
@@ -111,7 +86,7 @@ function HttpRequest(options) {
 
     url = url?.trim() || '';
 
-    url = appendSlash(url);
+    url = appendPrefixSlash(url);
     
     if (isDev) {
         log({ url, baseURL, method, data, params }, 'Request');
@@ -125,29 +100,28 @@ function HttpRequest(options) {
     
     // 为 url 增加代理服务拦截的path
     if (enableProxy) {
-        let prefix = isFunction(proxyPath) ? proxyPath(_options) : proxyPath;
-        prefix = appendSlash(prefix);
-        url = prefix + url;
+        let proxyURL = isFunction(proxyPath) ? proxyPath(_options) : proxyPath;
+        
+        // 为baseURL补充上非域名部分的rootPath, 但是 BASE_URL_REG正则有bug, 且造成代码混乱, 估暂时移除.
+        // var match = baseURL?.match(BASE_URL_REG) || [];
+        // baseURL = appendPrefixSlash(prefix) + appendPrefixSlash(match[4]);     
 
         // 请求当前dev服务器
-        baseURL = null;     // TODO: baseURL可能不止含有域名, 可能还有路径信息, 只清除域名部分
+        baseURL = appendPrefixSlash(proxyURL); 
     }
 
     // 只返回一个经过处理的url, 请求一个二进制文件
     if (returnType.toLowerCase() === ReturnType.URL) {
-        if (isNotBlank(baseURL)) {
-            url = removeSlash(baseURL, true) + url;
-        }
-
         if (params) {
             url += `?${qs.stringify(params, { allowDots: true })}`;
         }
 
-        if (isDev) {
-            console.log('Proxy URL: ', url);
-        }
+        let returnURL = removeSuffixSlash(baseURL) + url;
 
-        return url;
+        if (isDev) {
+            console.log('Return URL: ', returnURL);
+        }
+        return returnURL;
     }
 
     var promise = new Promise(function(resolve, reject) {
@@ -258,22 +232,31 @@ Promise.prototype.finally = function(callback) {
     );
 };
 
-function log(data, title) {
-    /* eslint-disable no-console */
-    if (title) {
-        console.log(title + ' start');
+// 根据 prefix + baseURL 生成代理拦截的 url
+export function proxyBaseURL(options = {}, prefix = 'proxy') {
+    var baseURL = options?.baseURL ||  options;
+    
+    if (isBlank(baseURL)) {
+        return '';
     }
 
-    if (isIE()) {
-        console.log(JSON.stringify(data));
-    } else {
-        console.log(data);
-    }
+    /**
+     * 获取url的host和port部分, 此正则有缺陷, 详见顶部.
+     */ 
+    // var match = baseURL?.match(BASE_URL_REG) || [];
+    // var host = match[2] || '';
+    // var port = match[3] || '';
+    // var proxyURL = host + port;
 
-    if (title) {
-        console.log(title + ' end');
-    }
-    /* eslint-enable no-console */
+    // if (isBlank(proxyURL)) {
+    //     return;
+    // }
+
+    var proxyURL = baseURL.replace(/(^http[s]?:\/\/)/, '')
+        .replace(/(\/)$/, '')
+        .replace(':', '_');
+
+    return `/${prefix}/${proxyURL}`;
 }
 
 export default HttpRequest;

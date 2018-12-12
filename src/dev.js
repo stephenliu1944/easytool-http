@@ -1,5 +1,7 @@
 // 该类用于测试模块
-import HttpRequest from './index';
+import HttpRequest, {
+    proxyBaseURL
+} from './index';
 
 HttpRequest.defaults = {
     requestInterceptor: function(config) {
@@ -7,12 +9,13 @@ HttpRequest.defaults = {
     },
     responseInterceptor: function(data) {
         console.log('responseInterceptor', data);
-    }
+    },
+    proxyPath: proxyBaseURL
 };
 
 HttpRequest({
-    url: '/service/getIpInfo.php',
-    baseURL: 'http://ip.taobao.com',
+    url: '/getIpInfo.php',
+    baseURL: 'http://ip.taobao.com/service',
     params: {
         ip: '210.75.225.254'
     }
@@ -23,20 +26,8 @@ HttpRequest({
     console.log('fail', e);
 });
 
-HttpRequest({
-    url: '/service/getIpInfo.php',
-    baseURL: 'http://ip.taobao.com',
-    params: {
-        ip: '210.75.225.254'
-    }
-}).then((e) => {
-    console.log('success', e);
-}, (e) => {
-    console.log('fail', e);
-});
-
 var url = HttpRequest({
-    baseURL: 'http://ip.taobao.com',
+    baseURL: 'http://ip.taobao.com/service/',
     // params: {
     //     ip: '210.75.225.254'
     // },
