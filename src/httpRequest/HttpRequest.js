@@ -236,7 +236,7 @@ Promise.prototype.finally = function(callback) {
 
 // 根据 prefix + baseURL 生成代理拦截的 url
 export function proxyBaseURL(options = {}, prefix = 'proxy') {
-    var baseURL = options?.baseURL ||  options;
+    var { baseURL } = options;
     
     if (isBlank(baseURL)) {
         return '';
