@@ -74,63 +74,14 @@ http.defaults = {
     ...
 };
 ```
-Proxy support three data types: String, Array or Object.
-package.json
-```js
-"dependencies": {
-...
-},
-"devDependencies": {
-...
-},
-// custom field, whatever you want
-"devServer": {              
-    // String
-    "proxy": "http://api1.xxxx.com"     // matching /proxy/api1.xxxx.com target http://api1.xxxx.com
-    // Array
-    "proxy": [
-        // matching /proxy/api1.xxxx.com target http://api1.xxxx.com
-        "http://api1.xxxx.com", 
-        or                                       
-        {   // matching /proxy/api2.xxxx.com target http://localhost:3002
-            "http://api2.xxxx.com": "http://localhost:3002"   
-        },
-        or        
-        {   // matching /proxy/api3.xxxx.com target http://localhost:3003 and more custom options
-            "http://api3.xxx.com": {                          
-                target: "http://localhost:3003"
-                (http-proxy-middleware options)...
-            }
-        }
-    ]
-    // Object
-    "proxy": {
-        // idem
-        "http://api1.xxx.com": "http://localhost:3001",  
-        or     
-        // idem
-        "http://api2.xxx.com": {
-            target: "http://localhost:3002"
-            (http-proxy-middleware options)...
-        }
-    }
-}
-...
-```
 webpack.config.dev.js
 ```js
 import { proxy } from '@beancommons/proxy';
-import pkg from './package.json';
-
-const { local, proxy: proxyOpts } = pkg.devServer;
-
 {
     devServer: {
-        host: '0.0.0.0',
-        port: local,
         ....
         proxy: {
-            ...proxy(proxyOpts)
+            ...proxy('http://beancommons.com')  // you chould config this in package.json file
         }
     }
     ...
