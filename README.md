@@ -10,10 +10,11 @@ npm install --save @beancommons/http
 ```js
 import http from '@beancommons/http';
 var promise = http({
-    method: xxx,
-    url: 'xxx',
-    params: xxx,
-    data: xxx
+    baseURL: 'http://beancommons.com',
+    url: '/getUser',
+    params: {
+        id: 1
+    }
 });
 promise.then((data) => {
 
@@ -21,33 +22,48 @@ promise.then((data) => {
 
 });
 
-// return a proxy url
+// return a handled url 'http://beancommons.com/getUser?id=1'
 var url = http({
-    baseURL: 'http://ip.taobao.com/service',
-    url: 'xxx',
-    params: xxx,
-    returnType: 'url',
+    baseURL: 'http://beancommons.com',
+    url: '/getUser',
+    params: {
+        id: 1
+    },
+    returnType: 'url'
+});
+window.open(url);
+
+// add proxy path, will request current domain 'http://localhost:xx/api/beancommons.com/setUser'
+var promise = http({
+    method: 'POST',
+    baseURL: 'http://beancommons.com',
+    url: '/setUser',
+    data: {
+        name: 'stephen',
+        age: 30
+    },
+    proxyPath: '/api',
     enableProxy: true
 });
 ```
 
 ## Setup global options
 ```js
-// need setup before request.
+// need setup before invoke http()
 http.defaults = {
-    method: 'POST',
-    contentType: 'application/json',    // default
-    cache: true,
-    proxyPath: '/proxy',                // default
-    enableProxy: true,
-    isDev: true
+    method: 'POST',                                      // default is 'GET'
+    contentType: 'application/x-www-form-urlencoded',    // default is 'application/json'
+    cache: true,                                         // default is false
+    proxyPath: '/api',                                   // default is '/proxy'
+    enableProxy: __DEV__,
+    isDev: __DEV__
 };
 ```
 
-## Use Proxy
+## Use Proxy(optional)
 @beancommons/proxy is Easy to config webpack devServer proxy or http-proxy-middleware options.
 ```
-npm install --save @beancommons/proxy
+npm install -D @beancommons/proxy
 ```
 app.js
 ```js
@@ -58,8 +74,8 @@ http.defaults = {
     ...
 };
 ```
-package.json  
-It support three data types: string, array or object.
+Proxy support three data types: String, Array or Object.
+package.json
 ```js
 "dependencies": {
 ...
@@ -68,30 +84,32 @@ It support three data types: string, array or object.
 ...
 },
 // custom field, whatever you want
-"devServer": {          
-    "local": 8080,
-    // proxy http://api1.xxxx.com to http://api1.xxxx.com
-    "proxy": "http://api1.xxxx.com"                           
-     or
+"devServer": {              
+    // String
+    "proxy": "http://api1.xxxx.com"     // matching /proxy/api1.xxxx.com target http://api1.xxxx.com
+    // Array
     "proxy": [
-        // proxy http://api1.xxxx.com to http://api1.xxxx.com
-        "http://api1.xxxx.com",                               
-        // proxy http://api2.xxxx.com to http://localhost:3002
-        { 
+        // matching /proxy/api1.xxxx.com target http://api1.xxxx.com
+        "http://api1.xxxx.com", 
+        or                                       
+        {   // matching /proxy/api2.xxxx.com target http://localhost:3002
             "http://api2.xxxx.com": "http://localhost:3002"   
         },
-        // proxy http://api3.xxxx.com to http://localhost:3003 and more custom options
-        { 
+        or        
+        {   // matching /proxy/api3.xxxx.com target http://localhost:3003 and more custom options
             "http://api3.xxx.com": {                          
                 target: "http://localhost:3003"
                 (http-proxy-middleware options)...
             }
         }
     ]
-     or
+    // Object
     "proxy": {
-        "http://api1.xxx.com": "http://localhost:3001",       
-        "http://api2.xxx.com": {                              
+        // idem
+        "http://api1.xxx.com": "http://localhost:3001",  
+        or     
+        // idem
+        "http://api2.xxx.com": {
             target: "http://localhost:3002"
             (http-proxy-middleware options)...
         }
@@ -138,4 +156,8 @@ const { local, proxy: proxyOpts } = pkg.devServer;
  * @return {object} - 返回一个promise的实例对象.
  */
 http(options)
+/**
+ * @desc rewrite baseURL like 'http://beancommons.com' to '/proxy/beancommons.com' for proxy path matching
+ */
+proxyBaseURL(options, prefix = 'proxy')
 ```
