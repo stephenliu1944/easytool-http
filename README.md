@@ -135,6 +135,7 @@ const { local, proxy: proxyOpts } = pkg.devServer;
  * @param {boolean} enableProxy 是否开启代理服务, will replace baseURL with proxyPath, default is false.
  * @param {string | function} proxyPath proxy path, can be string or function, the function receive a options args and return a string, default is "/proxy."
  * @param {boolean} isDev 是否为调试模式, 调试模式会打一些log.
+ * @param {object} extension custom data field
  * @return {object} - 返回一个promise的实例对象.
  */
 http(options)
