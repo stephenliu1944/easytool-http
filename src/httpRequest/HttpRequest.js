@@ -4,6 +4,42 @@ import { isString, isFormData, isIE, isEmpty, isNotEmpty, isBlank, isNotBlank, i
 import { HttpMethod, ContentType, ReturnType } from 'constants/enum';
 import { appendPrefixSlash, removeSuffixSlash, log } from 'utils/commons';
 
+var defaults = {
+    // axios的默认参数
+    method: HttpMethod.GET,
+    paramsSerializer: function(params) {
+        return qs.stringify(params, { allowDots: true });
+    },
+    // withCredentials: true,                    // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
+    transformResponse: [
+        // 默认转成json格式
+        function(data) {
+            if (isString(data)) {
+                try {
+                    data = JSON.parse(data);
+                } catch (e) {
+                    console.error('Can not parse response data to json object, please check the data format: ', e, data);
+                }
+            }
+
+            return data;
+        }
+    ],
+    // 扩展的属性默认值
+    contentType: ContentType.JSON,
+    proxyPath: '/proxy',
+    enableProxy: false,
+    isDev: false
+};
+
+export function settings(opts) {
+    Object.assign(defaults, opts);
+}
+
+export function prepare(opts) {
+
+}
+
 // 正则获取baseURL中的 protocol, host, port, rootPath 部分.
 // TODO: 如果baseURL格式为 '/xxx'则不能匹配到, 但是'xxx'和'xxx/'可以匹配到.
 // const BASE_URL_REG = /^(https?:\/\/)?([\w-\.]+)(:[\d]{1,})?(\/[\/\w-\.\?#=%]*)*/;
@@ -17,7 +53,8 @@ import { appendPrefixSlash, removeSuffixSlash, log } from 'utils/commons';
  * @param {string} returnType 方法返回的数据类型, 可选: 'promise', 'url', 默认为 promise.
  * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
  * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
- * @param {function} resolveInterceptor 在resolve之前拦截resolve, 可进一步根据返回数据决定是resolve还是reject.
+ * @param {function} beforeRequest 在请求之前进行一些预处理, 接收3个参数 resolve, reject, options.
+ * @param {function} afterResponse 在响应返回后进一步处理, 接收4个参数, resolve, reject, response, options.
  * @param {function} onError 在请求返回异常时调用.
  * @param {boolean} enableProxy 是否开启代理服务, will replace baseURL with proxyPath, default is false.
  * @param {string | function} proxyPath proxy path, can be string or function, the function receive a options args and return a string, default is "/proxy."
@@ -25,37 +62,10 @@ import { appendPrefixSlash, removeSuffixSlash, log } from 'utils/commons';
  * @param {object} extension custom data field.
  * @return {object} - 返回一个promise的实例对象.
  */
-function HttpRequest(options) {
+function HttpRequest(opts) {
     // 方法默认配置参数
-    var _options = Object.assign({
-        // axios的默认参数
-        method: HttpMethod.GET,                      
-        paramsSerializer: function(params) {
-            return qs.stringify(params, { allowDots: true });
-        },
-        // withCredentials: true,                    // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
-        transformResponse: [
-            // 默认转成json格式
-            function(data) {
-                if (isString(data)) {
-                    try {
-                        data = JSON.parse(data);
-                    } catch (e) {
-                        console.error('Can not parse response data to json object, please check the data format: ', e, data);
-                    }
-                }
-                
-                return data;
-            }
-        ],        
-        // 扩展的属性默认值
-        contentType: ContentType.JSON,             
-        returnType: ReturnType.PROMISE,
-        proxyPath: '/proxy',
-        enableProxy: false,
-        isDev: false    
-    }, HttpRequest.defaults, options);
-    
+    var _opts = {};
+
     var {
         // axios参数
         url = '',
@@ -72,18 +82,38 @@ function HttpRequest(options) {
         returnType,
         requestInterceptor,
         responseInterceptor,
-        resolveInterceptor,
+        beforeRequest,
+        afterResponse,
         onError,
         enableProxy,
         proxyPath,
         isDev,
         // axios其他参数
-        ...other
-    } = _options;
+        ...other            // 注意 other
+    } = Object.assign(_opts, defaults, opts);
 
-    if (isEmpty(url) && returnType.toLowerCase() !== ReturnType.URL) {
+    if (isEmpty(url)) {
         return Promise.reject();
     }
+
+    var prePromise;
+    // 请求前预处理
+    if (beforeRequest) {
+        prePromise = new Promise(function(resolve, reject) {
+            beforeRequest(resolve, reject, _opts);
+        });
+    } else {
+        prePromise = Promise.resolve(_opts);
+    }
+
+    return new Promise(function(resolve, reject) {
+        prePromise.then((options) => {
+
+            // TODO: 正常方法调用
+        }, (error) => {
+            reject(error);
+        });
+    });
 
     url = url?.trim() || '';
 
@@ -101,7 +131,7 @@ function HttpRequest(options) {
     
     // 为 url 增加代理服务拦截的path
     if (enableProxy) {
-        let proxyURL = isFunction(proxyPath) ? proxyPath(_options) : proxyPath;
+        let proxyURL = isFunction(proxyPath) ? proxyPath(_opts) : proxyPath;
         
         // 为baseURL补充上非域名部分的rootPath, 但是 BASE_URL_REG正则有bug, 且造成代码混乱, 估暂时移除.
         // var match = baseURL?.match(BASE_URL_REG) || [];
@@ -182,8 +212,8 @@ function HttpRequest(options) {
             }
 
             // 配置了响应拦截器, 自行处理 resolve 和 reject 状态.
-            if (resolveInterceptor) {
-                resolveInterceptor(response.data, _options, resolve, reject);
+            if (afterResponse) {
+                afterResponse(resolve, reject, response.data, _opts);
             } else {
                 resolve(response.data);
             }
@@ -238,7 +268,7 @@ Promise.prototype.finally = function(callback) {
 // 根据 prefix + baseURL 生成代理拦截的 url
 export function proxyBaseURL(options = {}, prefix = 'proxy') {
     var { baseURL } = options;
-    
+
     if (isBlank(baseURL)) {
         return '';
     }
@@ -257,7 +287,7 @@ export function proxyBaseURL(options = {}, prefix = 'proxy') {
 
     var proxyURL = baseURL.replace(/(^http[s]?:\/\/)/, '')
         .replace(/(\/)$/, '')
-        .replace(':', '_');
+        .replace(':', '_');     // TODO: 把 _ 替换成 \: 试试
 
     return `/${prefix}/${proxyURL}`;
 }

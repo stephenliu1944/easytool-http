@@ -30,7 +30,7 @@
         "no-regex-spaces": "error",
         "no-sparse-arrays": "error",
         "no-unexpected-multiline": "error",
-        "no-unreachable": "error",
+        "no-unreachable": "warn",
         "no-unsafe-finally": "error",
         "no-caller": "error",
         "no-case-declarations": "error",
