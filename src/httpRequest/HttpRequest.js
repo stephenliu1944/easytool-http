@@ -4,6 +4,7 @@ import { isString, isFormData, isIE, isEmpty, isNotEmpty, isBlank, isNotBlank, i
 import { HttpMethod, ContentType, ReturnType } from 'constants/enum';
 import { appendPrefixSlash, removeSuffixSlash, log } from 'utils/commons';
 
+// global settings
 var defaults = {
     // axios的默认参数
     method: HttpMethod.GET,
@@ -37,7 +38,67 @@ export function settings(opts) {
 }
 
 export function prepare(opts) {
+    url = url?.trim() || '';
 
+    url = appendPrefixSlash(url);
+    
+    // 不缓存请求, 则在末尾增加时间搓
+    if (!cache && isNotBlank(url)) {
+        params = params || {};
+        params.t = new Date().getTime();
+    }
+    
+    // 为 url 增加代理服务拦截的path
+    if (enableProxy) {
+        let proxyURL = isFunction(proxyPath) ? proxyPath(_opts) : proxyPath;
+        
+        // 为baseURL补充上非域名部分的rootPath, 但是 BASE_URL_REG正则有bug, 且造成代码混乱, 估暂时移除.
+        // var match = baseURL?.match(BASE_URL_REG) || [];
+        // baseURL = appendPrefixSlash(prefix) + appendPrefixSlash(match[4]);     
+
+        // 请求当前dev服务器
+        baseURL = appendPrefixSlash(proxyURL); 
+    }
+
+    // 只返回一个经过处理的url, 请求一个二进制文件
+    if (returnType.toLowerCase() === ReturnType.URL) {
+        if (params) {
+            url += `?${qs.stringify(params, { allowDots: true })}`;
+        }
+
+        let returnURL = removeSuffixSlash(baseURL) + url;
+
+        return returnURL;
+    }
+}
+
+function processURL(opts) {
+    var {
+        url,
+        baseURL,
+        proxyPath,
+        enableProxy
+    } = opts;
+
+    1.; // baseUrl和url代码健壮性处理
+    url = url?.trim() || '';
+
+    url = appendPrefixSlash(url);
+
+    baseURL;
+
+    2.; // 代理处理
+
+    // 为 url 增加代理服务拦截的path
+    if (enableProxy) {
+        let proxyURL = isFunction(proxyPath) ? proxyPath(opts) : proxyPath;
+        // 请求当前dev服务器
+        baseURL = appendPrefixSlash(proxyURL);
+    }
+
+    return {
+
+    };
 }
 
 // 正则获取baseURL中的 protocol, host, port, rootPath 部分.
@@ -63,37 +124,12 @@ export function prepare(opts) {
  * @return {object} - 返回一个promise的实例对象.
  */
 function HttpRequest(opts) {
-    // 方法默认配置参数
     var _opts = {};
 
-    var {
-        // axios参数
-        url = '',
-        baseURL,
-        method,
-        headers,
-        params,
-        data,
-        paramsSerializer,
-        // 扩展的参数
-        cache,
-        cancel,
-        contentType,
-        returnType,
-        requestInterceptor,
-        responseInterceptor,
-        beforeRequest,
-        afterResponse,
-        onError,
-        enableProxy,
-        proxyPath,
-        isDev,
-        // axios其他参数
-        ...other            // 注意 other
-    } = Object.assign(_opts, defaults, opts);
+    var { url, beforeRequest } = Object.assign(_opts, defaults, opts);
 
-    if (isEmpty(url)) {
-        return Promise.reject();
+    if (isBlank(url)) {
+        return Promise.reject('url is required.');
     }
 
     var prePromise;
@@ -108,6 +144,30 @@ function HttpRequest(opts) {
 
     return new Promise(function(resolve, reject) {
         prePromise.then((options) => {
+            var {
+                // axios参数
+                url = '',
+                baseURL,
+                method,
+                headers,
+                params,
+                data,
+                paramsSerializer,
+                // 扩展的参数
+                cache,
+                cancel,
+                contentType,
+                returnType,
+                requestInterceptor,
+                responseInterceptor,
+                afterResponse,
+                onError,
+                enableProxy,
+                proxyPath,
+                isDev,
+                // axios其他参数
+                ...other            // 注意 other
+            } = options;
 
             // TODO: 正常方法调用
         }, (error) => {
@@ -122,12 +182,6 @@ function HttpRequest(opts) {
     if (isDev) {
         log({ url, baseURL, method, data, params }, 'Request');
     }
-
-    // 不缓存请求, 则在末尾增加时间搓
-    if (!cache && isNotBlank(url)) {
-        params = params || {};
-        params.t = new Date().getTime();
-    }
     
     // 为 url 增加代理服务拦截的path
     if (enableProxy) {
@@ -136,11 +190,17 @@ function HttpRequest(opts) {
         // 为baseURL补充上非域名部分的rootPath, 但是 BASE_URL_REG正则有bug, 且造成代码混乱, 估暂时移除.
         // var match = baseURL?.match(BASE_URL_REG) || [];
         // baseURL = appendPrefixSlash(prefix) + appendPrefixSlash(match[4]);     
-
+        
         // 请求当前dev服务器
         baseURL = appendPrefixSlash(proxyURL); 
     }
 
+    // 不缓存请求, 则在末尾增加时间搓
+    if (!cache && isNotBlank(url)) {
+        params = params || {};
+        params.t = new Date().getTime();
+    }
+    
     // 只返回一个经过处理的url, 请求一个二进制文件
     if (returnType.toLowerCase() === ReturnType.URL) {
         if (params) {
