@@ -1,6 +1,6 @@
 {
   "name": "@beancommons/http",
-  "version": "0.1.58",
+  "version": "0.2.0",
   "description": "General HTTP Request module, extension from axios.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
