@@ -48,7 +48,7 @@ settings({
 });
 ```
 
-## Use Proxy
+## Use proxy
 ```js
 import http, { proxyHost } from '@beancommons/http';
 // will request current domain 'http://localhost/api/setUser'
