@@ -1,39 +1,36 @@
 // 该类用于测试模块
-import HttpRequest, {
-    proxyBaseURL
-} from './index';
+import HttpRequest, { settings, proxyHost, prepare } from './index';
 
-HttpRequest.defaults = {
+settings({
+    baseURL: 'http://ip.taobao.com/service',
     requestInterceptor: function(config) {
         console.log('requestInterceptor', config);
     },
     responseInterceptor: function(data) {
         console.log('responseInterceptor', data);
     },
-    proxyPath: proxyBaseURL
-};
+    proxyURL: proxyHost
+});
 
 HttpRequest({
     url: '/getIpInfo.php',
-    baseURL: 'http://ip.taobao.com/service',
     params: {
         ip: '210.75.225.254'
-    }
+    },
     // enableProxy: true
 }).then((e) => {
-    console.log('success', e);
+    console.log('success->>', e);
 }, (e) => {
-    console.log('fail', e);
+    console.log('fail->>', e);
 });
 
-var url = HttpRequest({
-    baseURL: 'http://ip.taobao.com/service/',
+var url = prepare({
+    // baseURL: 'http://ip.taobao.com/service/',
     url: '/getIpInfo.php',
-    // params: {
-    //     ip: '210.75.225.254'
-    // },
-    enableProxy: true,
-    returnType: 'url'
+    params: {
+        ip: '210.75.225.254'
+    },
+    enableProxy: true
 });
 
 console.log('url ', url);
