@@ -165,8 +165,8 @@ export function proxyHost(options = {}, props = {}) {
     // var proxyURL = host + port;
 
     var host = baseURL.replace(/(^http[s]?:\/\/)/, '')
-        .replace(/(\/)$/, '')
-        .replace(':', '_');     // TODO: 把 _ 替换成 \: 试试
+        .replace(/(\/)$/, '');
+        // .replace(':', '_');     
 
     return `${prefix}/${host}`;
 }
