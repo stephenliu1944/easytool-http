@@ -9,7 +9,7 @@ settings({
     responseInterceptor: function(data) {
         console.log('responseInterceptor', data);
     },
-    proxyPath: proxyHost
+    proxyURL: proxyHost
 });
 
 HttpRequest({

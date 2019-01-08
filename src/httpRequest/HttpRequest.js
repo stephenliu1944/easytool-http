@@ -26,7 +26,7 @@ var defaults = {
     ],
     // 扩展的属性默认值
     contentType: ContentType.JSON,
-    proxyPath: '/proxy',
+    proxyURL: '/proxy',
     enableProxy: false,
     isDev: false
 };
@@ -102,9 +102,9 @@ function handleProxy(opts) {
         return '';
     }
 
-    var proxyPath = opts.proxyPath;
+    var proxyURL = opts.proxyURL;
     // 为 url 增加代理服务拦截的path
-    var baseURL = isFunction(proxyPath) ? proxyPath(opts) : proxyPath;
+    var baseURL = isFunction(proxyURL) ? proxyURL(opts) : proxyURL;
     // 为baseURL补充上非域名部分的rootPath, 但是 BASE_URL_REG正则有bug, 且造成代码混乱, 估暂时移除.
     // var match = baseURL?.match(BASE_URL_REG) || [];
     // baseURL = appendPrefixSlash(prefix) + appendPrefixSlash(match[4]);     
@@ -174,24 +174,6 @@ export function proxyHost(options = {}, props = {}) {
 // 正则获取baseURL中的 protocol, host, port, rootPath 部分.
 // TODO: 如果baseURL格式为 '/xxx'则不能匹配到, 但是'xxx'和'xxx/'可以匹配到.
 // const BASE_URL_REG = /^(https?:\/\/)?([\w-\.]+)(:[\d]{1,})?(\/[\/\w-\.\?#=%]*)*/;
-/**
- * @author Stephen Liu
- * @desc 使用axios第三方库访问后台服务器, 返回封装过后的Promise对象.
- * @param {axios.options...} 支持全系axios参数.
- * @param {boolean} cache 是否开启缓存, 开起后每次请求会在url后加一个时间搓, 默认false.
- * @param {function} cancel 封装了CancelToken
- * @param {string} contentType HTTP请求头的 Content-Type, 默认为'application/json'
- * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
- * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
- * @param {function} beforeRequest 在请求之前进行一些预处理, 接收3个参数 resolve, reject, options.
- * @param {function} afterResponse 在响应返回后进一步处理, 接收4个参数, resolve, reject, response, options.
- * @param {function} onError 在请求返回异常时调用.
- * @param {boolean} enableProxy 是否开启代理服务, will replace baseURL with proxyPath, default is false.
- * @param {string | function} proxyPath proxy path, can be string or function, the function receive a options args and return a string, default is "/proxy."
- * @param {boolean} isDev 是否为调试模式, 调试模式会打一些log.
- * @param {object} extension custom data field.
- * @return {object} - 返回一个promise的实例对象.
- */
 export default function HttpRequest(opts) {
     if (isEmpty(opts)) {
         return Promise.reject('options is required.');
@@ -237,7 +219,7 @@ export default function HttpRequest(opts) {
                 afterResponse,
                 onError,
                 enableProxy,
-                proxyPath,
+                proxyURL,
                 isDev,
                 // axios其他参数
                 ...other            // 注意 other
