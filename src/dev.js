@@ -28,7 +28,8 @@ var url = prepare({
     // baseURL: 'http://ip.taobao.com/service/',
     url: '/getIpInfo.php',
     params: {
-        ip: '210.75.225.254'
+        t1: 'a',
+        t2: 'aa/d.fe'
     },
     enableProxy: true
 });

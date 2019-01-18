@@ -115,5 +115,5 @@ settings(options)
 /**
  * @desc return a handle url
  */
-prepare(options, encode)
+prepare(options, qsOptions)
 ```

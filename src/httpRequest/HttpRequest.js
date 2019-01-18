@@ -8,7 +8,7 @@ import { appendPrefixSlash, removeSuffixSlash, log } from 'utils/commons';
 var defaults = {
     // axios的默认参数
     method: HttpMethod.GET,
-    paramsSerializer: serializeData,
+    paramsSerializer: paramsSerializer,
     // withCredentials: true,                    // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
     transformResponse: [
         // 默认转成json格式
@@ -55,12 +55,9 @@ function createTimestamp() {
     return new Date().getTime();
 }
 
-function serializeData(params, encode = false) {
-    var data = qs.stringify(params, { allowDots: true });
+function paramsSerializer(params, options = {}) {
+    var data = qs.stringify(params, options);
 
-    if (encode) {
-        data = encodeURIComponent(data);
-    }
     return data;
 }
 
@@ -117,7 +114,7 @@ export function settings(opts) {
     Object.assign(defaults, opts);
 }
 
-export function prepare(opts, encode) {
+export function prepare(opts, qsOpts) {
     if (isEmpty(opts)) {
         return;
     }
@@ -133,14 +130,17 @@ export function prepare(opts, encode) {
         baseURL = handleProxy(_opts);
     }
 
+    params = paramsSerializer(params, qsOpts);
+
     baseURL = baseURL || '';
     url = url || '';
-    
-    if (isNotEmpty(params)) {
-        url += '?' + serializeData(params, encode);
+    params = params || '';
+
+    if (isNotBlank(params)) {
+        params = '?' + params;
     }
 
-    return baseURL + url;
+    return baseURL + url + params;
 }
 
 // 根据 prefix + baseURL 生成代理拦截的 url
@@ -268,7 +268,9 @@ export default function HttpRequest(opts) {
                         // contentType 为 'application/x-www-form-urlencoded' 的请求将参数转化为 formData 传递
                         case ContentType.FORM_URLENCODED:
                             if (!isFormData(data)) {
-                                data = serializeData(data);
+                                data = paramsSerializer(data, {
+                                    allowDots: true
+                                });
                             }
                             // TODO: 更多兼容性处理.
                             break;
