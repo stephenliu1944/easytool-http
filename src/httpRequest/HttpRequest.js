@@ -65,6 +65,9 @@ function adjustBaseURL(baseURL) {
     if (baseURL) {
         baseURL = baseURL.trim();
         baseURL = removeSuffixSlash(baseURL);
+    // 解决 baseURL 为 0, false, ''的情况
+    } else {
+        baseURL = null;
     }
 
     return baseURL;
