@@ -18,8 +18,9 @@ module.exports = function (api) {
         '@babel/plugin-proposal-export-default-from',
         ['babel-plugin-module-resolver', {
             alias: {
-                '^constants/(.+)': './src/_constants/\\1',
-                '^utils/(.+)': './src/_utils/\\1'
+                '^constants/(.+)': './src/constants/\\1',
+                '^enums/(.+)': './src/enums/\\1',
+                '^utils/(.+)': './src/utils/\\1'
             }
         }]
     ];

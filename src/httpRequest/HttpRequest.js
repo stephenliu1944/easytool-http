@@ -1,14 +1,13 @@
 import qs from 'qs';
 import axios from 'axios';
-import { isString, isFormData, isIE, isEmpty, isNotEmpty, isBlank, isNotBlank, isFunction } from '@beancommons/utils';
-import { HttpMethod, ContentType } from 'constants/enum';
-import { appendPrefixSlash, removeSuffixSlash, log } from 'utils/commons';
+import { Method, ContentType } from 'enums/Http';
+import { appendPrefixSlash, removeSuffixSlash, log, isString, isFormData, isIE, isEmpty, isNotEmpty, isBlank, isNotBlank, isFunction } from 'utils/common';
 
 // global settings
 var defaults = {
     // axios的默认参数
-    method: HttpMethod.GET,
-    paramsSerializer: paramsSerializer,
+    method: Method.GET,
+    paramsSerializer: serializeData,
     // withCredentials: true,                    // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
     transformResponse: [
         // 默认转成json格式
@@ -55,8 +54,8 @@ function createTimestamp() {
     return new Date().getTime();
 }
 
-function paramsSerializer(params, options = {}) {
-    var data = qs.stringify(params, options);
+function serializeData(params, options = {}) {
+    var data = qs.stringify(params, options);   // 默认返回空的字符串, 不会返回null
 
     return data;
 }
@@ -82,7 +81,7 @@ function adjustURL(url) {
     return url;
 }
 
-function formatOpts(opts) {
+function formatOptions(opts) {
     if (!opts) {
         return;
     }
@@ -97,53 +96,104 @@ function formatOpts(opts) {
     });
 }
 
-function handleProxy(opts) {
-    if (!opts) {
+function handleHeaders(options) {
+    var { headers, method, contentType } = options;
+    var _headers = Object.assign({}, headers);
+    
+    _headers['X-Requested-With'] = 'XMLHttpRequest';
+
+    if ([Method.POST, Method.PUT].includes(method.toLowerCase())) {
+        _headers['Content-Type'] = contentType;
+    }
+
+    return _headers;
+}
+
+function handleParams(options) {
+    var { params, cache } = options;
+    var _params = Object.assign({}, params);
+
+    if (!cache) {
+        _params.t = createTimestamp();
+    }
+
+    return _params;
+}
+
+function handleData(options) {
+    var { data, method, contentType, dataSerializer } = options;
+    
+    if (isEmpty(data)) {
+        return;
+    }
+
+    var _data;
+    if (dataSerializer) {
+        _data = dataSerializer(data);
+    } else if (method === Method.POST 
+            && contentType === ContentType.FORM_URLENCODED
+            && !isFormData(data)) {
+        _data = serializeData(data, {
+            allowDots: true
+        });
+    } else {
+        _data = data;
+    }
+    
+    return _data;
+}
+
+function handleProxy(options) {
+    if (!options) {
         return '';
     }
 
-    var proxyURL = opts.proxyURL;
+    var proxyURL = options.proxyURL;
     // 为 url 增加代理服务拦截的path
-    var baseURL = isFunction(proxyURL) ? proxyURL(opts) : proxyURL;
+    var baseURL = isFunction(proxyURL) ? proxyURL(options) : proxyURL;
     // 为baseURL补充上非域名部分的rootPath, 但是 BASE_URL_REG正则有bug, 且造成代码混乱, 估暂时移除.
     // var match = baseURL?.match(BASE_URL_REG) || [];
     // baseURL = appendPrefixSlash(prefix) + appendPrefixSlash(match[4]);     
     // 请求当前dev服务
     baseURL = appendPrefixSlash(baseURL);
-    return baseURL;
+    return baseURL || '';
 }
 
-export function settings(opts) {
-    Object.assign(defaults, opts);
+export function settings(options) {
+    Object.assign(defaults, options);
 }
 
-export function prepare(opts, qsOpts) {
-    if (isEmpty(opts)) {
+export function prepare(options) {
+    if (isEmpty(options)) {
         return;
     }
 
-    if (isBlank(opts.baseURL) && isBlank(opts.url)) {
+    if (isBlank(options.baseURL) && isBlank(options.url)) {
         return;
     }
 
-    var _opts = Object.assign({}, defaults, opts);
-    var { baseURL, url, enableProxy, params } = formatOpts(_opts);
+    var _opts = Object.assign({}, defaults, options);
+    var { baseURL = '', url = '', enableProxy, paramsSerializer, method } = formatOptions(_opts);
+    var _baseURL = enableProxy ? handleProxy(_opts) : baseURL;
+    var _url = url;
+    var _headers = handleHeaders(_opts);
+    var _params = handleParams(_opts);
+    var _data = handleData(_opts);
 
-    if (enableProxy) {
-        baseURL = handleProxy(_opts);
+    if (paramsSerializer) {
+        _params = paramsSerializer(_params);
     }
 
-    params = paramsSerializer(params, qsOpts);
-
-    baseURL = baseURL || '';
-    url = url || '';
-    params = params || '';
-
-    if (isNotBlank(params)) {
-        params = '?' + params;
-    }
-
-    return baseURL + url + params;
+    return {
+        headers: _headers,
+        method,
+        url: _baseURL + _url,
+        params: _params,
+        data: _data,
+        toString() {
+            return this.url + '?' + this.params;
+        }
+    };
 }
 
 // 根据 prefix + baseURL 生成代理拦截的 url
@@ -190,7 +240,7 @@ export default function HttpRequest(opts) {
     var _opts = Object.assign({}, defaults, opts);
     var beforeRequest = _opts.beforeRequest;
     
-    formatOpts(_opts);
+    formatOptions(_opts);
 
     // 请求前预处理
     if (beforeRequest) {
@@ -212,6 +262,7 @@ export default function HttpRequest(opts) {
                 params,
                 data,
                 paramsSerializer,
+                dataSerializer,
                 // 扩展的参数
                 cache,
                 cancel,
@@ -232,37 +283,6 @@ export default function HttpRequest(opts) {
                 log({ url, baseURL, method, data, params }, 'Request');
             }
         
-            if (enableProxy) {
-                baseURL = handleProxy(options);
-            }
-
-            // 不缓存请求, 则在末尾增加时间搓
-            if (!cache) {
-                params = params || {};
-                params.t = createTimestamp();
-            }
-            
-            headers = headers || {};
-            headers['X-Requested-With'] = 'XMLHttpRequest';
-    
-            if (method === HttpMethod.POST) {
-                headers['Content-Type'] = contentType;
-    
-                if (isNotEmpty(data)) {
-                    switch (contentType) {
-                        // contentType 为 'application/x-www-form-urlencoded' 的请求将参数转化为 formData 传递
-                        case ContentType.FORM_URLENCODED:
-                            if (!isFormData(data)) {
-                                data = paramsSerializer(data, {
-                                    allowDots: true
-                                });
-                            }
-                            // TODO: 更多兼容性处理.
-                            break;
-                    }
-                }
-            }
-            
             const instance = axios.create();
 
             if (requestInterceptor) {
@@ -283,13 +303,13 @@ export default function HttpRequest(opts) {
     
             // 调用 axios 库
             instance.request({
-                headers,
+                headers: handleHeaders(options),
                 method,
-                baseURL,
+                baseURL: enableProxy ? handleProxy(options) : baseURL,
                 url,
-                params,
+                params: handleParams(options),
                 paramsSerializer,
-                data,
+                data: handleData(options),
                 cancelToken: cancel && new axios.CancelToken(cancel),
                 ...other
             }).then(function(response) {

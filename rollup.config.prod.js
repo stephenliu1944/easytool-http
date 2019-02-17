@@ -15,8 +15,7 @@ export default [rollupMerge(base(umdName), {
         name: libraryName,
         globals: {
             qs: 'qs',
-            axios: 'axios',
-            '@beancommons/utils': 'Utils'
+            axios: 'axios'
         }
     },
     plugins: [

@@ -31,6 +31,14 @@ var url = prepare({
         t1: 'a',
         t2: 'aa/d.fe'
     },
+    data: {
+        d1: 'a',
+        d2: [1,2,3]
+    },
+    headers: {
+        a:1,
+        b:2
+    },
     enableProxy: true
 });
 

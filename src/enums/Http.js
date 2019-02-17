@@ -1,11 +1,12 @@
 // http协议method
-export const HttpMethod = {
+export const Method = {
     GET: 'get',
-    POST: 'post'
+    POST: 'post',
+    PUT: 'put',
+    HEAD: 'head'
 };
 // http协议头Content-Type
 export const ContentType = {
-    URL: 'url',               // 自定义的文件类型
     JSON: 'application/json',
     FORM_URLENCODED: 'application/x-www-form-urlencoded'
 };

@@ -23,15 +23,22 @@ promise.then((data) => {
 });
 
 import { prepare } from '@beancommons/http';
-// return a handled url 'http://beancommons.com/getUser?id=1'
-var url = prepare({
+// return a preprocess object, include { url, method, headers, params, data }
+var obj = prepare({
     baseURL: 'http://beancommons.com',
     url: '/getUser',
     params: {
         id: 1
-    }
+    },
+    enableProxy: true
 });
-window.open(url);
+
+window.open(obj.toString());    // url + params
+// or use jquery ajax
+$.get({
+    url: obj.url,       // url was already proxy
+    data: obj.params    // params was already serialized
+})
 ```
 
 ## Setup global options
@@ -50,7 +57,7 @@ settings({
 
 ## Use proxy
 ```js
-import http, { proxyHost } from '@beancommons/http';
+import http from '@beancommons/http';
 // will request current domain 'http://localhost/api/setUser'
 var promise = http({
     baseURL: 'http://beancommons.com',
@@ -66,7 +73,8 @@ var promise = http({
     proxyURL: (options) => '/api',  // function, options is args
     enableProxy: true
 });
-
+  
+import { proxyHost } from '@beancommons/http';
 // will request current domain 'http://localhost/proxy/beancommons.com/setUser'
 var promise = http({
     baseURL: 'http://beancommons.com',
@@ -145,6 +153,7 @@ http({
  * @param {boolean} cache 是否开启缓存, 开起后每次请求会在url后加一个时间搓, 默认false.
  * @param {function} cancel 封装了CancelToken
  * @param {string} contentType HTTP请求头的 Content-Type, 默认为'application/json'
+ * @param {function} dataSerializer like paramsSerializer but just for serialize `data`.
  * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
  * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
  * @param {function} beforeRequest 在请求之前进行一些预处理, 接收3个参数 resolve, reject, options.
@@ -162,10 +171,10 @@ http(options)
  */
 settings(options)
 /**
- * @desc return a handle url
- * @param {boolean} qsOptions is qs lib stringify() options.
+ * @desc return a preproccess object, includes url, headers, params, data properties.
+ * @param {object} options same with http(options).
  */
-prepare(options, qsOptions)
+prepare(options)
 /**
  * @desc rewrite baseURL like 'http://beancommons.com' to '/proxy/beancommons.com' for proxy matching
  * @param {object} props receive a object, include { prefix, domain }.
