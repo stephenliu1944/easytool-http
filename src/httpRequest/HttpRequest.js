@@ -163,39 +163,6 @@ export function settings(options) {
     Object.assign(defaults, options);
 }
 
-export function prepare(options) {
-    if (isEmpty(options)) {
-        return;
-    }
-
-    if (isBlank(options.baseURL) && isBlank(options.url)) {
-        return;
-    }
-
-    var _opts = Object.assign({}, defaults, options);
-    var { baseURL = '', url = '', enableProxy, paramsSerializer, method } = formatOptions(_opts);
-    var _baseURL = enableProxy ? handleProxy(_opts) : baseURL;
-    var _url = url;
-    var _headers = handleHeaders(_opts);
-    var _params = handleParams(_opts);
-    var _data = handleData(_opts);
-
-    if (paramsSerializer) {
-        _params = paramsSerializer(_params);
-    }
-
-    return {
-        headers: _headers,
-        method,
-        url: _baseURL + _url,
-        params: _params,
-        data: _data,
-        toString() {
-            return this.url + '?' + this.params;
-        }
-    };
-}
-
 // 根据 prefix + baseURL 生成代理拦截的 url
 export function proxyHost(options = {}, props = {}) {
     var { prefix = '/proxy', domain } = props;
@@ -222,6 +189,39 @@ export function proxyHost(options = {}, props = {}) {
         // .replace(':', '_');     
 
     return `${prefix}/${host}`;
+}
+
+export function prepare(options) {
+    if (isEmpty(options)) {
+        return;
+    }
+
+    if (isBlank(options.baseURL) && isBlank(options.url)) {
+        return;
+    }
+
+    var _opts = Object.assign({}, defaults, options);
+    var { baseURL = '', url = '', enableProxy, paramsSerializer, method } = formatOptions(_opts);
+    var _baseURL = enableProxy ? handleProxy(_opts) : baseURL;
+    var _url = url;
+    var _headers = handleHeaders(_opts);
+    var _params = handleParams(_opts);
+    var _data = handleData(_opts);
+
+    if (paramsSerializer) {
+        _params = paramsSerializer(_params);
+    }
+
+    return {
+        method,
+        headers: _headers,
+        url: _baseURL + _url,
+        params: _params,
+        data: _data,
+        toString() {
+            return this.url + '?' + this.params;
+        }
+    };
 }
 
 // 正则获取baseURL中的 protocol, host, port, rootPath 部分.

@@ -153,7 +153,7 @@ http({
  * @param {boolean} cache 是否开启缓存, 开起后每次请求会在url后加一个时间搓, 默认false.
  * @param {function} cancel 封装了CancelToken
  * @param {string} contentType HTTP请求头的 Content-Type, 默认为'application/json'
- * @param {function} dataSerializer like paramsSerializer but just for serialize `data`.
+ * @param {function} dataSerializer same with paramsSerializer but just for serialize `data`.
  * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
  * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
  * @param {function} beforeRequest 在请求之前进行一些预处理, 接收3个参数 resolve, reject, options.
@@ -171,8 +171,9 @@ http(options)
  */
 settings(options)
 /**
- * @desc return a preproccess object, includes url, headers, params, data properties.
+ * @desc return a preproccess object, includes { method, url, headers, params, data } properties.
  * @param {object} options same with http(options).
+ * @return {object} - return a preprocess options.
  */
 prepare(options)
 /**
