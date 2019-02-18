@@ -2,24 +2,32 @@
 import HttpRequest, { settings, proxyHost, prepare } from './index';
 
 settings({
-    baseURL: 'http://ip.taobao.com/service',
+    // baseURL: 'http://ip.taobao.com/service',
     requestInterceptor: function(config) {
         console.log('requestInterceptor', config);
     },
     responseInterceptor: function(data) {
         console.log('responseInterceptor', data);
     },
+    baseURL: 'http://ip-api.com',
     proxyURL: proxyHost
 });
 
 HttpRequest({
-    url: '/getIpInfo.php',
-    params: {
-        ip: '210.75.225.254'
-    },
-    // enableProxy: true
+    baseURL: 'http://tpic.home.news.cn',
+    url: 'xhCloudNewsPic/xhpic1501/M09/38/3E/wKhTlFiRoJmEOB3RAAAAAFK1grI124.jpg',
+    // params: {
+        // ip: '210.75.225.254'
+    // },
+    responseType: 'stream'
 }).then((e) => {
-    console.log('success->>', e);
+    var reader = new FileReader();
+
+    reader.onloadend = function () {
+        console.log(reader.result);
+    }
+  
+    reader.readAsBinaryString(e);
 }, (e) => {
     console.log('fail->>', e);
 });
@@ -38,8 +46,7 @@ var url = prepare({
     headers: {
         a:1,
         b:2
-    },
-    enableProxy: true
+    }
 });
 
-console.log('url ', url);
+console.log('url ', url + '');

@@ -8,25 +8,11 @@ var defaults = {
     // axios的默认参数
     method: Method.GET,
     paramsSerializer: serializeData,
+    responseType: 'json',
     // withCredentials: true,                    // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
-    transformResponse: [
-        // 默认转成json格式
-        function(data) {
-            if (isString(data)) {
-                try {
-                    data = JSON.parse(data);
-                } catch (e) {
-                    console.error('Can not parse response data to json object, please check the data format: ', e, data);
-                }
-            }
-
-            return data;
-        }
-    ],
     // 扩展的属性默认值
     contentType: ContentType.JSON,
-    proxyURL: '/proxy',
-    enableProxy: false,
+    // proxyPath: '/proxy',
     isDev: false
 };
 
@@ -49,6 +35,10 @@ Promise.prototype.finally = function(callback) {
         })
     );
 };
+
+function hasEntityBody(method = '') {
+    return [Method.POST, Method.PUT, Method.PATCH].includes(method.toLowerCase());
+}
 
 function createTimestamp() {
     return new Date().getTime();
@@ -102,7 +92,7 @@ function handleHeaders(options) {
     
     _headers['X-Requested-With'] = 'XMLHttpRequest';
 
-    if ([Method.POST, Method.PUT].includes(method.toLowerCase())) {
+    if (hasEntityBody(method)) {
         _headers['Content-Type'] = contentType;
     }
 
@@ -143,20 +133,26 @@ function handleData(options) {
     return _data;
 }
 
-function handleProxy(options) {
+function handleProxyPath(options) {
     if (!options) {
         return '';
     }
 
-    var proxyURL = options.proxyURL;
+    var { baseURL, proxyPath } = options;
+    var _baseURL;
     // 为 url 增加代理服务拦截的path
-    var baseURL = isFunction(proxyURL) ? proxyURL(options) : proxyURL;
-    // 为baseURL补充上非域名部分的rootPath, 但是 BASE_URL_REG正则有bug, 且造成代码混乱, 估暂时移除.
-    // var match = baseURL?.match(BASE_URL_REG) || [];
-    // baseURL = appendPrefixSlash(prefix) + appendPrefixSlash(match[4]);     
-    // 请求当前dev服务
-    baseURL = appendPrefixSlash(baseURL);
-    return baseURL || '';
+    if (proxyPath) {
+        _baseURL = isFunction(proxyPath) ? proxyPath(options) : proxyPath;
+        // 为baseURL补充上非域名部分的rootPath, 但是 BASE_URL_REG正则有bug, 且造成代码混乱, 估暂时移除.
+        // var match = baseURL?.match(BASE_URL_REG) || [];
+        // baseURL = appendPrefixSlash(prefix) + appendPrefixSlash(match[4]);     
+        // 请求当前dev服务
+        _baseURL = appendPrefixSlash(_baseURL);
+    } else {
+        _baseURL = baseURL;
+    }
+
+    return _baseURL;
 }
 
 export function settings(options) {
@@ -166,14 +162,10 @@ export function settings(options) {
 // 根据 prefix + baseURL 生成代理拦截的 url
 export function proxyHost(options = {}, props = {}) {
     var { prefix = '/proxy', domain } = props;
-    var { baseURL } = options;
+    var { baseURL = domain } = options;
 
     if (isBlank(baseURL)) {
-        if (isNotBlank(domain)) {
-            baseURL = domain;
-        } else {
-            return prefix;
-        }
+        return prefix;
     }
 
     /**
@@ -182,7 +174,7 @@ export function proxyHost(options = {}, props = {}) {
     // var match = baseURL?.match(BASE_URL_REG) || [];
     // var host = match[2] || '';
     // var port = match[3] || '';
-    // var proxyURL = host + port;
+    // var proxyPath = host + port;
 
     var host = baseURL.replace(/(^http[s]?:\/\/)/, '')
         .replace(/(\/)$/, '');
@@ -201,9 +193,9 @@ export function prepare(options) {
     }
 
     var _opts = Object.assign({}, defaults, options);
-    var { baseURL = '', url = '', enableProxy, paramsSerializer, method } = formatOptions(_opts);
-    var _baseURL = enableProxy ? handleProxy(_opts) : baseURL;
+    var { url = '', paramsSerializer, method } = formatOptions(_opts);
     var _url = url;
+    var _baseURL = handleProxyPath(_opts) || '';
     var _headers = handleHeaders(_opts);
     var _params = handleParams(_opts);
     var _data = handleData(_opts);
@@ -255,28 +247,26 @@ export default function HttpRequest(opts) {
         preProcess.then(function(options) {
             var {
                 // axios参数
-                url = '',
                 baseURL,
+                url = '',
                 method,
                 headers,
                 params,
                 data,
                 paramsSerializer,
-                dataSerializer,
                 // 扩展的参数
+                dataSerializer,
                 cache,
                 cancel,
                 contentType,
-                returnType,
                 requestInterceptor,
                 responseInterceptor,
                 afterResponse,
                 onError,
-                enableProxy,
-                proxyURL,
+                proxyPath,
                 isDev,
                 // axios其他参数
-                ...other            // 注意 other
+                ...other            
             } = options;
           
             if (isDev) {
@@ -305,7 +295,7 @@ export default function HttpRequest(opts) {
             instance.request({
                 headers: handleHeaders(options),
                 method,
-                baseURL: enableProxy ? handleProxy(options) : baseURL,
+                baseURL: handleProxyPath(options),
                 url,
                 params: handleParams(options),
                 paramsSerializer,
