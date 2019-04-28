@@ -62,7 +62,6 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.0.0",
-    "axios": "^0.18.0",
     "qs": "^6.5.2"
   },
   "devDependencies": {
@@ -100,6 +99,9 @@
     "rollup-plugin-replace": "^2.0.0",
     "rollup-plugin-serve": "^0.6.0",
     "rollup-plugin-uglify": "^4.0.0"
+  },
+  "peerDependencies": {
+    "axios": ">=0.17.0"
   },
   "pre-commit": [
     "lint"

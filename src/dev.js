@@ -10,22 +10,22 @@ settings({
         console.log('responseInterceptor', data);
     },
     baseURL: 'http://ip-api.com',
-    proxyURL: proxyHost
+    proxyPath: proxyHost
 });
 
 HttpRequest({
     baseURL: 'http://tpic.home.news.cn',
     url: 'xhCloudNewsPic/xhpic1501/M09/38/3E/wKhTlFiRoJmEOB3RAAAAAFK1grI124.jpg',
     // params: {
-        // ip: '210.75.225.254'
+    // ip: '210.75.225.254'
     // },
     responseType: 'stream'
 }).then((e) => {
     var reader = new FileReader();
 
-    reader.onloadend = function () {
+    reader.onloadend = function() {
         console.log(reader.result);
-    }
+    };
   
     reader.readAsBinaryString(e);
 }, (e) => {
@@ -41,11 +41,11 @@ var url = prepare({
     },
     data: {
         d1: 'a',
-        d2: [1,2,3]
+        d2: [1, 2, 3]
     },
     headers: {
-        a:1,
-        b:2
+        a: 1,
+        b: 2
     }
 });
 
