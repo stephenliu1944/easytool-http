@@ -15,6 +15,8 @@ var defaults = {
     // proxyPath: '/proxy',
     isDev: false
 };
+var requestInterceptors;
+var responseInterceptors;
 
 Promise.prototype.done = function(onFulfilled, onRejected) {
     this.then(onFulfilled, onRejected)
@@ -142,45 +144,23 @@ function handleProxyPath(options) {
     var _baseURL;
     // 为 url 增加代理服务拦截的path
     if (proxyPath) {
-        _baseURL = isFunction(proxyPath) ? proxyPath(options) : proxyPath;
-        // 为baseURL补充上非域名部分的rootPath, 但是 BASE_URL_REG正则有bug, 且造成代码混乱, 估暂时移除.
-        // var match = baseURL?.match(BASE_URL_REG) || [];
-        // baseURL = appendPrefixSlash(prefix) + appendPrefixSlash(match[4]);     
-        // 请求当前dev服务
-        _baseURL = appendPrefixSlash(_baseURL);
+        // 如果是方法则交给方法处理
+        if (isFunction(proxyPath)) {
+            _baseURL = proxyPath(options);
+        // 如果是字符串则加在请求的 URL 最前面, 并移除原有请求的 Host 部分.
+        } else if (isString(proxyPath)) {
+            _baseURL = proxyPath.replace(/(\/)$/, '');
+            // 根路径加上 "/" 请求当前dev服务
+            _baseURL = appendPrefixSlash(_baseURL);
+            // 根路径后加上非 Host 部分路径, 如: /api
+            _baseURL = _baseURL + baseURL.replace(/^(http[s]?:)?\/\//, '')
+                .replace(/^[\w\.:]+/, '');
+        }
     } else {
         _baseURL = baseURL;
     }
 
     return _baseURL;
-}
-
-export function settings(options) {
-    Object.assign(defaults, options);
-}
-
-// 根据 prefix + baseURL 生成代理拦截的 url
-export function proxyHost(options = {}, props = {}) {
-    var { prefix = '/proxy', domain } = props;
-    var { baseURL = domain } = options;
-
-    if (isBlank(baseURL)) {
-        return prefix;
-    }
-
-    /**
-     * 获取url的host和port部分, 此正则有缺陷, 详见顶部.
-     */ 
-    // var match = baseURL?.match(BASE_URL_REG) || [];
-    // var host = match[2] || '';
-    // var port = match[3] || '';
-    // var proxyPath = host + port;
-
-    var host = baseURL.replace(/(^http[s]?:\/\/)/, '')
-        .replace(/(\/)$/, '');
-        // .replace(':', '_');     
-
-    return `${prefix}/${host}`;
 }
 
 export function prepare(options) {
@@ -216,10 +196,7 @@ export function prepare(options) {
     };
 }
 
-// 正则获取baseURL中的 protocol, host, port, rootPath 部分.
-// TODO: 如果baseURL格式为 '/xxx'则不能匹配到, 但是'xxx'和'xxx/'可以匹配到.
-// const BASE_URL_REG = /^(https?:\/\/)?([\w-\.]+)(:[\d]{1,})?(\/[\/\w-\.\?#=%]*)*/;
-export default function HttpRequest(opts) {
+export function httpRequest(opts) {
     if (isEmpty(opts)) {
         return Promise.reject('options is required.');
     }
@@ -228,7 +205,7 @@ export default function HttpRequest(opts) {
         return Promise.reject('url is required.');
     }
 
-    var preProcess;
+    var prePromise;
     var _opts = Object.assign({}, defaults, opts);
     var beforeRequest = _opts.beforeRequest;
     
@@ -236,15 +213,15 @@ export default function HttpRequest(opts) {
 
     // 请求前预处理
     if (beforeRequest) {
-        preProcess = new Promise(function(resolve, reject) {
+        prePromise = new Promise(function(resolve, reject) {
             beforeRequest(resolve, reject, _opts);
         });
     } else {
-        preProcess = Promise.resolve(_opts);
+        prePromise = Promise.resolve(_opts);
     }
 
     return new Promise(function(resolve, reject) {
-        preProcess.then(function(options) {
+        prePromise.then(function(options) {
             var {
                 // axios参数
                 baseURL,
@@ -274,21 +251,30 @@ export default function HttpRequest(opts) {
             }
         
             const instance = axios.create();
-
+            // 处理请求拦截器 requestInterceptor = function or [success, error]
             if (requestInterceptor) {
-                instance.interceptors.request.use(function(config) {
-                    return requestInterceptor(config) || config;
-                }, function(error) {
-                    return Promise.reject(error);
-                });
+                // requestInterceptors = requestInterceptors || {};
+                let reqSuccess, reqError;
+                if (isFunction(requestInterceptor)) {
+                    reqSuccess = requestInterceptor;
+                } else {
+                    reqSuccess = requestInterceptor[0];
+                    reqError = requestInterceptor[1];
+                }
+
+                let reqInterceptor = instance.interceptors.request.use(reqSuccess, reqError);
             }
-    
+            // 处理响应拦截器 responseInterceptor = function or [success, error]
             if (responseInterceptor) {
-                instance.interceptors.response.use(function(response) {
-                    return responseInterceptor(response) || response;
-                }, function(error) {
-                    return Promise.reject(error);
-                });
+                // responseInterceptors = responseInterceptors || {};
+                let respSuccess, respError;
+                if (isFunction(responseInterceptor)) {
+                    reqSuccess = responseInterceptor;
+                } else {
+                    reqSuccess = responseInterceptor[0];
+                    reqError = responseInterceptor[1];
+                }
+                let respInterceptor = instance.interceptors.response.use(respSuccess, respError);
             }
     
             // 调用 axios 库
@@ -341,3 +327,27 @@ export default function HttpRequest(opts) {
         });
     });
 }
+
+httpRequest.settings = function(options) {
+    Object.assign(defaults, options);
+};
+
+httpRequest.instance = function(defaultOpts) {
+    return function(opts) {
+        var options = Object.assign(defaultOpts, opts);
+        return httpRequest(options);
+    };
+};
+
+httpRequest.ejectRequestInterceptor = function(interceptor) {
+    // var instance = requestInterceptors[interceptor];
+    // instance && instance.interceptors.request.eject(interceptor);
+    // TODO: 
+};
+
+httpRequest.ejectResponseInterceptor = function(interceptor) {
+    // var instance = responseInterceptors[interceptor];
+    // instance && instance.interceptors.request.eject(interceptor);
+    // TODO: 
+};
+

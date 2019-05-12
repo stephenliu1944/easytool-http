@@ -1,5 +1,25 @@
 // 该类用于测试模块
 import HttpRequest, { settings, proxyHost, prepare } from './index';
+import axios from 'axios';
+
+axios.get("/api/?results=50", {
+        proxy: {
+          host: "http://www.baidu.com",
+          port: 8888
+        }
+      })
+      .then(response => {
+        const data = response.data.results;
+        this.setState({ data });
+      })
+      .catch(error => {
+        console.log(error);
+      });
+
+
+
+
+
 
 settings({
     // baseURL: 'http://ip.taobao.com/service',
@@ -9,17 +29,24 @@ settings({
     responseInterceptor: function(data) {
         console.log('responseInterceptor', data);
     },
-    baseURL: 'http://ip-api.com',
-    proxyPath: proxyHost
+    // baseURL: 'http://ip-api.com',
+    // proxyPath: proxyHost
+    proxy: {
+        host: '127.0.0.1',
+        port: 9000
+    }
 });
 
 HttpRequest({
-    baseURL: 'http://tpic.home.news.cn',
+    // baseURL: 'http://tpic.home.news.cn',
     url: 'xhCloudNewsPic/xhpic1501/M09/38/3E/wKhTlFiRoJmEOB3RAAAAAFK1grI124.jpg',
     // params: {
     // ip: '210.75.225.254'
     // },
-    responseType: 'stream'
+    proxy: {
+        host: '127.0.0.1',
+        port: 8080
+    }
 }).then((e) => {
     var reader = new FileReader();
 

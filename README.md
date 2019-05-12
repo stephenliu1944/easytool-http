@@ -1,5 +1,5 @@
 # @beancommons/http
-General HTTP Request module, extension from axios. support all options with axios.
+General HTTP Request module, extension from axios.
 
 ## Install
 ```
@@ -7,13 +7,22 @@ npm install --save @beancommons/http
 ```
 
 ## Usage
-GET request
 ```js
 import http from '@beancommons/http';
-
 var promise = http({
     baseURL: 'http://beancommons.com',
     url: '/getUser',
+    interceptor: {
+        request: [],
+        response: {
+            success(){
+
+            },
+            error(){
+                
+            }
+        }
+    }
     params: {
         id: 1
     }
@@ -23,41 +32,23 @@ promise.then((data) => {
 }, (error) => {
 
 });
-```
-POST request
-```js
-import http from '@beancommons/http';
 
-var promise = http({
-    baseURL: 'http://beancommons.com',
-    method: 'post',
-    url: '/getUser',
-    data: {
-        name: 'stephen',
-        age: 34
-    }
-});
-```
-Get prepare request object.
-```js
 import { prepare } from '@beancommons/http';
-// return a object, include { url, method, headers, params, data }
+// return a preprocess object, include { url, method, headers, params, data }
 var obj = prepare({
     baseURL: 'http://beancommons.com',
     url: '/getUser',
     params: {
-        name: 'stephen',
-        age: 34
+        id: 1
     },
-    proxyPath: '/api'
+    enableProxy: true
 });
 
-// (url + params) -> '/api/getUser?name=stephen&age=34'
-window.open(obj.toString());    
-// use jquery ajax
+window.open(obj.toString());    // url + params
+// or use jquery ajax
 $.get({
-    url: obj.url,       // url was already proxy, '/api/getUser'
-    data: obj.params    // params was already serialized, name=stephen&age=34
+    url: obj.url,       // url was already proxy
+    data: obj.params    // params was already serialized
 })
 ```
 
@@ -69,63 +60,47 @@ settings({
     method: 'POST',                                      // default is 'GET'
     contentType: 'application/x-www-form-urlencoded',    // default is 'application/json'
     cache: true,                                         // default is false
-    proxyPath: '/api',                                   // default is null
+    proxyURL: '/api',                                   // default is '/proxy'
+    enableProxy: __DEV__,
     isDev: __DEV__
 });
 ```
 
-## Use proxyPath
-### Use with Webpack DevServer.proxy or http-proxy-middleware
-proxyPath is string.
+## Use proxy
 ```js
 import http from '@beancommons/http';
-// will request '/api/setUser'
+// will request current domain 'http://localhost/api/setUser'
 var promise = http({
     baseURL: 'http://beancommons.com',
     url: '/setUser',
-    proxyPath: '/api'      // string
+    proxyURL: '/api',  // string
+    enableProxy: true
 });
-```
-proxyPath is function.
-```js
-// will request '/api/setUser'
-var promise = http({
-    baseURL: 'http://beancommons.com',
-    url: '/setUser',
-    proxyPath: (options) => '/api'  // function, options is input args
-});
-```
-webpack.config.js
-```js
-module.exports = {
-    //...
-    devServer: {
-        proxy: {
-            '/api': 'http://beancommons.com'
-        }
-    }
-};
-```
 
-### Use proxyHost function.
-```js
-import { proxyHost } from '@beancommons/http';
-// will request '/proxy/beancommons.com/setUser'
+// will request current domain 'http://localhost/api/setUser'
 var promise = http({
     baseURL: 'http://beancommons.com',
     url: '/setUser',
-    proxyPath: proxyHost
+    proxyURL: (options) => '/api',  // function, options is args
+    enableProxy: true
 });
-```
-config proxyHost options
-```js
-// will request '/api/beancommons.com/setUser'
+  
+import { proxyHost } from '@beancommons/http';
+// will request current domain 'http://localhost/proxy/beancommons.com/setUser'
+var promise = http({
+    baseURL: 'http://beancommons.com',
+    url: '/setUser',
+    proxyURL: proxyHost,
+    enableProxy: true
+});
+// with none baseURL, // will request current domain 'http://localhost/api/beancommons.com/setUser'
 var promise = http({
     url: '/setUser',
-    proxyPath: (options) => proxyHost(options, {
-        prefix: '/api',                     // set proxyPath prefix, default is '/proxy'
-        domain: 'http://beancommons.com'    // set default domain
-    })
+    proxyURL: (options) => proxyHost(options, {
+        prefix: '/api',         // default is '/proxy'
+        domain: 'http://beancommons.com'
+    }),
+    enableProxy: true
 });
 ```
 
@@ -184,20 +159,22 @@ http({
 ## API
 ```js
 /**
- * @param {axios.options...} support all options with axios.
- * @param {boolean} cache enable cache, default to false.
- * @param {function} cancel wrap axios.CancelToken.
- * @param {string} contentType request ContentType with entity body in headers, default to 'application/json'
+ * @desc 使用axios第三方库访问后台服务器, 返回封装过后的Promise对象.
+ * @param {axios.options...} suport all options with axios.
+ * @param {boolean} cache 是否开启缓存, 开起后每次请求会在url后加一个时间搓, 默认false.
+ * @param {function} cancel 封装了CancelToken
+ * @param {string} contentType HTTP请求头的 Content-Type, 默认为'application/json'
  * @param {function} dataSerializer same with paramsSerializer but just for serialize `data`.
- * @param {function} requestInterceptor wrap axios.interceptors.request.use().
- * @param {function} responseInterceptor wrap axios.interceptors.response.use().
- * @param {function} beforeRequest async function, do something before request, receive 3 args resolve, reject, options(input).
- * @param {function} afterResponse async function, do something after response, receive 4 args, resolve, reject, response, options(input).
- * @param {function} onError invoke on response error.
- * @param {string | function} proxyPath proxy url path, can be string or function, the function receive a options args and return a string, default is null.
+ * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
+ * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
+ * @param {function} beforeRequest 在请求之前进行一些预处理, 接收3个参数 resolve, reject, options.
+ * @param {function} afterResponse 在响应返回后进一步处理, 接收4个参数, resolve, reject, response, options.
+ * @param {function} onError 在请求返回异常时调用.
+ * @param {boolean} enableProxy use proxyURL replace with baseURL, default is false.
+ * @param {string | function} proxyPath proxy path, can be string or function, the function receive a options args and return a string, default is "/proxy."
  * @param {boolean} isDev dev mode print more log info.
  * @param {object} extension custom data field.
- * @return {object} - promise instance.
+ * @return {object} - 返回一个promise的实例对象.
  */
 http(options)
 /**

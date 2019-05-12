@@ -4,7 +4,11 @@ export const Method = {
     GET: 'get',
     POST: 'post',
     PUT: 'put',
-    PATCH: 'patch'
+    PATCH: 'patch',
+    DELETE: 'delete',
+    OPTIONS: 'options',
+    TRACE: 'trace'
+
 };
 // http协议头Content-Type
 export const ContentType = {
