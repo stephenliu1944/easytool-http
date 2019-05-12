@@ -40,8 +40,7 @@ var obj = prepare({
     url: '/getUser',
     params: {
         id: 1
-    },
-    enableProxy: true
+    }
 });
 
 window.open(obj.toString());    // url + params
@@ -60,8 +59,7 @@ settings({
     method: 'POST',                                      // default is 'GET'
     contentType: 'application/x-www-form-urlencoded',    // default is 'application/json'
     cache: true,                                         // default is false
-    proxyURL: '/api',                                   // default is '/proxy'
-    enableProxy: __DEV__,
+    proxyPath: __DEV__ && '/api',                         // default is '/proxy'
     isDev: __DEV__
 });
 ```
@@ -73,16 +71,14 @@ import http from '@beancommons/http';
 var promise = http({
     baseURL: 'http://beancommons.com',
     url: '/setUser',
-    proxyURL: '/api',  // string
-    enableProxy: true
+    proxyPath: '/api',  // string
 });
 
 // will request current domain 'http://localhost/api/setUser'
 var promise = http({
     baseURL: 'http://beancommons.com',
     url: '/setUser',
-    proxyURL: (options) => '/api',  // function, options is args
-    enableProxy: true
+    proxyPath: (options) => '/api',  // function, options is args
 });
   
 import { proxyHost } from '@beancommons/http';
@@ -90,17 +86,15 @@ import { proxyHost } from '@beancommons/http';
 var promise = http({
     baseURL: 'http://beancommons.com',
     url: '/setUser',
-    proxyURL: proxyHost,
-    enableProxy: true
+    proxyPath: proxyHost
 });
 // with none baseURL, // will request current domain 'http://localhost/api/beancommons.com/setUser'
 var promise = http({
     url: '/setUser',
-    proxyURL: (options) => proxyHost(options, {
+    proxyPath: (options) => proxyHost(options, {
         prefix: '/api',         // default is '/proxy'
         domain: 'http://beancommons.com'
-    }),
-    enableProxy: true
+    })
 });
 ```
 
@@ -165,12 +159,11 @@ http({
  * @param {function} cancel 封装了CancelToken
  * @param {string} contentType HTTP请求头的 Content-Type, 默认为'application/json'
  * @param {function} dataSerializer same with paramsSerializer but just for serialize `data`.
- * @param {function} requestInterceptor 封装了axios的interceptors.request.use().
- * @param {function} responseInterceptor 封装了axios的interceptors.response.use().
- * @param {function} beforeRequest 在请求之前进行一些预处理, 接收3个参数 resolve, reject, options.
- * @param {function} afterResponse 在响应返回后进一步处理, 接收4个参数, resolve, reject, response, options.
+ * @param {function|array} requestInterceptor wrap axios's interceptors.request.use().
+ * @param {function|array} responseInterceptor wrap axios's interceptors.response.use().
+ * @param {function} beforeRequest asynchronize process request interceptor, it's receive 3 args: resolve, reject, options.
+ * @param {function} afterResponse asynchronize process response interceptor, it's receive 4 args: resolve, reject, response, options.
  * @param {function} onError 在请求返回异常时调用.
- * @param {boolean} enableProxy use proxyURL replace with baseURL, default is false.
  * @param {string | function} proxyPath proxy path, can be string or function, the function receive a options args and return a string, default is "/proxy."
  * @param {boolean} isDev dev mode print more log info.
  * @param {object} extension custom data field.
@@ -180,7 +173,7 @@ http(options)
 /**
  * @desc set global options
  */
-settings(options)
+http.settings(options)
 /**
  * @desc return a preproccess object, includes { method, url, headers, params, data } properties.
  * @param {object} options same with http(options).
@@ -191,5 +184,5 @@ prepare(options)
  * @desc rewrite baseURL like 'http://beancommons.com' to '/proxy/beancommons.com' for proxy matching
  * @param {object} props receive a object, include { prefix, domain }.
  */
-proxyHost(options, props)
+ProxyUtils.proxyHost(options)
 ```

@@ -1,27 +1,22 @@
 // 该类用于测试模块
-import HttpRequest, { settings, proxyHost, prepare } from './index';
+import httpRequest, { prepare } from './index';
 import axios from 'axios';
 
-axios.get("/api/?results=50", {
-        proxy: {
-          host: "http://www.baidu.com",
-          port: 8888
-        }
-      })
-      .then(response => {
+axios.get('/api/?results=50', {
+    proxy: {
+        host: 'http://www.baidu.com',
+        port: 8888
+    }
+})
+    .then(response => {
         const data = response.data.results;
         this.setState({ data });
-      })
-      .catch(error => {
+    })
+    .catch(error => {
         console.log(error);
-      });
+    });
 
-
-
-
-
-
-settings({
+httpRequest.settings({
     // baseURL: 'http://ip.taobao.com/service',
     requestInterceptor: function(config) {
         console.log('requestInterceptor', config);
@@ -37,7 +32,7 @@ settings({
     }
 });
 
-HttpRequest({
+httpRequest({
     // baseURL: 'http://tpic.home.news.cn',
     url: 'xhCloudNewsPic/xhpic1501/M09/38/3E/wKhTlFiRoJmEOB3RAAAAAFK1grI124.jpg',
     // params: {

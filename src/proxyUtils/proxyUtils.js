@@ -1,6 +1,6 @@
+
 // 根据 prefix + baseURL 生成代理拦截的 url
-export function proxyHost(options = {}) {
-    var prefix = '/proxy';
+export function proxyHost(options = {}, prefix = '/proxy') {
     var { baseURL } = options;
 
     if (isBlank(baseURL)) {
