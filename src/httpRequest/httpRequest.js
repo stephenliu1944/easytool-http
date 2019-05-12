@@ -1,6 +1,6 @@
 import qs from 'qs';
 import axios from 'axios';
-import { Method, ContentType } from 'enums/Http';
+import { Method, ContentType } from 'enums/common';
 import { appendPrefixSlash, removeSuffixSlash, log, isString, isFormData, isIE, isEmpty, isNotEmpty, isBlank, isNotBlank, isFunction } from 'utils/common';
 
 // global settings
@@ -123,7 +123,7 @@ function handleData(options) {
     if (dataSerializer) {
         _data = dataSerializer(data);
     } else if (method === Method.POST 
-            && contentType === ContentType.FORM_URLENCODED
+            && contentType === ContentType.X_WWW_FORM_URLENCODED
             && !isFormData(data)) {
         _data = serializeData(data, {
             allowDots: true
@@ -152,9 +152,11 @@ function handleProxyPath(options) {
             _baseURL = proxyPath.replace(/(\/)$/, '');
             // 根路径加上 "/" 请求当前dev服务
             _baseURL = appendPrefixSlash(_baseURL);
-            // 根路径后加上非 Host 部分路径, 如: /api
-            _baseURL = _baseURL + baseURL.replace(/^(http[s]?:)?\/\//, '')
-                .replace(/^[\w\.:]+/, '');
+            if (isNotBlank(baseURL)) {
+                // 根路径后加上非 Host 部分路径, 如: /api
+                _baseURL = _baseURL + baseURL.replace(/^(http[s]?:)?\/\//, '')
+                    .replace(/^[\w\.:]+/, '');
+            }
         }
     } else {
         _baseURL = baseURL;

@@ -13,5 +13,5 @@ export const Method = {
 // http协议头Content-Type
 export const ContentType = {
     JSON: 'application/json',
-    FORM_URLENCODED: 'application/x-www-form-urlencoded'
+    X_WWW_FORM_URLENCODED: 'application/x-www-form-urlencoded'
 };

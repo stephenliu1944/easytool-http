@@ -7,32 +7,52 @@ npm install --save @beancommons/http
 ```
 
 ## Usage
+### Example
 ```js
 import http from '@beancommons/http';
-var promise = http({
+http({
     baseURL: 'http://beancommons.com',
     url: '/getUser',
-    interceptor: {
-        request: [],
-        response: {
-            success(){
-
-            },
-            error(){
-                
-            }
-        }
-    }
     params: {
         id: 1
     }
-});
-promise.then((data) => {
+}).then((data) => {
 
 }, (error) => {
 
 });
+```
 
+### Setup global options
+```js
+import http, { Method, ContentType } from '@beancommons/http';
+// need setup before invoke http()
+http.settings({
+    baseURL: 'http://www.beancommons.com',
+    method: Method.GET,                                 // default is 'GET'
+    contentType: ContentType.JSON                       // default is 'json'
+    cache: true,                                        // default is false
+    proxyPath: __DEV__ && '/api',                       // default is '/proxy'
+    isDev: __DEV__
+});
+```
+
+### Instance
+```js
+import http, { Method, ContentType } from '@beancommons/http';
+// default options with instance
+var _http = http.instance({
+    baseURL: 'http://www.beancharts.com',
+    method: Method.POST,
+    contentType: ContentType.X_WWW_FORM_URLENCODED
+});
+_http({
+    url: '/getUser'
+});
+```
+
+### Preprocess request data
+```js
 import { prepare } from '@beancommons/http';
 // return a preprocess object, include { url, method, headers, params, data }
 var obj = prepare({
@@ -49,104 +69,164 @@ $.get({
     url: obj.url,       // url was already proxy
     data: obj.params    // params was already serialized
 })
+// or use antd with ajax form, upload...
 ```
 
-## Setup global options
-```js
-import { settings } from '@beancommons/http';
-// need setup before invoke http()
-settings({
-    method: 'POST',                                      // default is 'GET'
-    contentType: 'application/x-www-form-urlencoded',    // default is 'application/json'
-    cache: true,                                         // default is false
-    proxyPath: __DEV__ && '/api',                         // default is '/proxy'
-    isDev: __DEV__
-});
-```
-
-## Use proxy
+### Use proxy
+proxyPath with string
 ```js
 import http from '@beancommons/http';
-// will request current domain 'http://localhost/api/setUser'
+// will request '/api/setUser'
 var promise = http({
     baseURL: 'http://beancommons.com',
     url: '/setUser',
     proxyPath: '/api',  // string
 });
-
-// will request current domain 'http://localhost/api/setUser'
+```
+proxyPath with function
+```js
+// will request '/api/setUser'
 var promise = http({
     baseURL: 'http://beancommons.com',
     url: '/setUser',
-    proxyPath: (options) => '/api',  // function, options is args
+    proxyPath: (options) => '/api',  // function
 });
-  
-import { proxyHost } from '@beancommons/http';
-// will request current domain 'http://localhost/proxy/beancommons.com/setUser'
+```
+proxyPath with helpers api
+```js
+import { helpers } from '@beancommons/http';
+// will request '/proxy/beancommons.com/setUser'
 var promise = http({
     baseURL: 'http://beancommons.com',
     url: '/setUser',
-    proxyPath: proxyHost
-});
-// with none baseURL, // will request current domain 'http://localhost/api/beancommons.com/setUser'
-var promise = http({
-    url: '/setUser',
-    proxyPath: (options) => proxyHost(options, {
-        prefix: '/api',         // default is '/proxy'
-        domain: 'http://beancommons.com'
-    })
+    proxyPath: helpers.proxyHost
 });
 ```
 
-## Advance
-beforeRequest
+### Transform
+transformRequest
 ```js
-import http from '@beancommons/http';
-
-function beforeRequest(resolve, reject, options) {
-    setTimeout(() => {
-        resolve(options);                   // will continue to process.
-        // or
-        reject('some error message.');      // will abort http request.
-    }, 2000)
-}
-
 http({
     baseURL: 'http://beancommons.com',
     url: '/getUser',
-    beforeRequest
-}).then((data) => {
+    transformRequest: [function (data, headers) {
+        // same with axios
+        return data;
+    }]
+});
+```
+transformResponse
+```js
+http({
+    baseURL: 'http://beancommons.com',
+    url: '/getUser',
+    transformResponse: [function (data) {
+        // same with axios
+        return data;
+    }]
+});
+```
 
-}, (error) => {
-    console.log(error)      // when beforeRequest invoke reject, error will be 'some error message.'
+### Interceptors
+request interceptor
+```js
+http({
+    baseURL: 'http://beancommons.com',
+    url: '/getUser',
+    requestInterceptor(config) {
+        // same with axios
+        return config;
+    }
+});
+// or
+http({
+    baseURL: 'http://beancommons.com',
+    url: '/getUser',
+    requestInterceptor: [(config) => {
+        // same with axios
+        return config;
+    }, (error) => {
+        // same with axios
+        return Promise.reject(error);
+    }]
+});
+```
+response interceptor
+```js
+http({
+    baseURL: 'http://beancommons.com',
+    url: '/getUser',
+    requestInterceptor(response) {
+        // same with axios
+        return response;
+    }
+});
+// or
+http({
+    baseURL: 'http://beancommons.com',
+    url: '/getUser',
+    requestInterceptor: [(response) => {
+        // same with axios
+        return response;
+    }, (error) => {
+        // same with axios
+        return Promise.reject(error);
+    }]
+});
+```
+
+### Asynchronize Interceptors
+beforeRequest
+```js
+http({
+    baseURL: 'http://beancommons.com',
+    url: '/getUser',
+    beforeRequest(resolve, reject, options) {
+        // Do something before request is sent
+        setTimeout(() => {
+            resolve(options);                   // will continue to process.
+            // or
+            reject('some error message.');      // will abort http request.
+        }, 2000)
+    }
 });
 ```
 afterResponse
 ```js
-function afterResponse(resolve, reject, response, options) {
-    switch (response.code) {
-        case 403:
-            // maybe other http request
-            setTimeout(() => {
-                resolve(response);
-            }, 2000);
-            break;
-        case 500:
-            reject(response.error);
-            break;
-        default:
-            resolve(response);
-    }
-}
 
 http({
     baseURL: 'http://beancommons.com',
     url: '/getUser',
-    afterResponse
-}).then((data) => {
+    afterResponse(resolve, reject, response, options) {
+        switch (response.code) {
+            case 200:
+                // continue to process.
+                resolve(response.data);
+            case 403:
+                // maybe other http request
+                setTimeout(() => {
+                    // continue to process.
+                    resolve(response.data);
+                }, 2000);
+                break;
+            case 500:
+                // throw a error.
+                reject(response);
+                break;
+        }
+    }
+});
+```
 
-}, (error) => {
-    console.log(error);
+### Other
+```js
+import { Method, ContentType } from '@beancommons/http';
+
+http({
+    baseURL: 'http://beancommons.com',
+    url: '/getUser',
+    method: Method.POST,
+    contentType: ContentType.X_WWW_FORM_URLENCODED
 });
 ```
 
@@ -170,19 +250,27 @@ http({
  * @return {object} - 返回一个promise的实例对象.
  */
 http(options)
+
 /**
  * @desc set global options
  */
 http.settings(options)
+
+/**
+ * @desc create a new instance
+ */
+http.instance(options)
+
 /**
  * @desc return a preproccess object, includes { method, url, headers, params, data } properties.
  * @param {object} options same with http(options).
  * @return {object} - return a preprocess options.
  */
 prepare(options)
+
 /**
  * @desc rewrite baseURL like 'http://beancommons.com' to '/proxy/beancommons.com' for proxy matching
  * @param {object} props receive a object, include { prefix, domain }.
  */
-ProxyUtils.proxyHost(options)
+helpers.proxyHost(options)
 ```

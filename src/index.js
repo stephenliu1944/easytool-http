@@ -1,10 +1,10 @@
 import { httpRequest, prepare } from './httpRequest';
-import * as ProxyUtils from './proxyUtils';
-import { Method, ContentType } from './enum/common';
+import * as helpers from './helpers';
+import { Method, ContentType } from './enums/common';
 
 export {
     prepare,
-    ProxyUtils,
+    helpers,
     Method,
     ContentType
 };
