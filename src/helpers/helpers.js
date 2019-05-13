@@ -1,3 +1,4 @@
+import { isBlank } from 'utils/common';
 
 // 根据 prefix + baseURL 生成代理拦截的 url
 export function proxyHost(options = {}, prefix = '/proxy') {
@@ -13,5 +14,6 @@ export function proxyHost(options = {}, prefix = '/proxy') {
     // .replace(/(\/)$/, '');
     var host = baseURL.replace(/^(http[s]?:)?\/\//, '')
         .replace(/(\/)$/, '');
+        
     return `${prefix}/${host}`;
 }

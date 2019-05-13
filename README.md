@@ -41,12 +41,12 @@ http.settings({
 ```js
 import http, { Method, ContentType } from '@beancommons/http';
 // default options with instance
-var _http = http.instance({
+var instance = http.instance({
     baseURL: 'http://www.beancharts.com',
     method: Method.POST,
     contentType: ContentType.X_WWW_FORM_URLENCODED
 });
-_http({
+instance({
     url: '/getUser'
 });
 ```

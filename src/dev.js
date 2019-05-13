@@ -1,55 +1,29 @@
 // 该类用于测试模块
-import httpRequest, { prepare } from './index';
-import axios from 'axios';
-
-axios.get('/api/?results=50', {
-    proxy: {
-        host: 'http://www.baidu.com',
-        port: 8888
-    }
-})
-    .then(response => {
-        const data = response.data.results;
-        this.setState({ data });
-    })
-    .catch(error => {
-        console.log(error);
-    });
+import httpRequest, { prepare, helpers } from './index';
 
 httpRequest.settings({
-    // baseURL: 'http://ip.taobao.com/service',
+    baseURL: '//192.232.222.3333:8888/service',
     requestInterceptor: function(config) {
         console.log('requestInterceptor', config);
+        config.headers.tttt = '1111111111';
+        return config;
     },
-    responseInterceptor: function(data) {
+    responseInterceptor: function(response) {
         console.log('responseInterceptor', data);
+        return response;
     },
     // baseURL: 'http://ip-api.com',
-    // proxyPath: proxyHost
-    proxy: {
-        host: '127.0.0.1',
-        port: 9000
-    }
+    proxyPath: helpers.proxyHost
 });
 
 httpRequest({
     // baseURL: 'http://tpic.home.news.cn',
-    url: 'xhCloudNewsPic/xhpic1501/M09/38/3E/wKhTlFiRoJmEOB3RAAAAAFK1grI124.jpg',
-    // params: {
-    // ip: '210.75.225.254'
-    // },
-    proxy: {
-        host: '127.0.0.1',
-        port: 8080
+    url: '/getIpInfo.php',
+    params: {
+        ip: '210.75.225.254'
     }
-}).then((e) => {
-    var reader = new FileReader();
-
-    reader.onloadend = function() {
-        console.log(reader.result);
-    };
-  
-    reader.readAsBinaryString(e);
+}).then((data) => {
+    console.log('data: ', data);
 }, (e) => {
     console.log('fail->>', e);
 });
@@ -71,4 +45,4 @@ var url = prepare({
     }
 });
 
-console.log('url ', url + '');
+console.log('url ', url);

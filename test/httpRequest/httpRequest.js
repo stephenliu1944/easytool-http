@@ -1,6 +1,6 @@
-import http, { prepare, proxyHost } from '../src/index';
+import http, { prepare, helpers } from '../src/index';
 
-describe('ReturnType is promise', function () {
+describe('ReturnType is promise', function() {
     it('xxx', function() {
         var url = prepare({
             // baseURL: 'http://ip.taobao.com/service/',
@@ -16,6 +16,6 @@ describe('ReturnType is promise', function () {
     });
 });
 
-describe('ReturnType is url', function () {
-    it('xxx', function () {});
+describe('ReturnType is url', function() {
+    it('xxx', function() {});
 });

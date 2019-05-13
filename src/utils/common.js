@@ -24,7 +24,7 @@ function appendSlash(url, suffix) {
     
     if (suffix && !/\/$/.test(url)) {
         url += '/';
-    } else if (!/^\//.test(url)) {
+    } else if (!suffix && !/^\//.test(url)) {
         url = '/' + url;
     }
 
@@ -39,7 +39,7 @@ function removeSlash(url, suffix) {
     
     if (suffix && /\/$/.test(url)) {
         url = url.slice(0, -1);
-    } else if (/^\//.test(url)) {
+    } else if (!suffix && /^\//.test(url)) {
         url = url.slice(1);
     }
 

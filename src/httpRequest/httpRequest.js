@@ -60,7 +60,7 @@ function adjustBaseURL(baseURL) {
     } else {
         baseURL = null;
     }
-
+    
     return baseURL;
 }
 
@@ -142,6 +142,7 @@ function handleProxyPath(options) {
 
     var { baseURL, proxyPath } = options;
     var _baseURL;
+    
     // 为 url 增加代理服务拦截的path
     if (proxyPath) {
         // 如果是方法则交给方法处理
@@ -271,14 +272,14 @@ export function httpRequest(opts) {
                 // responseInterceptors = responseInterceptors || {};
                 let respSuccess, respError;
                 if (isFunction(responseInterceptor)) {
-                    reqSuccess = responseInterceptor;
+                    respSuccess = responseInterceptor;
                 } else {
-                    reqSuccess = responseInterceptor[0];
-                    reqError = responseInterceptor[1];
+                    respSuccess = responseInterceptor[0];
+                    respError = responseInterceptor[1];
                 }
                 let respInterceptor = instance.interceptors.response.use(respSuccess, respError);
             }
-    
+            
             // 调用 axios 库
             instance.request({
                 headers: handleHeaders(options),
