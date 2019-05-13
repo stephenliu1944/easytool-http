@@ -11,7 +11,7 @@ npm install --save @beancommons/http
 ```js
 import http from '@beancommons/http';
 http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     params: {
         id: 1
@@ -28,7 +28,7 @@ http({
 import http, { Method, ContentType } from '@beancommons/http';
 // need setup before invoke http()
 http.settings({
-    baseURL: 'http://www.beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     method: Method.GET,                                 // default is 'GET'
     contentType: ContentType.JSON                       // default is 'json'
     cache: true,                                        // default is false
@@ -56,7 +56,7 @@ instance({
 import { prepare } from '@beancommons/http';
 // return a preprocess object, include { url, method, headers, params, data }
 var obj = prepare({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     params: {
         id: 1
@@ -78,7 +78,7 @@ proxyPath with string
 import http from '@beancommons/http';
 // will request '/api/setUser'
 var promise = http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/setUser',
     proxyPath: '/api',  // string
 });
@@ -87,7 +87,7 @@ proxyPath with function
 ```js
 // will request '/api/setUser'
 var promise = http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/setUser',
     proxyPath: (options) => '/api',  // function
 });
@@ -95,19 +95,26 @@ var promise = http({
 proxyPath with helpers api
 ```js
 import { helpers } from '@beancommons/http';
-// will request '/proxy/beancommons.com/setUser'
 var promise = http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/setUser',
     proxyPath: helpers.proxyHost
 });
+// will request '/proxy/www.beancharts.com/setUser'
+
+var promise = http({
+    baseURL: 'http://127.0.0.1:8080/api',
+    url: '/setUser',
+    proxyPath: helpers.proxyHost
+});
+// will request '/proxy/127.0.0.1:8080/api/setUser'
 ```
 
 ### Transform
 transformRequest
 ```js
 http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     transformRequest: [function (data, headers) {
         // same with axios
@@ -118,7 +125,7 @@ http({
 transformResponse
 ```js
 http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     transformResponse: [function (data) {
         // same with axios
@@ -131,16 +138,17 @@ http({
 request interceptor
 ```js
 http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     requestInterceptor(config) {
+        config.headers.TOKEN = 'xxxxxx';
         // same with axios
         return config;
     }
 });
 // or
 http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     requestInterceptor: [(config) => {
         // same with axios
@@ -154,7 +162,7 @@ http({
 response interceptor
 ```js
 http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     requestInterceptor(response) {
         // same with axios
@@ -163,7 +171,7 @@ http({
 });
 // or
 http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     requestInterceptor: [(response) => {
         // same with axios
@@ -179,7 +187,7 @@ http({
 beforeRequest
 ```js
 http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     beforeRequest(resolve, reject, options) {
         // Do something before request is sent
@@ -195,7 +203,7 @@ afterResponse
 ```js
 
 http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     afterResponse(resolve, reject, response, options) {
         switch (response.code) {
@@ -219,11 +227,12 @@ http({
 ```
 
 ### Other
+Method and ContentType
 ```js
 import { Method, ContentType } from '@beancommons/http';
 
 http({
-    baseURL: 'http://beancommons.com',
+    baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     method: Method.POST,
     contentType: ContentType.X_WWW_FORM_URLENCODED
@@ -269,8 +278,30 @@ http.instance(options)
 prepare(options)
 
 /**
- * @desc rewrite baseURL like 'http://beancommons.com' to '/proxy/beancommons.com' for proxy matching
+ * @desc rewrite baseURL like 'http://www.beancharts.com' to '/proxy/www.beancharts.com' for proxy matching
  * @param {object} props receive a object, include { prefix, domain }.
  */
 helpers.proxyHost(options)
+
+/**
+ * @desc general http method
+ * @props
+ * HEAD: 'head',
+ * GET: 'get',
+ * POST: 'post',
+ * PUT: 'put',
+ * PATCH: 'patch',
+ * DELETE: 'delete',
+ * OPTIONS: 'options',
+ * TRACE: 'trace'
+ */
+Method
+
+/**
+ * @desc general content type
+ * @props
+ * JSON: 'application/json',
+ * X_WWW_FORM_URLENCODED: 'application/x-www-form-urlencoded'
+ */
+ContentType
 ```

@@ -8,7 +8,6 @@ export const Method = {
     DELETE: 'delete',
     OPTIONS: 'options',
     TRACE: 'trace'
-
 };
 // http协议头Content-Type
 export const ContentType = {
