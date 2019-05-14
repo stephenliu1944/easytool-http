@@ -98,16 +98,16 @@ import { helpers } from '@beancommons/http';
 var promise = http({
     baseURL: 'http://www.beancharts.com',
     url: '/setUser',
-    proxyPath: helpers.proxyHost
+    proxyPath: helpers.proxyHost()
 });
 // will request '/proxy/www.beancharts.com/setUser'
 
 var promise = http({
-    baseURL: 'http://127.0.0.1:8080/api',
+    baseURL: 'http://127.0.0.1:8080/service',
     url: '/setUser',
-    proxyPath: helpers.proxyHost
+    proxyPath: helpers.proxyHost('/api')       // set prefix path
 });
-// will request '/proxy/127.0.0.1:8080/api/setUser'
+// will request '/api/127.0.0.1:8080/service/setUser'
 ```
 
 ### Transform
@@ -279,9 +279,9 @@ prepare(options)
 
 /**
  * @desc rewrite baseURL like 'http://www.beancharts.com' to '/proxy/www.beancharts.com' for proxy matching
- * @param {object} props receive a object, include { prefix, domain }.
+ * @param {string} prefix prefix path of proxy, default to /proxy
  */
-helpers.proxyHost(options)
+helpers.proxyHost(prefix)
 
 /**
  * @desc general http method

@@ -13,7 +13,7 @@ httpRequest.settings({
         return response;
     },
     // baseURL: 'http://ip-api.com',
-    proxyPath: helpers.proxyHost
+    proxyPath: helpers.proxyHost('/api')
 });
 
 httpRequest({
