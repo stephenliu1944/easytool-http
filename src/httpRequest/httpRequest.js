@@ -11,7 +11,7 @@ var defaults = {
     responseType: 'json',
     // withCredentials: true,                    // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
     // 扩展的属性默认值
-    contentType: ContentType.JSON,
+    contentType: ContentType.APPLICATION_JSON,
     // proxyPath: '/proxy',
     isDev: false
 };
@@ -123,7 +123,7 @@ function handleData(options) {
     if (dataSerializer) {
         _data = dataSerializer(data);
     } else if (method === Method.POST 
-            && contentType === ContentType.X_WWW_FORM_URLENCODED
+            && contentType === ContentType.APPLICATION_X_WWW_FORM_URLENCODED
             && !isFormData(data)) {
         _data = serializeData(data, {
             allowDots: true

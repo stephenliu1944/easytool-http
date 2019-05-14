@@ -30,7 +30,7 @@ import http, { Method, ContentType } from '@beancommons/http';
 http.settings({
     baseURL: 'http://www.beancharts.com',
     method: Method.GET,                                 // default is 'GET'
-    contentType: ContentType.JSON                       // default is 'json'
+    contentType: ContentType.APPLICATION_JSON           // default is 'json'
     cache: true,                                        // default is false
     proxyPath: __DEV__ && '/api',                       // default is '/proxy'
     isDev: __DEV__
@@ -44,7 +44,7 @@ import http, { Method, ContentType } from '@beancommons/http';
 var instance = http.instance({
     baseURL: 'http://www.beancharts.com',
     method: Method.POST,
-    contentType: ContentType.X_WWW_FORM_URLENCODED
+    contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED
 });
 instance({
     url: '/getUser'
@@ -235,7 +235,7 @@ http({
     baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     method: Method.POST,
-    contentType: ContentType.X_WWW_FORM_URLENCODED
+    contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED
 });
 ```
 
@@ -300,8 +300,18 @@ Method
 /**
  * @desc general content type
  * @props
- * JSON: 'application/json',
- * X_WWW_FORM_URLENCODED: 'application/x-www-form-urlencoded'
+ * MULTIPART_FORM_DATA: 'multipart/form-data',
+ * APPLICATION_JSON: 'application/json',
+ * APPLICATION_X_WWW_FORM_URLENCODED: 'application/x-www-form-urlencoded',
+ * APPLICATION_X_JAVASCRIPT: 'application/x-javascript',
+ * APPLICATION_PDF: 'application/pdf',
+ * TEXT_PLAIN: 'text/plain',
+ * TEXT_HTML: 'text/html',
+ * TEXT_XML: 'text/xml',
+ * IMAGE_JPEG: 'image/jpeg',
+ * IMAGE_GIF: 'image/gif',
+ * IMAGE_PNG: 'image/png'
+ * ...
  */
 ContentType
 ```
