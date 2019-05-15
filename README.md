@@ -1,5 +1,5 @@
 # @beancommons/http
-General HTTP Request module, extension from axios.
+Wrap and extension axios lib, suport all options with axios.
 
 ## Install
 ```
@@ -29,10 +29,10 @@ import http, { Method, ContentType } from '@beancommons/http';
 // need setup before invoke http()
 http.settings({
     baseURL: 'http://www.beancharts.com',
-    method: Method.GET,                                 // default is 'GET'
-    contentType: ContentType.APPLICATION_JSON           // default is 'json'
-    cache: true,                                        // default is false
-    proxyPath: __DEV__ && '/api',                       // default is '/proxy'
+    method: Method.POST,                                        // default is 'GET'
+    contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED  // default is 'json'
+    cache: true,                                                // default is false
+    proxyPath: __DEV__ && '/api',                               // default is ''
     isDev: __DEV__
 });
 ```
@@ -44,8 +44,9 @@ import http, { Method, ContentType } from '@beancommons/http';
 var instance = http.instance({
     baseURL: 'http://www.beancharts.com',
     method: Method.POST,
-    contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED
+    contentType: ContentType.MULTIPART_FORM_DATA
 });
+
 instance({
     url: '/getUser'
 });
@@ -83,6 +84,7 @@ var promise = http({
     proxyPath: '/api',  // string
 });
 ```
+
 proxyPath with function
 ```js
 // will request '/api/setUser'
@@ -92,7 +94,8 @@ var promise = http({
     proxyPath: (options) => '/api',  // function
 });
 ```
-proxyPath with helpers api
+
+proxyPath with host
 ```js
 import { helpers } from '@beancommons/http';
 var promise = http({
@@ -106,7 +109,7 @@ var promise = http({
     url: '/setUser',
     proxyPath: helpers.proxyHost('/api')       // set default prefix
 });
-// will request '/api/setUser'
+// with no baseURL will request '/api/setUser'
 ```
 
 ### Transform
@@ -121,6 +124,7 @@ http({
     }]
 });
 ```
+
 transformResponse
 ```js
 http({
@@ -158,6 +162,7 @@ http({
     }]
 });
 ```
+
 response interceptor
 ```js
 http({
@@ -198,6 +203,7 @@ http({
     }
 });
 ```
+
 afterResponse
 ```js
 
@@ -241,21 +247,21 @@ http({
 ## API
 ```js
 /**
- * @desc 使用axios第三方库访问后台服务器, 返回封装过后的Promise对象.
- * @param {axios.options...} suport all options with axios.
- * @param {boolean} cache 是否开启缓存, 开起后每次请求会在url后加一个时间搓, 默认false.
- * @param {function} cancel 封装了CancelToken
- * @param {string} contentType HTTP请求头的 Content-Type, 默认为'application/json'
+ * @desc wrap and extension axios lib, suport all options with axios.
+ * @param {axios.options...} axios options.
+ * @param {boolean} cache enable cache, default false.
+ * @param {function} cancel wrap CancelToken of axios, function receive a cancel args.
+ * @param {string} contentType HTTP request header Content-Type, default 'application/json'.
  * @param {function} dataSerializer same with paramsSerializer but just for serialize `data`.
  * @param {function|array} requestInterceptor wrap axios's interceptors.request.use().
  * @param {function|array} responseInterceptor wrap axios's interceptors.response.use().
  * @param {function} beforeRequest asynchronize process request interceptor, it's receive 3 args: resolve, reject, options.
  * @param {function} afterResponse asynchronize process response interceptor, it's receive 4 args: resolve, reject, response, options.
- * @param {function} onError 在请求返回异常时调用.
- * @param {string | function} proxyPath proxy path, can be string or function, the function receive a options args and return a string, default is "/proxy."
+ * @param {function} onError when catch error will occur.
+ * @param {string | function} proxyPath proxy path, can be string or function, the function receive a options args and return a string.
  * @param {boolean} isDev dev mode print more log info.
  * @param {object} extension custom data field.
- * @return {object} - 返回一个promise的实例对象.
+ * @return {object} - return a promise instance.
  */
 http(options)
 
