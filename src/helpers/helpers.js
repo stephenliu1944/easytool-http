@@ -1,7 +1,8 @@
 import { isBlank } from 'utils/common';
 
 // 根据 prefix + baseURL 生成代理拦截的 url
-export function proxyHost(prefix = '/proxy') {
+export function proxyHost(prefix) {
+
     return function(options) {
         var { baseURL } = options;
         
@@ -11,12 +12,14 @@ export function proxyHost(prefix = '/proxy') {
         }
 
         // 将 Host 部分作为代理服务匹配的字符串
-        // http://www.xxx.com/api to /proxy/www.xxx.com/api
+        // http://www.xxx.com/api to /www.xxx.com/api
         // var host = baseURL.replace(/(^http[s]?:\/\/)/, '')
         // .replace(/(\/)$/, '');
         var host = baseURL.replace(/^(http[s]?:)?\/\//, '')
-            .replace(/(\/)$/, '');
+            .replace(/^\//, '')
+            .replace(/\/$/, '');
             
-        return `${prefix}/${host}`;
+        // return `${prefix}/${host}`;
+        return `/${host}`;
     };
 }
