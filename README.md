@@ -120,6 +120,7 @@ http({
     url: '/getUser',
     transformRequest: [function (data, headers) {
         // same with axios
+        headers.TOKEN = 'xxxxxx';
         return data;
     }]
 });
@@ -211,15 +212,16 @@ http({
     baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     afterResponse(resolve, reject, response, options) {
-        switch (response.code) {
+        var { data, status } = response;
+        switch (status) {
             case 200:
                 // continue to process.
-                resolve(response.data);
+                resolve(data);
             case 403:
                 // maybe other http request
                 setTimeout(() => {
                     // continue to process.
-                    resolve(response.data);
+                    resolve(data);
                 }, 2000);
                 break;
             case 500:

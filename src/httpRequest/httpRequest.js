@@ -166,6 +166,14 @@ function handleProxyPath(options) {
     return _baseURL;
 }
 
+// 用于处理传入的 reject, 暂未使用
+function handleReject(reject, onError) {
+    return function(error) {
+        onError?.(error);
+        reject(error);
+    };
+}
+
 export function prepare(options) {
     if (isEmpty(options)) {
         return;
@@ -224,6 +232,7 @@ export function httpRequest(opts) {
     }
 
     return new Promise(function(resolve, reject) {
+
         prePromise.then(function(options) {
             var {
                 // axios参数
@@ -264,7 +273,7 @@ export function httpRequest(opts) {
                     reqSuccess = requestInterceptor[0];
                     reqError = requestInterceptor[1];
                 }
-
+                // 该实例在注销 interceptor 时使用
                 let reqInterceptor = instance.interceptors.request.use(reqSuccess, reqError);
             }
             // 处理响应拦截器 responseInterceptor = function or [success, error]
@@ -277,6 +286,7 @@ export function httpRequest(opts) {
                     respSuccess = responseInterceptor[0];
                     respError = responseInterceptor[1];
                 }
+                // 该实例在注销 interceptor 时使用
                 let respInterceptor = instance.interceptors.response.use(respSuccess, respError);
             }
             
@@ -292,40 +302,47 @@ export function httpRequest(opts) {
                 cancelToken: cancel && new axios.CancelToken(cancel),
                 ...other
             }).then(function(response) {
+                var { config, request, headers, status, statusText, data } = response;
+
                 if (isDev) {
                     log(response.data, 'Response');
                 }
-    
+
                 // 配置了响应拦截器, 自行处理 resolve 和 reject 状态.
                 if (afterResponse) {
-                    afterResponse(resolve, reject, response.data, options);
+                    afterResponse(resolve, reject, response, options);
                 } else {
-                    resolve(response.data);
+                    resolve(response);
                 }
             }).catch(function(error) {
-                var errorMsg;
-                // 服务端异常
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
-                if (error.response) {
-                    errorMsg = error.response;
-                // 浏览器抛出的异常, 比如请求超时, 不同浏览器可能有不同的行为.
-                // Something happened in setting up the request that triggered an Error
+                var { config, request, response, message, stack } = error;
+              
+                if (response) {
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    console.error('Response Error:', message);
+                } else if (request) {
+                    // The request was made but no response was received
+                    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+                    console.error('Nonresponse Error:', message);
+                } else if (config) {
+                    // Something happened in setting up the request that triggered an Error
+                    console.error('Setting up Error:', message);
                 } else {
-                    errorMsg = error.stack || error.message;
-                }          
-                
-                if (isIE()) {
-                    console.error(JSON.stringify(errorMsg));
-                } else {
-                    console.error(errorMsg);
+                    // afterResponse 抛出的错误
+                    console.error('AfterResponse Error:', message);
                 }
+
+                if (isDev) {
+                    console.error(error);
+                }
+
+                onError?.(error);
     
-                onError?.(errorMsg);
-    
-                reject(errorMsg);
+                reject(error);
             });
         }, function(error) {
+            // beforeRequest 抛出的错误
             reject(error);
         });
     });
