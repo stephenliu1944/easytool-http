@@ -100,14 +100,13 @@ var promise = http({
     url: '/setUser',
     proxyPath: helpers.proxyHost()
 });
-// will request '/proxy/www.beancharts.com/setUser'
+// will request '/www.beancharts.com/setUser'
 
 var promise = http({
-    baseURL: 'http://127.0.0.1:8080/service',
     url: '/setUser',
-    proxyPath: helpers.proxyHost('/api')       // set prefix path
+    proxyPath: helpers.proxyHost('/api')       // set default prefix
 });
-// will request '/api/127.0.0.1:8080/service/setUser'
+// will request '/api/setUser'
 ```
 
 ### Transform
@@ -278,8 +277,8 @@ http.instance(options)
 prepare(options)
 
 /**
- * @desc rewrite baseURL like 'http://www.beancharts.com' to '/proxy/www.beancharts.com' for proxy matching
- * @param {string} prefix prefix path of proxy, default to /proxy
+ * @desc rewrite baseURL like 'http://www.beancharts.com' to '/www.beancharts.com' for proxy matching
+ * @param {string} prefix default prefix path of proxy, when baseURL is null to use, default is ''
  */
 helpers.proxyHost(prefix)
 
