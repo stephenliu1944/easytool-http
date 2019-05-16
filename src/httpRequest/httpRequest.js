@@ -354,8 +354,8 @@ httpRequest.settings = function(options) {
 
 httpRequest.instance = function(defaultOpts) {
     return function(opts) {
-        var options = Object.assign(defaultOpts, opts);
-        return httpRequest(options);
+        var _opts = Object.assign({}, defaultOpts, opts);
+        return httpRequest(_opts);
     };
 };
 
