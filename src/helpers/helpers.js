@@ -3,8 +3,8 @@ import { isBlank } from 'utils/common';
 // 根据 prefix + baseURL 生成代理拦截的 url
 export function proxyHost(prefix) {
 
-    return function(options) {
-        var { baseURL } = options;
+    return function(options) {  // options: string or object
+        var baseURL = options.baseURL || options;
         
         // 如果为空直接返回代理路径前缀
         if (isBlank(baseURL)) {
