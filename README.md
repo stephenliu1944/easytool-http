@@ -98,18 +98,30 @@ var promise = http({
 proxyPath with host
 ```js
 import { helpers } from '@beancommons/http';
+
+// with baseURL will request '/www.beancharts.com/setUser'
 var promise = http({
     baseURL: 'http://www.beancharts.com',
     url: '/setUser',
     proxyPath: helpers.proxyHost()
 });
-// will request '/www.beancharts.com/setUser'
 
+// with none baseURL will request '/api/setUser'
 var promise = http({
     url: '/setUser',
-    proxyPath: helpers.proxyHost('/api')       // set default prefix
+    proxyPath: helpers.proxyHost('/api')       // set default prefix when none host
 });
-// with no baseURL will request '/api/setUser'
+
+// use other xhr lib
+$.ajax({
+    url: helpers.proxyHost()('http://www.beancharts.com') + '/setUser',
+    success() {}
+});
+// or
+$.ajax({
+    url: helpers.proxyHost('/api')() + '/setUser',
+    success() {}
+});
 ```
 
 ### Transform
