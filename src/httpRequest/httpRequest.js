@@ -189,6 +189,8 @@ export function prepare(options) {
     var { url = '', paramsSerializer, method } = formatOptions(_opts);
     var _url = url;
 
+    _opts.headers = handleHeaders(_opts);
+    
     _opts = _opts.requestInterceptor && _opts.requestInterceptor(_opts) || _opts;
 
     if (isArray(_opts.transformRequest)) {
@@ -198,7 +200,7 @@ export function prepare(options) {
     }
 
     var _baseURL = handleProxyPath(_opts) || '';
-    var _headers = handleHeaders(_opts);
+    // var _headers = handleHeaders(_opts);
     var _params = handleParams(_opts);
     var _data = handleData(_opts);
 
@@ -208,7 +210,7 @@ export function prepare(options) {
 
     return {
         method,
-        headers: _headers,
+        headers: _opts.headers,
         url: _baseURL + _url,
         params: _params,
         data: _data,

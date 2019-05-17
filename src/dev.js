@@ -4,7 +4,11 @@ import httpRequest, { prepare, helpers } from './index';
 httpRequest.settings({
     baseURL: '//192.232.222.3333:8888/service',
     // baseURL: 'http://ip-api.com',
-    proxyPath: helpers.proxyHost('/api')
+    proxyPath: helpers.proxyHost('/api'),
+    requestInterceptor(config) {
+        config.headers['abc'] = 1;
+        return config;
+    }
 });
 
 httpRequest({
