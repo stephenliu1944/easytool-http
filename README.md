@@ -55,22 +55,87 @@ instance({
 ### Preprocess request data
 ```js
 import { prepare } from '@beancommons/http';
-// return a preprocess object, include { url, method, headers, params, data }
-var obj = prepare({
+// request: { url, method, headers, params, data }
+var request = prepare({
     baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     params: {
         id: 1
     }
 });
+```
 
-window.open(obj.toString());    // url + params
+Use for open or download file URL.
+```js
+var request = prepare({
+    baseURL: 'http://file.xxx.com',
+    url: '/file',
+    params: {
+        id: 1
+    }
+});
+// request.toString() = url + params
+window.open(request.toString());    // http://file.xxx.com/file?id=1
+// or
+<a href={request.toString()} target="_blank" >Download</a>
+```
+
+Use jQuery ajax lib.
+```js
 // or use jquery ajax
 $.get({
-    url: obj.url,       // url was already proxy
-    data: obj.params    // params was already serialized
+    url: request.url,                            // url was already proxy
+    type: request.method,
+    data: request.params || request.data         // params was already serialized
+    headers: request.headers
 })
-// or use antd with ajax form, upload...
+```
+
+Use Antd Upload Component.
+```js
+import { prepare, Method } from  '@beancommons/http';
+import { Upload } from 'antd';
+
+function uploadFile(params) {
+    return prepare({
+        baseURL: 'http://file.xxx.com',
+        url: '/api/file/upload',
+        method: Method.POST,
+        params
+    });
+}
+
+function render(props) {
+    const request = uploadFile(props);
+
+    return (
+        <Upload name="file" action={request.url} ></Upload>
+    );
+}
+```
+
+upload with header token.
+```js
+function uploadFile(params) {
+    return prepare({
+        baseURL: 'http://file.xxx.com',
+        url: '/api/file/upload',
+        method: Method.POST,
+        contentType: null,              // disable default contentType, use antd's
+        headers: {
+            token: 'xxxx-xxxx-xxxx'
+        },
+        params
+    });
+}
+
+function render(props) {
+    const request = uploadFile(props);
+
+    return (
+        <Upload name="file" action={request.url} headers={request.headers} ></Upload>
+    );
+}
 ```
 
 ### Use proxy

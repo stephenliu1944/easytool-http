@@ -95,14 +95,15 @@ function handleHeaders(options, isXHR) {
     if (isXHR) {
         _headers['X-Requested-With'] = 'XMLHttpRequest';
     }
-
-    if (hasEntityBody(method)) {
-        if (contentType) {
-            _headers['Content-Type'] = contentType;
-        } else if (contentType === null || contentType === '') {
-            delete _headers['Content-Type'];
-        }
+    
+    if (hasEntityBody(method) && contentType) {
+        _headers['Content-Type'] = contentType;
     }
+    
+    if (!_headers['Content-Type']) {
+        delete _headers['Content-Type'];
+    }
+
     return _headers;
 }
 
