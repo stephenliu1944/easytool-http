@@ -124,32 +124,6 @@ $.ajax({
 });
 ```
 
-### Transform
-transformRequest
-```js
-http({
-    baseURL: 'http://www.beancharts.com',
-    url: '/getUser',
-    transformRequest: [function (data, headers) {
-        // same with axios
-        headers.TOKEN = 'xxxxxx';
-        return data;
-    }]
-});
-```
-
-transformResponse
-```js
-http({
-    baseURL: 'http://www.beancharts.com',
-    url: '/getUser',
-    transformResponse: [function (data) {
-        // same with axios
-        return data;
-    }]
-});
-```
-
 ### Interceptors
 request interceptor
 ```js
@@ -242,6 +216,31 @@ http({
                 break;
         }
     }
+});
+```
+
+### Transform
+transformRequest
+```js
+http({
+    baseURL: 'http://www.beancharts.com',
+    url: '/getUser',
+    transformRequest: [function (data) {
+        // same with axios
+        return data;
+    }]
+});
+```
+
+transformResponse
+```js
+http({
+    baseURL: 'http://www.beancharts.com',
+    url: '/getUser',
+    transformResponse: [function (data) {
+        // same with axios
+        return data;
+    }]
 });
 ```
 

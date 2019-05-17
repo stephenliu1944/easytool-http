@@ -1,7 +1,7 @@
 import qs from 'qs';
 import axios from 'axios';
 import { Method, ContentType } from 'enums/common';
-import { appendPrefixSlash, removeSuffixSlash, log, isString, isFormData, isIE, isEmpty, isNotEmpty, isBlank, isNotBlank, isFunction } from 'utils/common';
+import { appendPrefixSlash, removeSuffixSlash, log, isString, isFormData, isArray, isEmpty, isNotEmpty, isBlank, isNotBlank, isFunction } from 'utils/common';
 
 // global settings
 var defaults = {
@@ -88,11 +88,13 @@ function formatOptions(opts) {
     });
 }
 
-function handleHeaders(options) {
+function handleHeaders(options, isXHR) {
     var { headers, method, contentType } = options;
     var _headers = Object.assign({}, headers);
     
-    _headers['X-Requested-With'] = 'XMLHttpRequest';
+    if (isXHR) {
+        _headers['X-Requested-With'] = 'XMLHttpRequest';
+    }
 
     if (hasEntityBody(method)) {
         _headers['Content-Type'] = contentType;
@@ -186,6 +188,15 @@ export function prepare(options) {
     var _opts = Object.assign({}, defaults, options);
     var { url = '', paramsSerializer, method } = formatOptions(_opts);
     var _url = url;
+
+    _opts = _opts.requestInterceptor && _opts.requestInterceptor(_opts) || _opts;
+
+    if (isArray(_opts.transformRequest)) {
+        _opts.transformRequest.forEach((transform) => {
+            _opts.data = transform(_opts.data, _opts.headers);
+        });
+    }
+
     var _baseURL = handleProxyPath(_opts) || '';
     var _headers = handleHeaders(_opts);
     var _params = handleParams(_opts);
@@ -292,7 +303,7 @@ export function httpRequest(opts) {
             
             // 调用 axios 库
             instance.request({
-                headers: handleHeaders(options),
+                headers: handleHeaders(options, true),
                 method,
                 baseURL: handleProxyPath(options),
                 url,

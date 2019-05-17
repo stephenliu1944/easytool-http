@@ -3,15 +3,6 @@ import httpRequest, { prepare, helpers } from './index';
 
 httpRequest.settings({
     baseURL: '//192.232.222.3333:8888/service',
-    requestInterceptor: function(config) {
-        console.log('requestInterceptor', config);
-        config.headers.tttt = '1111111111';
-        return config;
-    },
-    responseInterceptor: function(response) {
-        console.log('responseInterceptor', data);
-        return response;
-    },
     // baseURL: 'http://ip-api.com',
     proxyPath: helpers.proxyHost('/api')
 });
@@ -21,6 +12,10 @@ httpRequest({
     url: '/getIpInfo.php',
     params: {
         ip: '210.75.225.254'
+    }, 
+    data: {
+        name: 1,
+        age: 2
     }
 }).then((data) => {
     console.log('data: ', data);
