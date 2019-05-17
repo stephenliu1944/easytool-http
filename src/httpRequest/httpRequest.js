@@ -97,9 +97,12 @@ function handleHeaders(options, isXHR) {
     }
 
     if (hasEntityBody(method)) {
-        _headers['Content-Type'] = contentType;
+        if (contentType) {
+            _headers['Content-Type'] = contentType;
+        } else if (contentType === null || contentType === '') {
+            delete _headers['Content-Type'];
+        }
     }
-
     return _headers;
 }
 

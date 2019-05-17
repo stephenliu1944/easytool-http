@@ -3,7 +3,7 @@ import httpRequest, { prepare, helpers } from './index';
 
 httpRequest.settings({
     baseURL: '//192.232.222.3333:8888/service',
-    // baseURL: 'http://ip-api.com',
+    contentType: 'application/json',
     proxyPath: helpers.proxyHost('/api'),
     requestInterceptor(config) {
         config.headers['abc'] = 1;
@@ -30,6 +30,8 @@ httpRequest({
 var url = prepare({
     // baseURL: 'http://ip.taobao.com/service/',
     url: '/getIpInfo.php',
+    method: 'post',
+    contentType: '',
     params: {
         t1: 'a',
         t2: 'aa/d.fe'
