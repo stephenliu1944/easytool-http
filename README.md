@@ -1,21 +1,21 @@
 # @beancommons/http
 Wrap and extension axios lib, suport all options with axios.
 
+## extension 
+cache,   
+contentType,  
+beforeRequest,   
+afterResponse,   
+proxyPath,   
+onError,  
+prepare,  
+helpers,  
+...
+
 ## Install
 ```
 npm install --save @beancommons/http
 ```
-
-## extension
-cache   
-contentType  
-beforeRequest   
-afterResponse   
-proxyPath   
-onError  
-prepare  
-helpers  
-...
 
 ## Usage
 ### Example
