@@ -6,6 +6,17 @@ Wrap and extension axios lib, suport all options with axios.
 npm install --save @beancommons/http
 ```
 
+## extension
+cache   
+contentType  
+beforeRequest   
+afterResponse   
+proxyPath   
+onError  
+prepare  
+helpers  
+...
+
 ## Usage
 ### Example
 ```js
@@ -359,7 +370,7 @@ http({
  * @param {boolean} isDev dev mode print more log info.
  * @param {object} extension custom data field.
  * @return {object} - return a promise instance.
- */
+ */ 
 http(options)
 
 /**
