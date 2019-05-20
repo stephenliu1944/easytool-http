@@ -290,8 +290,7 @@ http({
 ```
 
 ### Transform
-transformRequest
-serialize form URL encoded.
+transformRequest  
 ```js
 import qs from 'qs';
 import http, { Method, ContentType, helpers } from '@beancommons/http';
@@ -299,7 +298,7 @@ import http, { Method, ContentType, helpers } from '@beancommons/http';
 http({
     baseURL: 'http://www.beancharts.com',
     url: '/getUser',
-    transformRequest: [function (data, header) {
+    transformRequest: [function (data, header) {    // serialize data form URL encoded.
         if (header['Content-Type'] === ContentType.APPLICATION_X_WWW_FORM_URLENCODED
             && !helpers.util.isFormData(data)) {
 
