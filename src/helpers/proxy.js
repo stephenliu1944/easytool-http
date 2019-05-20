@@ -1,4 +1,5 @@
-import { isObject, isString, isBlank } from 'utils/common';
+
+import { isObject, isString, isBlank } from 'helpers/util';
 
 // 根据 baseURL 生成代理拦截的 url
 export function proxyHost(defaultPrefix) {

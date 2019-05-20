@@ -1,13 +1,12 @@
-import qs from 'qs';
 import axios from 'axios';
 import { Method, ContentType } from 'enums/common';
-import { appendPrefixSlash, removeSuffixSlash, log, isString, isFormData, isArray, isEmpty, isNotEmpty, isBlank, isNotBlank, isFunction } from 'utils/common';
+import { appendPrefixSlash, removeSuffixSlash, log, isString, isFormData, isArray, isEmpty, isNotEmpty, isBlank, isNotBlank, isFunction } from 'helpers/util';
 
 // global settings
 var defaults = {
     // axios的默认参数
     method: Method.GET,
-    paramsSerializer: serializeData,
+    // paramsSerializer: serializeData,
     responseType: 'json',
     // withCredentials: true,                    // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
     // 扩展的属性默认值
@@ -40,16 +39,6 @@ Promise.prototype.finally = function(callback) {
 
 function hasEntityBody(method = '') {
     return [Method.POST, Method.PUT, Method.PATCH].includes(method.toLowerCase());
-}
-
-function createTimestamp() {
-    return new Date().getTime();
-}
-
-function serializeData(params, options = {}) {
-    var data = qs.stringify(params, options);   // 默认返回空的字符串, 不会返回null
-
-    return data;
 }
 
 function adjustBaseURL(baseURL) {
@@ -107,38 +96,16 @@ function handleHeaders(options, isXHR) {
     return _headers;
 }
 
-function handleParams(options) {
+function handleCache(options) {
     var { params, cache } = options;
     var _params = Object.assign({}, params);
 
+    // 增加缓存
     if (!cache) {
-        _params.t = createTimestamp();
+        _params.t = new Date().getTime();
     }
 
     return _params;
-}
-
-function handleData(options) {
-    var { data, method, contentType, dataSerializer } = options;
-    
-    if (isEmpty(data)) {
-        return;
-    }
-
-    var _data;
-    if (dataSerializer) {
-        _data = dataSerializer(data);
-    } else if (method === Method.POST 
-            && contentType === ContentType.APPLICATION_X_WWW_FORM_URLENCODED
-            && !isFormData(data)) {
-        _data = serializeData(data, {
-            allowDots: true
-        });
-    } else {
-        _data = data;
-    }
-    
-    return _data;
 }
 
 function handleProxyPath(options) {
@@ -172,9 +139,15 @@ function handleProxyPath(options) {
     return _baseURL;
 }
 
-// 用于处理传入的 reject, 暂未使用
-function handleReject(reject, onError) {
+// 用于处理用户手动调用的 reject(), 关注性能问题
+function handleReject(reject, options) {
+    var { isDev, onError } = options;
+
     return function(error) {
+        if (isDev) {
+            console.error(error);
+        }
+
         onError?.(error);
         reject(error);
     };
@@ -190,24 +163,30 @@ export function prepare(options) {
     }
 
     var _opts = Object.assign({}, defaults, options);
-    var { url = '', paramsSerializer, method } = formatOptions(_opts);
+    var { url = '', method, paramsSerializer } = formatOptions(_opts);
     var _url = url;
-
-    _opts.headers = handleHeaders(_opts);
     
+    // 处理 header
+    _opts.headers = handleHeaders(_opts);
+
+    // 处理代理路径
+    var _baseURL = handleProxyPath(_opts) || '';
+    
+    // 处理 params
+    var _params = handleCache(_opts);
+    // var _data = handleData(_opts);
+
+    // 处理 requestInterceptor(config)
     _opts = _opts.requestInterceptor && _opts.requestInterceptor(_opts) || _opts;
 
+    // 处理 transformRequest(data, header)
     if (isArray(_opts.transformRequest)) {
         _opts.transformRequest.forEach((transform) => {
             _opts.data = transform(_opts.data, _opts.headers);
         });
     }
-
-    var _baseURL = handleProxyPath(_opts) || '';
-    // var _headers = handleHeaders(_opts);
-    var _params = handleParams(_opts);
-    var _data = handleData(_opts);
-
+    
+    // 序列化 params
     if (paramsSerializer) {
         _params = paramsSerializer(_params);
     }
@@ -217,7 +196,7 @@ export function prepare(options) {
         headers: _opts.headers,
         url: _baseURL + _url,
         params: _params,
-        data: _data,
+        data: _opts.data,
         toString() {
             return this.url + '?' + this.params;
         }
@@ -261,7 +240,6 @@ export function httpRequest(opts) {
                 data,
                 paramsSerializer,
                 // 扩展的参数
-                dataSerializer,
                 cache,
                 cancel,
                 contentType,
@@ -313,9 +291,10 @@ export function httpRequest(opts) {
                 method,
                 baseURL: handleProxyPath(options),
                 url,
-                params: handleParams(options),
+                params: handleCache(options),
                 paramsSerializer,
-                data: handleData(options),
+                data,
+                // data: handleData(options),
                 cancelToken: cancel && new axios.CancelToken(cancel),
                 ...other
             }).then(function(response) {
@@ -327,7 +306,7 @@ export function httpRequest(opts) {
 
                 // 配置了响应拦截器, 自行处理 resolve 和 reject 状态.
                 if (afterResponse) {
-                    afterResponse(resolve, reject, response, options);
+                    afterResponse(resolve, handleReject(reject, options), response, options);
                 } else {
                     resolve(response);
                 }

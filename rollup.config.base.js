@@ -38,7 +38,7 @@ export default function(fileName) {
             alias({
                 constants: 'src/constants',
                 enums: 'src/enums',
-                utils: 'src/utils'
+                helpers: 'src/helpers'
             }),
             babel({
                 exclude: 'node_modules/**' // only transpile our source code
@@ -48,7 +48,7 @@ export default function(fileName) {
             }),
             commonjs(isDEV && {
                 namedExports: {
-                    // 'node_modules/@beancommons/utils/dist/index.umd.js': ['isString', 'isArray', 'isObject', 'isBlank', 'isFormData', 'isIE', 'isEmpty', 'isNotEmpty', 'isNotBlank', 'isFunction' ]
+                    // 'node_modules/@beancommons/dist/index.umd.js': ['isString', 'isArray', 'isObject', 'isBlank', 'isFormData', 'isIE', 'isEmpty', 'isNotEmpty', 'isNotBlank', 'isFunction' ]
                 }
             }),     // so Rollup can convert `ms` to an ES module
             eslint({

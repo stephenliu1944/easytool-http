@@ -168,23 +168,23 @@ import { helpers } from '@beancommons/http';
 var promise = http({
     baseURL: 'http://www.beancharts.com',
     url: '/setUser',
-    proxyPath: helpers.proxyHost()
+    proxyPath: helpers.proxy.proxyHost()
 });
 
 // with none baseURL will request '/api/setUser'
 var promise = http({
     url: '/setUser',
-    proxyPath: helpers.proxyHost('/api')       // set default prefix when none host
+    proxyPath: helpers.proxy.proxyHost('/api')       // set default proxy path when none host
 });
 
-// use other xhr lib
+// use other xhr lib, will request '/www.beancharts.com/setUser'
 $.ajax({
-    url: helpers.proxyHost()('http://www.beancharts.com') + '/setUser',
+    url: helpers.proxy.proxyHost()('http://www.beancharts.com') + '/setUser',
     success() {}
 });
-// or
+// or, will request '/api/setUser'
 $.ajax({
-    url: helpers.proxyHost('/api')() + '/setUser',
+    url: helpers.proxy.proxyHost('/api')() + '/setUser',
     success() {}
 });
 ```
@@ -265,14 +265,19 @@ http({
     afterResponse(resolve, reject, response, options) {
         var { data, status } = response;
         switch (status) {
-            case 200:
-                // continue to process.
+            case 200:   // continue to process.
                 resolve(data);
-            case 403:
-                // maybe other http request
+            case 401:   // need log in
+                reject(response);
+
+                setTimeout(() => {
+                    location.href = `http://www.beancharts.com/login?callback=${encodeURIComponent(location.href)}`;
+                }, 0);
+                break;
+            case 403:   // maybe other http request
                 setTimeout(() => {
                     // continue to process.
-                    resolve(data);
+                    resolve(data);  
                 }, 2000);
                 break;
             case 500:
@@ -286,12 +291,23 @@ http({
 
 ### Transform
 transformRequest
+serialize form URL encoded.
 ```js
+import qs from 'qs';
+import http, { Method, ContentType, helpers } from '@beancommons/http';
+
 http({
     baseURL: 'http://www.beancharts.com',
     url: '/getUser',
-    transformRequest: [function (data) {
-        // same with axios
+    transformRequest: [function (data, header) {
+        if (header['Content-Type'] === ContentType.APPLICATION_X_WWW_FORM_URLENCODED
+            && !helpers.util.isFormData(data)) {
+
+            return qs.stringify(data, {     // e.g. https://www.npmjs.com/package/qs
+                allowDots: true
+            });
+        }
+
         return data;
     }]
 });
@@ -309,16 +325,20 @@ http({
 });
 ```
 
-### Other
-Method and ContentType
+### Serializer
+Serialize params.
 ```js
+import qs from 'qs';
 import { Method, ContentType } from '@beancommons/http';
 
 http({
     baseURL: 'http://www.beancharts.com',
     url: '/getUser',
-    method: Method.POST,
-    contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED
+    paramsSerializer(params) {
+        return qs.stringify(params, {   // e.g. https://www.npmjs.com/package/qs
+            allowDots: true
+        });
+    }
 });
 ```
 
@@ -329,8 +349,8 @@ http({
  * @param {axios.options...} axios options.
  * @param {boolean} cache enable cache, default false.
  * @param {function} cancel wrap CancelToken of axios, function receive a cancel args.
+ * @param {function} paramsSerializer same with axios options.
  * @param {string} contentType HTTP request header Content-Type, default 'application/json'.
- * @param {function} dataSerializer same with paramsSerializer but just for serialize `data`.
  * @param {function|array} requestInterceptor wrap axios's interceptors.request.use().
  * @param {function|array} responseInterceptor wrap axios's interceptors.response.use().
  * @param {function} beforeRequest asynchronize process request interceptor, it's receive 3 args: resolve, reject, options.
@@ -359,12 +379,6 @@ http.instance(options)
  * @return {object} - return a preprocess options.
  */
 prepare(options)
-
-/**
- * @desc rewrite baseURL like 'http://www.beancharts.com' to '/www.beancharts.com' for proxy matching
- * @param {string} prefix default prefix path of proxy, when baseURL is null to use, default is ''
- */
-helpers.proxyHost(prefix)
 
 /**
  * @desc general http method
@@ -397,4 +411,63 @@ Method
  * ...
  */
 ContentType
+```
+
+### helpers.proxy
+```js
+/**
+ * @desc rewrite baseURL like 'http://www.beancharts.com' to '/www.beancharts.com' for proxy matching
+ * @param {string} prefix default proxy path of rootPath, when baseURL is null, default is ''
+ */
+proxyHost(prefix)(baseURL)
+```
+
+### helpers.util
+```js
+export function isArray(obj)
+
+export function isString(obj)
+
+export function isDate(obj)
+
+export function isObject(obj)
+
+export function isNumber(obj)
+
+export function isFunction(obj)
+
+export function isFormData(obj)
+
+export function isIE()
+
+/**
+ * @desc 判断参数是否为空, 包括null, undefined, [], '', {}
+ * @param {object} obj 需判断的对象
+ */
+export function isEmpty(obj)
+
+/**
+ * @desc 判断参数是否不为空
+ */
+export function isNotEmpty(obj)
+
+/**
+ * @desc 判断参数是否为空字符串, 比isEmpty()多判断字符串中全是空格的情况, 如: '   '.
+ * @param {string} str 需判断的字符串
+ */
+export function isBlank(str)
+
+/**
+ * @desc 判断参数是否不为空字符串
+ */
+export function isNotBlank(obj)
+
+/**
+ * @desc 函数节流
+ * @url http://underscorejs.org/#throttle
+ * @param {string} func 防抖函数
+ * @param {string} wait 间隔时间
+ * @param {string} options 可选项
+ */
+export function throttle(func, wait, options)
 ```

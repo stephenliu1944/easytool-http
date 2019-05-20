@@ -1,4 +1,4 @@
-module.exports = function (api) {
+module.exports = function(api) {
     api.cache(true);
 
     const presets = [
@@ -20,7 +20,7 @@ module.exports = function (api) {
             alias: {
                 '^constants/(.+)': './src/constants/\\1',
                 '^enums/(.+)': './src/enums/\\1',
-                '^utils/(.+)': './src/utils/\\1'
+                '^helpers/(.+)': './src/helpers/\\1'
             }
         }]
     ];
