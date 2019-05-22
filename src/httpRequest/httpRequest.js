@@ -172,7 +172,7 @@ export function prepare(options) {
     // 处理代理路径
     var _baseURL = handleProxyPath(_opts) || '';
     
-    // 处理 params
+    // 处理缓存
     var _params = handleCache(_opts);
     // var _data = handleData(_opts);
 
