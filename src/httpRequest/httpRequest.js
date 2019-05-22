@@ -173,7 +173,7 @@ export function prepare(options) {
     var _baseURL = handleProxyPath(_opts) || '';
     
     // 处理缓存
-    var _params = handleCache(_opts);
+    _opts.params = handleCache(_opts);
     // var _data = handleData(_opts);
 
     // 处理 requestInterceptor(config)
@@ -188,14 +188,14 @@ export function prepare(options) {
     
     // 序列化 params
     if (paramsSerializer) {
-        _params = paramsSerializer(_params);
+        _opts.params = paramsSerializer(_opts.params);
     }
 
     return {
         method,
-        headers: _opts.headers,
         url: _baseURL + _url,
-        params: _params,
+        headers: _opts.headers,
+        params: _opts.params,
         data: _opts.data,
         toString() {
             return this.url + '?' + this.params;
