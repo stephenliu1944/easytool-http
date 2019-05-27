@@ -74,6 +74,7 @@ var url = prepare({
     url: '/getIpInfo.php',
     method: 'post',
     contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED,
+    cache: true,
     params: {
         t1: 'a',
         t2: '大米',
@@ -90,9 +91,6 @@ var url = prepare({
         a: 1,
         b: 2
     }
-    // paramsSerializer: null
-    // paramsSerializer: null
-
 });
 
 console.log('url ', url.toString());

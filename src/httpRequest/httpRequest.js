@@ -4,6 +4,7 @@ import { appendPrefixSlash, removeSuffixSlash, log, isString, isFormData, isArra
 
 // global settings
 var defaults = {
+    cache: true,
     // axios的默认参数
     method: Method.GET,
     // paramsSerializer: serializeData,
@@ -198,7 +199,13 @@ export function prepare(options) {
         params: _opts.params,
         data: _opts.data,
         toString() {
-            return this.url + '?' + this.params;
+            var url = this.url;
+            if (typeof this.params === 'string') {
+                url += '?' + this.params;
+            } else if (typeof this.params === 'object' && this.params.t) {
+                url += '?t=' + this.params.t;
+            }
+            return url;
         }
     };
 }
@@ -349,10 +356,17 @@ httpRequest.settings = function(options) {
 };
 
 httpRequest.instance = function(defaultOpts) {
-    return function(opts) {
+    function _instance(opts) {
         var _opts = Object.assign({}, defaultOpts, opts);
         return httpRequest(_opts);
+    }
+
+    _instance.prepare = function(opts) {
+        var _opts = Object.assign({}, defaultOpts, opts);
+        return prepare(_opts);
     };
+ 
+    return _instance;
 };
 
 httpRequest.ejectRequestInterceptor = function(interceptor) {

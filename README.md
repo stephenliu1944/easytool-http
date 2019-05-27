@@ -42,8 +42,9 @@ http.settings({
     baseURL: 'http://www.beancharts.com',
     method: Method.POST,                                        // default is 'GET'
     contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED  // default is 'json'
-    cache: true,                                                // default is false
+    cache: false,                                               // default is true
     proxyPath: __DEV__ && '/api',                               // default is ''
+    withCredentials: true,
     isDev: __DEV__
 });
 ```
@@ -61,9 +62,14 @@ var instance = http.instance({
 instance({
     url: '/getUser'
 });
+// or
+instance.prepare({
+    url: '/getUser'
+});
 ```
 
 ### Preprocess request data
+Use for preproccess request options, return a object, it will not send request.
 ```js
 import { prepare } from '@beancommons/http';
 // request: { url, method, headers, params, data }
@@ -85,7 +91,7 @@ var request = prepare({
         id: 1
     }
 });
-// request.toString() = url + params
+// request.toString() = url + params(need to set paramsSerializer)
 window.open(request.toString());    // http://file.xxx.com/file?id=1
 // or
 <a href={request.toString()} target="_blank" >Download</a>
@@ -357,7 +363,7 @@ http({
 /**
  * @desc wrap and extension axios lib, suport all options with axios.
  * @param {axios.options...} axios options.
- * @param {boolean} cache enable cache, default false.
+ * @param {boolean} cache enable cache, default true.
  * @param {function} cancel wrap CancelToken of axios, function receive a cancel args.
  * @param {function} paramsSerializer same with axios options.
  * @param {string} contentType HTTP request header Content-Type, default 'application/json'.
