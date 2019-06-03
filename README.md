@@ -68,6 +68,18 @@ instance.prepare({
 });
 ```
 
+### Handle file stream
+```js
+http({
+    baseURL: 'http://www.beancharts.com',
+    url: '/assets/images/cat.png',
+    responseType: 'blob'
+}).then((response) => {
+    var url = window.URL.createObjectURL(response.data);
+    window.open(url);
+});
+```
+
 ### Preprocess request data
 Use for preproccess request options, return a object, it will not send request.
 ```js
