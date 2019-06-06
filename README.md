@@ -328,10 +328,8 @@ http({
     baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     transformRequest: [function (data, header) {    // serialize data form URL encoded.
-        if (header['Content-Type'] === ContentType.APPLICATION_X_WWW_FORM_URLENCODED
-            && !helpers.util.isFormData(data)) {
-
-            return qs.stringify(data, {     // e.g. https://www.npmjs.com/package/qs
+        if (header['Content-Type'] === ContentType.APPLICATION_X_WWW_FORM_URLENCODED) {
+            return qs.stringify(data, {             // e.g. https://www.npmjs.com/package/qs
                 allowDots: true
             });
         }
@@ -354,7 +352,7 @@ http({
 ```
 
 ### Serializer
-Serialize params.
+Serialize parameters.
 ```js
 import qs from 'qs';
 import { Method, ContentType } from '@beancommons/http';
