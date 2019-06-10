@@ -354,8 +354,7 @@ http({
 ### Serializer
 Serialize parameters.
 ```js
-import qs from 'qs';
-import { Method, ContentType, helpers } from '@beancommons/http';
+import http, { prepare, Method, ContentType, helpers } from '@beancommons/http';
 
 http({
     baseURL: 'http://www.beancharts.com',
@@ -367,6 +366,26 @@ http({
         });
     }
 });
+// or
+prepare({
+    baseURL: 'http://www.beancharts.com',
+    url: '/getUser',
+    paramsSerializer(params) {
+        return helpers.qs.stringify(params, {   // e.g. https://www.npmjs.com/package/qs
+            arrayFormat: 'brackets',
+            allowDots: true
+        });
+    }
+});
+```
+#### default paramsSerializer handler
+Set to false or rewrite it could change default behavior.
+```js
+paramsSerializer(params) {
+    return helpers.qs.stringify(params, {
+        allowDots: true
+    });
+}
 ```
 
 ## API
@@ -376,7 +395,7 @@ http({
  * @param {axios.options...} axios options.
  * @param {boolean} cache enable cache, default true.
  * @param {function} cancel wrap CancelToken of axios, function receive a cancel args.
- * @param {function} paramsSerializer same with axios options.
+ * @param {function} paramsSerializer same with axios options. false to disable default handler.
  * @param {string} contentType HTTP request header Content-Type, default 'application/json'.
  * @param {function|array} requestInterceptor wrap axios's interceptors.request.use().
  * @param {function|array} responseInterceptor wrap axios's interceptors.response.use().

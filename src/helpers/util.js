@@ -241,9 +241,11 @@ export function throttle(func, wait, options) {
 
 export function normalizeHeaderName(headers = {}, normalizedName) {
     for (let key in headers) {
-        if (key !== normalizedName && key.toUpperCase() === normalizedName.toUpperCase()) {
-            headers[normalizedName] = headers[key];
-            delete headers[key];
+        if (key.toUpperCase() === normalizedName.toUpperCase()) {
+            if (key !== normalizedName) {
+                headers[normalizedName] = headers[key];
+                delete headers[key];
+            }
             return headers[normalizedName];
         }
     }
