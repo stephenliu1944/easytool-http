@@ -110,7 +110,7 @@ export function isFunction(obj) {
 }
 
 export function isFormData(obj) {
-    return typeof FormData !== 'undefined' && val instanceof FormData;
+    return typeof FormData !== 'undefined' && obj instanceof FormData;
 }
 
 export function isURLSearchParams(val) {
