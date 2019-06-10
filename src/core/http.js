@@ -1,17 +1,26 @@
+import qs from 'qs';
 import axios from 'axios';
+import { transformRequestDefault, transformResponseDefault } from './transformData';
 import { Method, ContentType } from 'enums/common';
-import { appendPrefixSlash, removeSuffixSlash, log, isString, isFormData, isArray, isEmpty, isNotEmpty, isBlank, isNotBlank, isFunction } from 'helpers/util';
+import { appendPrefixSlash, removeSuffixSlash, log, isObject, isString, isArray, isEmpty, isBlank, isNotBlank, isFunction } from 'helpers/util';
 
 // global settings
 var defaults = {
     cache: true,
     // axios的默认参数
     method: Method.GET,
-    // paramsSerializer: serializeData,
     responseType: 'json',
-    // withCredentials: true,                    // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
+    // withCredentials: true,                        // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
     // 扩展的属性默认值
     contentType: ContentType.APPLICATION_JSON,
+    paramsSerializer(params) {
+        if (isObject(params)) {
+            return qs.stringify(params, {            
+                allowDots: true
+            });
+        }
+        return params;
+    },
     // proxyPath: '/proxy',
     isDev: false
 };
@@ -63,18 +72,36 @@ function adjustURL(url) {
     return url;
 }
 
-function formatOptions(opts) {
+function setTransformData(transform, transformDefault, opts) {
+    var transformRequest = [];
+
+    if (isFunction(transform)) {
+        transformRequest.push(transform);
+    } else if (isArray(transform)) {
+        transformRequest.push(...transform);
+    }
+
+    if (transformDefault) {
+        transformRequest.push(transformDefault);
+    }
+
+    return transformRequest.map((fn) => fn.bind(opts));
+}
+
+function initOptions(opts) {
     if (!opts) {
         return;
     }
 
-    var { baseURL, url, method, contentType } = opts;
+    var { baseURL, url, method, contentType, transformRequest, transformResponse } = opts;
 
-    return Object.assign(opts, {
+    return Object.assign({}, opts, {
         baseURL: adjustBaseURL(baseURL),
         url: adjustURL(url),
         method: method?.toLowerCase(),
-        contentType: contentType?.toLowerCase()
+        contentType: contentType?.toLowerCase(),
+        transformRequest: setTransformData(transformRequest, transformRequestDefault, opts),
+        transformResponse: setTransformData(transformResponse, transformResponseDefault, opts)
     });
 }
 
@@ -163,8 +190,8 @@ export function prepare(options) {
         return;
     }
 
-    var _opts = Object.assign({}, defaults, options);
-    var { url = '', method, paramsSerializer } = formatOptions(_opts);
+    var _opts = initOptions(Object.assign({}, defaults, options));
+    var { url = '', method, paramsSerializer } = _opts;
     var _url = url;
     
     // 处理 header
@@ -220,11 +247,9 @@ export function httpRequest(opts) {
     }
 
     var prePromise;
-    var _opts = Object.assign({}, defaults, opts);
+    var _opts = initOptions(Object.assign({}, defaults, opts));
     var beforeRequest = _opts.beforeRequest;
     
-    formatOptions(_opts);
-
     // 请求前预处理
     if (beforeRequest) {
         prePromise = new Promise(function(resolve, reject) {

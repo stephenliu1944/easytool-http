@@ -321,7 +321,6 @@ http({
 ### Transform
 transformRequest  
 ```js
-import qs from 'qs';
 import http, { Method, ContentType, helpers } from '@beancommons/http';
 
 http({
@@ -329,7 +328,8 @@ http({
     url: '/getUser',
     transformRequest: [function (data, header) {    // serialize data form URL encoded.
         if (header['Content-Type'] === ContentType.APPLICATION_X_WWW_FORM_URLENCODED) {
-            return qs.stringify(data, {             // e.g. https://www.npmjs.com/package/qs
+            return helpers.qs.stringify(data, {             // e.g. https://www.npmjs.com/package/qs
+                arrayFormat: 'brackets',
                 allowDots: true
             });
         }
@@ -355,13 +355,14 @@ http({
 Serialize parameters.
 ```js
 import qs from 'qs';
-import { Method, ContentType } from '@beancommons/http';
+import { Method, ContentType, helpers } from '@beancommons/http';
 
 http({
     baseURL: 'http://www.beancharts.com',
     url: '/getUser',
     paramsSerializer(params) {
-        return qs.stringify(params, {   // e.g. https://www.npmjs.com/package/qs
+        return helpers.qs.stringify(params, {   // e.g. https://www.npmjs.com/package/qs
+            arrayFormat: 'brackets',
             allowDots: true
         });
     }
@@ -379,6 +380,8 @@ http({
  * @param {string} contentType HTTP request header Content-Type, default 'application/json'.
  * @param {function|array} requestInterceptor wrap axios's interceptors.request.use().
  * @param {function|array} responseInterceptor wrap axios's interceptors.response.use().
+ * @param {function|array} transformRequest wrap axios's transformRequest.
+ * @param {function|array} transformResponse wrap axios's transformResponse.
  * @param {function} beforeRequest asynchronize process request interceptor, it's receive 3 args: resolve, reject, options.
  * @param {function} afterResponse asynchronize process response interceptor, it's receive 4 args: resolve, reject, response, options.
  * @param {function} onError when catch error will occur.

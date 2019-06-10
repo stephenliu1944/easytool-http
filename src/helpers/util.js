@@ -110,16 +110,23 @@ export function isFunction(obj) {
 }
 
 export function isFormData(obj) {
-    try {
-        if (obj instanceof FormData) {
-            return true;
-        }
-    } catch (e) {
-        return false;
-    }
-    return false;
+    return typeof FormData !== 'undefined' && val instanceof FormData;
 }
 
+export function isURLSearchParams(val) {
+    return typeof URLSearchParams !== 'undefined' && val instanceof URLSearchParams;
+}
+
+export function isArrayBufferView(val) {
+    var result;
+    if ((typeof ArrayBuffer !== 'undefined') && (ArrayBuffer.isView)) {
+        result = ArrayBuffer.isView(val);
+    } else {
+        result = (val) && (val.buffer) && (val.buffer instanceof ArrayBuffer);
+    }
+    return result;
+}
+  
 export function isIE() {
     var userAgent = navigator.userAgent;
     if (userAgent.indexOf('compatible') > -1 && userAgent.indexOf('MSIE') > -1) {
@@ -230,4 +237,14 @@ export function throttle(func, wait, options) {
         }
         return result;
     };
+}
+
+export function normalizeHeaderName(headers = {}, normalizedName) {
+    for (let key in headers) {
+        if (key !== normalizedName && key.toUpperCase() === normalizedName.toUpperCase()) {
+            headers[normalizedName] = headers[key];
+            delete headers[key];
+            return headers[normalizedName];
+        }
+    }
 }

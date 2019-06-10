@@ -6,22 +6,34 @@ httpRequest.settings({
     baseURL: '//192.232.222.3333:8888/service',
     // contentType: 'application/json',
     proxyPath: helpers.proxy.proxyHost('/api'),
-    paramsSerializer(params) {
-        console.log('------------paramsSerializer-------', params);
-        return qs.stringify(params, { 
-            arrayFormat: 'brackets',
-            allowDots: true
-        });
-    },
+    // paramsSerializer(params) {
+    //     console.log('------------paramsSerializer-------', helpers.qs.stringify({ a: 1 }, { 
+    //         arrayFormat: 'brackets',
+    //         allowDots: true
+    //     }));
+
+    //     return helpers.qs.stringify(null, { 
+    //         arrayFormat: 'brackets',
+    //         allowDots: true
+    //     });
+    // },
     requestInterceptor(config) {
         console.log('------------requestInterceptor-------');
         config.headers['token'] = 1;
         config.params.token = 'aaaaaaaaaaaaaaaa';
         return config;
     },
-    transformRequest: [function(data, headers, c, d) {
-        console.log('------------transformRequest-------', this, headers, c, d);
+    transformRequest: [function(data, headers) {
+        console.log('------------transformRequest-------', this, headers);
         return data;
+    }],
+    responseInterceptor(response) {
+        console.log('------------responseInterceptor-------', response);
+        return response;
+    },
+    transformResponse: [function(data) {
+        console.log('------------transformResponse-------', data);
+        return { name: 'stephen' };
     }],
     afterResponse(resolve, reject, response) {
         // throw Error('abc');
@@ -35,10 +47,10 @@ httpRequest.settings({
     }
 });
 
-/* httpRequest({
-    // baseURL: 'http://tpic.home.news.cn',
+httpRequest({
+    baseURL: 'http://tpic.home.news.cn',
     url: '/getIpInfo.php',
-    contentType: ContentType.APPLICATION_PDF,
+    contentType: ContentType.APPLICATION_JSON,
     method: 'post',
     // params: {
     //     ip: '210.75.225.254'
@@ -67,7 +79,7 @@ httpRequest.settings({
     console.log('data: ', data);
 }, (e) => {
     console.log('fail->>', e);
-}); */
+});
 
 var url = prepare({
     // baseURL: 'http://ip.taobao.com/service/',

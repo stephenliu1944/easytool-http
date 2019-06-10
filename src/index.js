@@ -1,4 +1,4 @@
-import { httpRequest, prepare } from './httpRequest';
+import { httpRequest, prepare } from './core';
 import * as helpers from './helpers';
 import { Method, ContentType } from './enums/common';
 
