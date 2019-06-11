@@ -1,4 +1,4 @@
-# axios-enhance
+# @beancommons/http
 Enhance axios features, still suport axios options.
 
 ## Extension features
@@ -14,13 +14,13 @@ helpers,
 
 ## Install
 ```
-npm install --save axios-enhance
+npm install --save @beancommons/http
 ```
 
 ## Usage
 ### Example
 ```js
-import http from 'axios-enhance';
+import http from '@beancommons/http';
 http({
     baseURL: 'http://www.beancharts.com',
     url: '/getUser',
@@ -36,7 +36,7 @@ http({
 
 ### Setup global options
 ```js
-import http, { Method, ContentType } from 'axios-enhance';
+import http, { Method, ContentType } from '@beancommons/http';
 // need setup before invoke http()
 http.settings({
     baseURL: 'http://www.beancharts.com',
@@ -51,7 +51,7 @@ http.settings({
 
 ### Instance
 ```js
-import http, { Method, ContentType } from 'axios-enhance';
+import http, { Method, ContentType } from '@beancommons/http';
 // default options with instance
 var instance = http.instance({
     baseURL: 'http://www.beancharts.com',
@@ -83,7 +83,7 @@ http({
 ### Preprocess request data
 Use for preproccess request options, return a object, it will not send request.
 ```js
-import { prepare } from 'axios-enhance';
+import { prepare } from '@beancommons/http';
 // request: { url, method, headers, params, data }
 var request = prepare({
     baseURL: 'http://www.beancharts.com',
@@ -122,7 +122,7 @@ $.get({
 
 Use Antd Upload Component.
 ```js
-import { prepare, Method } from  'axios-enhance';
+import { prepare, Method } from  '@beancommons/http';
 import { Upload } from 'antd';
 
 function uploadFile(params) {
@@ -170,7 +170,7 @@ function render(props) {
 ### Use proxy
 proxyPath with string
 ```js
-import http from 'axios-enhance';
+import http from '@beancommons/http';
 // will request '/api/setUser'
 var promise = http({
     baseURL: 'http://www.beancharts.com',
@@ -191,7 +191,7 @@ var promise = http({
 
 proxyPath with host
 ```js
-import { helpers } from 'axios-enhance';
+import { helpers } from '@beancommons/http';
 
 // with baseURL will request '/www.beancharts.com/setUser'
 var promise = http({
@@ -321,7 +321,7 @@ http({
 ### Transform
 transformRequest  
 ```js
-import http, { Method, ContentType, helpers } from 'axios-enhance';
+import http, { Method, ContentType, helpers } from '@beancommons/http';
 
 http({
     baseURL: 'http://www.beancharts.com',
@@ -354,7 +354,7 @@ http({
 ### Serializer
 Serialize parameters.
 ```js
-import http, { prepare, Method, ContentType, helpers } from 'axios-enhance';
+import http, { prepare, Method, ContentType, helpers } from '@beancommons/http';
 
 http({
     baseURL: 'http://www.beancharts.com',
