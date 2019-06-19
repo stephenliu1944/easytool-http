@@ -5,7 +5,6 @@ import qs from 'qs';
 httpRequest.settings({
     baseURL: '//192.232.222.3333:8888/service',
     // contentType: 'application/json',
-    proxyPath: helpers.proxy.proxyHost('/api'),
     // paramsSerializer(params) {
     //     console.log('------------paramsSerializer-------', helpers.qs.stringify({ a: 1 }, { 
     //         arrayFormat: 'brackets',
@@ -52,6 +51,7 @@ httpRequest({
     url: '/getIpInfo.php',
     contentType: ContentType.APPLICATION_JSON,
     method: 'post',
+    proxyPath: true,
     // params: {
     //     ip: '210.75.225.254'
     // }, 

@@ -2,6 +2,7 @@ import qs from 'qs';
 import axios from 'axios';
 import { transformRequestDefault, transformResponseDefault } from './transformData';
 import { Method, ContentType } from 'enums/common';
+import { proxyBaseURL } from 'helpers/proxy';
 import { appendPrefixSlash, removeSuffixSlash, log, isObject, isString, isArray, isEmpty, isBlank, isNotBlank, isFunction } from 'helpers/util';
 
 // global settings
@@ -146,11 +147,9 @@ function handleProxyPath(options) {
     
     // 为 url 增加代理服务拦截的path
     if (proxyPath) {
-        // 如果是方法则交给方法处理
-        if (isFunction(proxyPath)) {
-            _baseURL = proxyPath(options);
-        // 如果是字符串则加在请求的 URL 最前面, 并移除原有请求的 Host 部分.
-        } else if (isString(proxyPath)) {
+        if (proxyPath === true) {                   // 开启后, 默认代理 BaseURl
+            _baseURL = proxyBaseURL(baseURL);
+        } else if (isString(proxyPath)) {           // 如果是字符串则加在请求的 URL 最前面, 并移除原有请求的 Host 部分.
             _baseURL = proxyPath.replace(/(\/)$/, '');
             // 根路径加上 "/" 请求当前dev服务
             _baseURL = appendPrefixSlash(_baseURL);
@@ -159,6 +158,8 @@ function handleProxyPath(options) {
                 _baseURL = _baseURL + baseURL.replace(/^(http[s]?:)?\/\//, '')
                     .replace(/^[\w\.:]+/, '');
             }
+        } else if (isFunction(proxyPath)) {        // 如果是方法则交给方法处理 
+            _baseURL = proxyPath(options);
         }
     } else {
         _baseURL = baseURL;

@@ -1,5 +1,5 @@
 # axios-enhance
-Enhance axios features, still suport axios options.
+Enhance axios features, use it like axios but more powerful.
 
 ## Extension features
 cache,   
@@ -168,52 +168,56 @@ function render(props) {
 ```
 
 ### Use proxy
-proxyPath with string
+proxyPath use baseURL
+```js
+import { helpers } from 'axios-enhance';
+// with none baseURL will request current location host, like '/http://localhost:8080/setUser'
+var promise = http({
+    url: '/setUser',
+    proxyPath: true
+});
+
+// with baseURL will request specific host, like '/http://www.beancharts.com/setUser'
+var promise = http({
+    baseURL: 'http://www.beancharts.com',
+    url: '/setUser',
+    proxyPath: true
+});
+```
+
+proxyPath use String
 ```js
 import http from 'axios-enhance';
 // will request '/api/setUser'
 var promise = http({
     baseURL: 'http://www.beancharts.com',
     url: '/setUser',
-    proxyPath: '/api',  // string
+    proxyPath: __DEV__ && '/api'  
 });
 ```
 
-proxyPath with function
+proxyPath use Function
 ```js
 // will request '/api/setUser'
 var promise = http({
     baseURL: 'http://www.beancharts.com',
     url: '/setUser',
-    proxyPath: (options) => '/api',  // function
+    proxyPath: __DEV__ && (options) => '/api'
 });
 ```
 
-proxyPath with host
+Use other xhr lib.
 ```js
 import { helpers } from 'axios-enhance';
-
-// with baseURL will request '/www.beancharts.com/setUser'
-var promise = http({
-    baseURL: 'http://www.beancharts.com',
-    url: '/setUser',
-    proxyPath: helpers.proxy.proxyHost()
-});
-
-// with none baseURL will request '/api/setUser'
-var promise = http({
-    url: '/setUser',
-    proxyPath: helpers.proxy.proxyHost('/api')       // set default proxy path when none host
-});
-
-// use other xhr lib, will request '/www.beancharts.com/setUser'
+// use other xhr lib, will request '/http://www.beancharts.com/setUser'
 $.ajax({
-    url: helpers.proxy.proxyHost()('http://www.beancharts.com') + '/setUser',
+    url: `${helpers.proxy.proxyBaseURL('http://www.beancharts.com')}/setUser`,
     success() {}
 });
+
 // or, will request '/api/setUser'
 $.ajax({
-    url: helpers.proxy.proxyHost('/api')() + '/setUser',
+    url: `${helpers.proxy.proxyBaseURL('/api')}/setUser`,
     success() {}
 });
 ```
@@ -303,9 +307,9 @@ http({
                     location.href = `http://www.beancharts.com/login?callback=${encodeURIComponent(location.href)}`;
                 }, 0);
                 break;
-            case 403:   // maybe other http request
+            case 403:   // maybe other http request, like get token
                 setTimeout(() => {
-                    // continue to process.
+                    // finish the request.
                     resolve(data);  
                 }, 2000);
                 break;
@@ -464,11 +468,14 @@ ContentType
 ### helpers.proxy
 ```js
 /**
- * @desc rewrite baseURL like 'http://www.beancharts.com' to '/www.beancharts.com' for proxy matching
- * @param {string} prefix default proxy path of rootPath, when baseURL is null, default is ''
+ * @desc rewrite baseURL like 'http://www.beancharts.com' to '/http://www.beancharts.com' for proxy matching
+ * @param {string} prefix default proxy path function, when baseURL is null, will use current browser location.
  */
-proxyHost(prefix)(baseURL)
+proxyBaseURL(baseURL)
 ```
+
+### helpers.qs
+refer to https://www.npmjs.com/package/qs
 
 ### helpers.util
 ```js
