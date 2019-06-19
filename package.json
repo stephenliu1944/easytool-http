@@ -1,6 +1,6 @@
 {
   "name": "axios-enhance",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Enhance axios features, use it like axios but more powerful.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
