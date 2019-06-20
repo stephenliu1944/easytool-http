@@ -74,19 +74,19 @@ function adjustURL(url) {
 }
 
 function setTransformData(transform, transformDefault, opts) {
-    var transformRequest = [];
+    var transformList = [];
 
     if (isFunction(transform)) {
-        transformRequest.push(transform);
+        transformList.push(transform);
     } else if (isArray(transform)) {
-        transformRequest.push(...transform);
+        transformList.push(...transform);
     }
 
     if (transformDefault) {
-        transformRequest.push(transformDefault);
+        transformList.push(transformDefault);
     }
 
-    return transformRequest.map((fn) => fn.bind(opts));
+    return transformList.map((fn) => fn.bind(opts));
 }
 
 function initOptions(opts) {
