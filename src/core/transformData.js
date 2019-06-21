@@ -38,3 +38,9 @@ export function transformResponseDefault(data) {
     }
     return data;
 }
+
+export function transformWrapper(transform, opts) {
+    return function(data, headers = opts.headers) {     // transformResponse 没有headrs
+        return transform(data, headers, opts);
+    };
+}

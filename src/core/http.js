@@ -1,6 +1,6 @@
 import qs from 'qs';
 import axios from 'axios';
-import { transformRequestDefault, transformResponseDefault } from './transformData';
+import { transformRequestDefault, transformResponseDefault, transformWrapper } from './transformData';
 import { Method, ContentType } from 'enums/common';
 import { proxyBaseURL } from 'helpers/proxy';
 import { appendPrefixSlash, removeSuffixSlash, log, isObject, isString, isArray, isEmpty, isBlank, isNotBlank, isFunction } from 'helpers/util';
@@ -73,7 +73,7 @@ function adjustURL(url) {
     return url;
 }
 
-function setTransformData(transform, transformDefault, opts) {
+function setTransformData(transform, transformDefault, wrapper, opts) {
     var transformList = [];
 
     if (isFunction(transform)) {
@@ -86,7 +86,11 @@ function setTransformData(transform, transformDefault, opts) {
         transformList.push(transformDefault);
     }
 
-    return transformList.map((fn) => fn.bind(opts));
+    if (wrapper) {
+        transformList = transformList.map((fn) => wrapper(fn, opts));
+    }
+    
+    return transformList;
 }
 
 function initOptions(opts) {
@@ -101,8 +105,8 @@ function initOptions(opts) {
         url: adjustURL(url),
         method: method?.toLowerCase(),
         contentType: contentType?.toLowerCase(),
-        transformRequest: setTransformData(transformRequest, transformRequestDefault, opts),
-        transformResponse: setTransformData(transformResponse, transformResponseDefault, opts)
+        transformRequest: setTransformData(transformRequest, transformRequestDefault, transformWrapper, opts),
+        transformResponse: setTransformData(transformResponse, transformResponseDefault, transformWrapper, opts)
     });
 }
 
