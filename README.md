@@ -405,8 +405,8 @@ paramsSerializer(params) {
  * @param {function|array} responseInterceptor wrap axios's interceptors.response.use().
  * @param {function|array} transformRequest wrap axios's transformRequest.
  * @param {function|array} transformResponse wrap axios's transformResponse.
- * @param {function} beforeRequest asynchronize process request interceptor, it's receive 3 args: resolve, reject, options.
- * @param {function} afterResponse asynchronize process response interceptor, it's receive 4 args: resolve, reject, response, options.
+ * @param {function} beforeRequest asynchronize process request interceptor, it's receive 3 args: (resolve, reject, options).
+ * @param {function} afterResponse asynchronize process response interceptor, it's receive 4 args: (resolve, reject, response, options).
  * @param {function} onError when catch error will occur.
  * @param {string | function} proxyPath proxy path, can be string or function, the function receive a options args and return a string.
  * @param {boolean} isDev dev mode print more log info.
