@@ -181,7 +181,8 @@ function handleReject(reject, options) {
             console.error(error);
         }
 
-        onError?.(error);
+        onError && onError(error);
+        
         reject(error);
     };
 }
@@ -370,7 +371,7 @@ export function httpRequest(opts) {
                     console.error(error);
                 }
 
-                onError?.(error);
+                onError && onError(error);
     
                 reject(error);
             });
