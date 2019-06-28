@@ -62,6 +62,27 @@ export function removeSuffixSlash(url) {
     return removeSlash(url, true);
 }
 
+export function adjustBaseURL(baseURL) {
+    if (baseURL) {
+        baseURL = baseURL.trim();
+        baseURL = removeSuffixSlash(baseURL);
+    // 解决 baseURL 为 0, false, ''的情况
+    } else {
+        baseURL = null;
+    }
+    
+    return baseURL;
+}
+
+export function adjustURL(url) {
+    if (url) {
+        url = url.trim();
+        url = appendPrefixSlash(url);
+    }
+
+    return url;
+}
+
 export function log(data, title) {
     /* eslint-disable no-console */
     if (title) {

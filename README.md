@@ -412,7 +412,7 @@ paramsSerializer(params) {
  * @param {boolean} isDev dev mode print more log info.
  * @param {object} extension custom data field.
  * @return {object} - return a promise instance.
- */ 
+ */
 http(options)
 
 /**
@@ -525,4 +525,62 @@ export function isNotBlank(obj)
  * @param {string} options 可选项
  */
 export function throttle(func, wait, options)
+```
+
+### axios options
+The following options are provided by the underlying axios library.
+```js
+// `timeout` specifies the number of milliseconds before the request times out.
+// If the request takes longer than `timeout`, the request will be aborted.
+timeout: 1000, // default is `0` (no timeout)
+
+// `withCredentials` indicates whether or not cross-site Access-Control requests
+// should be made using credentials
+withCredentials: false, // default
+
+// `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
+// This will set an `Authorization` header, overwriting any existing
+// `Authorization` custom headers you have set using `headers`.
+// Please note that only HTTP Basic auth is configurable through this parameter.
+// For Bearer tokens and such, use `Authorization` custom headers instead.
+auth: {
+    username: 'janedoe',
+    password: 's00pers3cret'
+},
+
+// `responseType` indicates the type of data that the server will respond with
+// options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
+//   browser only: 'blob'
+responseType: 'json', // default
+
+// `responseEncoding` indicates encoding to use for decoding responses
+// Note: Ignored for `responseType` of 'stream' or client-side requests
+responseEncoding: 'utf8', // default
+
+// `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
+xsrfCookieName: 'XSRF-TOKEN', // default
+
+// `xsrfHeaderName` is the name of the http header that carries the xsrf token value
+xsrfHeaderName: 'X-XSRF-TOKEN', // default
+
+// `onUploadProgress` allows handling of progress events for uploads
+onUploadProgress: function (progressEvent) {
+// Do whatever you want with the native progress event
+},
+
+// `onDownloadProgress` allows handling of progress events for downloads
+onDownloadProgress: function (progressEvent) {
+// Do whatever you want with the native progress event
+},
+
+// `maxContentLength` defines the max size of the http response content in bytes allowed
+maxContentLength: 2000,
+
+// `validateStatus` defines whether to resolve or reject the promise for a given
+// HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
+// or `undefined`), the promise will be resolved; otherwise, the promise will be
+// rejected.
+validateStatus: function (status) {
+    return status >= 200 && status < 300; // default
+}
 ```

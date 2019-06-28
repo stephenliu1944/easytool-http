@@ -16,24 +16,29 @@ httpRequest.settings({
     //         allowDots: true
     //     });
     // },
-    requestInterceptor(config) {
+    beforeRequest(resolve, reject, options) {
+        console.log('beforeRequest:', options);
+        resolve(options);
+    },
+    requestInterceptor: [(config) => {
         console.log('------------requestInterceptor-------');
         config.headers['token'] = 1;
         config.params.token = 'aaaaaaaaaaaaaaaa';
         return config;
-    },
-    transformRequest: [function(data, headers) {
+    }, () => {}],
+    transformRequest: [function(data, headers, options) {
         console.log('------------transformRequest-------', this, headers);
+        
         return data;
+    }],
+    transformResponse: [function(data, headers, options) {
+        console.log('------------transformResponse-------', data);
+        return { name: 'stephen' };
     }],
     responseInterceptor(response) {
         console.log('------------responseInterceptor-------', response);
         return response;
     },
-    transformResponse: [function(data) {
-        console.log('------------transformResponse-------', data);
-        return { name: 'stephen' };
-    }],
     afterResponse(resolve, reject, response) {
         // throw Error('abc');
         reject(response);
@@ -67,6 +72,11 @@ httpRequest({
         d1: 'a',
         d2: 'aa/d.fe',
         d3: [1, 2, 3]
+    },
+    log: {
+        a: 1,
+        b: 2,
+        c: 3
     }
     // paramsSerializer: null
     // paramsSerializer: function(params) {

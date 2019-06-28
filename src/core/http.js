@@ -1,9 +1,9 @@
 import qs from 'qs';
 import axios from 'axios';
+import { handleHeaders, handleCache, handleProxyPath, handleReject, handleBeforeRequest, handleTransformData, handleInterceptor } from './handler';
 import { transformRequestDefault, transformResponseDefault, transformWrapper } from './transformData';
 import { Method, ContentType } from 'enums/common';
-import { proxyBaseURL } from 'helpers/proxy';
-import { appendPrefixSlash, removeSuffixSlash, log, isObject, isString, isArray, isEmpty, isBlank, isNotBlank, isFunction } from 'helpers/util';
+import { adjustBaseURL, adjustURL, log, isObject, isEmpty, isBlank } from 'helpers/util';
 
 // global settings
 var defaults = {
@@ -48,51 +48,6 @@ Promise.prototype.finally = function(callback) {
     );
 };
 
-function hasEntityBody(method = '') {
-    return [Method.POST, Method.PUT, Method.PATCH].includes(method.toLowerCase());
-}
-
-function adjustBaseURL(baseURL) {
-    if (baseURL) {
-        baseURL = baseURL.trim();
-        baseURL = removeSuffixSlash(baseURL);
-    // 解决 baseURL 为 0, false, ''的情况
-    } else {
-        baseURL = null;
-    }
-    
-    return baseURL;
-}
-
-function adjustURL(url) {
-    if (url) {
-        url = url.trim();
-        url = appendPrefixSlash(url);
-    }
-
-    return url;
-}
-
-function setTransformData(transform, transformDefault, wrapper, opts) {
-    var transformList = [];
-
-    if (isFunction(transform)) {
-        transformList.push(transform);
-    } else if (isArray(transform)) {
-        transformList.push(...transform);
-    }
-
-    if (transformDefault) {
-        transformList.push(transformDefault);
-    }
-
-    if (wrapper) {
-        transformList = transformList.map((fn) => wrapper(fn, opts));
-    }
-    
-    return transformList;
-}
-
 function initOptions(opts) {
     if (!opts) {
         return;
@@ -105,98 +60,29 @@ function initOptions(opts) {
         url: adjustURL(url),
         method: method?.toLowerCase(),
         contentType: contentType?.toLowerCase(),
-        transformRequest: setTransformData(transformRequest, transformRequestDefault, transformWrapper, opts),
-        transformResponse: setTransformData(transformResponse, transformResponseDefault, transformWrapper, opts)
+        transformRequest: handleTransformData(transformRequest, transformRequestDefault, transformWrapper, opts),
+        transformResponse: handleTransformData(transformResponse, transformResponseDefault, transformWrapper, opts)
     });
-}
-
-function handleHeaders(options, isXHR) {
-    var { headers, method, contentType } = options;
-    var _headers = Object.assign({}, headers);
-    
-    if (isXHR) {
-        _headers['X-Requested-With'] = 'XMLHttpRequest';
-    }
-    
-    if (hasEntityBody(method) && contentType) {
-        _headers['Content-Type'] = contentType;
-    }
-    
-    if (!_headers['Content-Type']) {
-        delete _headers['Content-Type'];
-    }
-
-    return _headers;
-}
-
-function handleCache(options) {
-    var { params, cache } = options;
-    var _params = Object.assign({}, params);
-
-    // 增加缓存
-    if (!cache) {
-        _params.t = new Date().getTime();
-    }
-
-    return _params;
-}
-
-function handleProxyPath(options) {
-    if (!options) {
-        return '';
-    }
-
-    var { baseURL, proxyPath } = options;
-    var _baseURL;
-    
-    // 为 url 增加代理服务拦截的path
-    if (proxyPath) {
-        if (proxyPath === true) {                   // 开启后, 默认代理 BaseURl
-            _baseURL = proxyBaseURL(baseURL);
-        } else if (isString(proxyPath)) {           // 如果是字符串则加在请求的 URL 最前面, 并移除原有请求的 Host 部分.
-            _baseURL = proxyPath.replace(/(\/)$/, '');
-            // 根路径加上 "/" 请求当前dev服务
-            _baseURL = appendPrefixSlash(_baseURL);
-            if (isNotBlank(baseURL)) {
-                // 根路径后加上非 Host 部分路径, 如: /api
-                _baseURL = _baseURL + baseURL.replace(/^(http[s]?:)?\/\//, '')
-                    .replace(/^[\w\.:]+/, '');
-            }
-        } else if (isFunction(proxyPath)) {        // 如果是方法则交给方法处理 
-            _baseURL = proxyPath(options);
-        }
-    } else {
-        _baseURL = baseURL;
-    }
-
-    return _baseURL;
-}
-
-// 用于处理用户手动调用的 reject(), 关注性能问题
-function handleReject(reject, options) {
-    var { isDev, onError } = options;
-
-    return function(error) {
-        if (isDev) {
-            console.error(error);
-        }
-
-        onError && onError(error);
-        
-        reject(error);
-    };
 }
 
 export function prepare(options) {
     if (isEmpty(options)) {
-        return;
+        throw 'options is required.';
     }
 
-    if (isBlank(options.baseURL) && isBlank(options.url)) {
-        return;
+    if (isBlank(options.url)) {
+        throw 'url is required.';
     }
 
-    var _opts = initOptions(Object.assign({}, defaults, options));
+    options = Object.assign({}, defaults, options);
+    var beforeRequest = options.beforeRequest;
+    
+    if (beforeRequest) {
+        // TODO: httpRequest是通过resolve(opts)接收的参数, 这里行为不一致
+        options = beforeRequest((opts) => opts, (error) => {throw error;}, options) || options;
+    }
+
+    var _opts = initOptions(options);
     var { url = '', method, paramsSerializer } = _opts;
     var _url = url;
     
@@ -208,13 +94,14 @@ export function prepare(options) {
     
     // 处理缓存
     _opts.params = handleCache(_opts);
-    // var _data = handleData(_opts);
-
-    // 处理 requestInterceptor(config)
-    _opts = _opts.requestInterceptor && _opts.requestInterceptor(_opts) || _opts;
+    
+    if (_opts.requestInterceptor) {
+        let use = handleInterceptor(_opts.requestInterceptor);
+        _opts = use.success && use.success(_opts) || _opts;
+    }
 
     // 处理 transformRequest(data, header)
-    if (isArray(_opts.transformRequest)) {
+    if (_opts.transformRequest) {
         _opts.transformRequest.forEach((transform) => {
             _opts.data = transform(_opts.data, _opts.headers);
         });
@@ -245,29 +132,26 @@ export function prepare(options) {
 
 export function httpRequest(opts) {
     if (isEmpty(opts)) {
-        return Promise.reject('options is required.');
+        throw 'options is required.';
     }
 
     if (isBlank(opts.url)) {
-        return Promise.reject('url is required.');
+        throw 'url is required.';
     }
-
-    var prePromise;
-    var _opts = initOptions(Object.assign({}, defaults, opts));
-    var beforeRequest = _opts.beforeRequest;
     
+    opts = Object.assign({}, defaults, opts);
     // 请求前预处理
-    if (beforeRequest) {
-        prePromise = new Promise(function(resolve, reject) {
-            beforeRequest(resolve, reject, _opts);
-        });
-    } else {
-        prePromise = Promise.resolve(_opts);
-    }
-
+    var beforePromise = handleBeforeRequest(opts);
+    
     return new Promise(function(resolve, reject) {
 
-        prePromise.then(function(options) {
+        beforePromise.then(function(options) {
+            if (isEmpty(options)) {
+                throw 'options is required when call reslove(options) in beforeRequest.';
+            }
+
+            var _opts = initOptions(options);
+
             var {
                 // axios参数
                 baseURL,
@@ -289,7 +173,7 @@ export function httpRequest(opts) {
                 isDev,
                 // axios其他参数
                 ...other            
-            } = options;
+            } = _opts;
           
             if (isDev) {
                 log({ url, baseURL, method, data, params }, 'Request');
@@ -299,37 +183,25 @@ export function httpRequest(opts) {
             // 处理请求拦截器 requestInterceptor = function or [success, error]
             if (requestInterceptor) {
                 // requestInterceptors = requestInterceptors || {};
-                let reqSuccess, reqError;
-                if (isFunction(requestInterceptor)) {
-                    reqSuccess = requestInterceptor;
-                } else {
-                    reqSuccess = requestInterceptor[0];
-                    reqError = requestInterceptor[1];
-                }
+                let use = handleInterceptor(requestInterceptor);
                 // 该实例在注销 interceptor 时使用
-                let reqInterceptor = instance.interceptors.request.use(reqSuccess, reqError);
+                let reqInterceptor = instance.interceptors.request.use(use.success, use.error);
             }
             // 处理响应拦截器 responseInterceptor = function or [success, error]
             if (responseInterceptor) {
                 // responseInterceptors = responseInterceptors || {};
-                let respSuccess, respError;
-                if (isFunction(responseInterceptor)) {
-                    respSuccess = responseInterceptor;
-                } else {
-                    respSuccess = responseInterceptor[0];
-                    respError = responseInterceptor[1];
-                }
+                let use = handleInterceptor(responseInterceptor);
                 // 该实例在注销 interceptor 时使用
-                let respInterceptor = instance.interceptors.response.use(respSuccess, respError);
+                let respInterceptor = instance.interceptors.response.use(use.success, use.error);
             }
             
             // 调用 axios 库
             instance.request({
-                headers: handleHeaders(options, true),
+                headers: handleHeaders(_opts, true),
                 method,
-                baseURL: handleProxyPath(options),
+                baseURL: handleProxyPath(_opts),
                 url,
-                params: handleCache(options),
+                params: handleCache(_opts),
                 paramsSerializer,
                 data,
                 // data: handleData(options),
@@ -344,7 +216,7 @@ export function httpRequest(opts) {
 
                 // 配置了响应拦截器, 自行处理 resolve 和 reject 状态.
                 if (afterResponse) {
-                    afterResponse(resolve, handleReject(reject, options), response, options);
+                    afterResponse(resolve, handleReject(reject, _opts), response, _opts);
                 } else {
                     resolve(response);
                 }
