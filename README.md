@@ -1,4 +1,4 @@
-# axios-enhance
+# axios-enhanced
 Enhance axios features, use it like axios but more powerful.
 
 ## Extension features
@@ -14,13 +14,13 @@ helpers,
 
 ## Install
 ```
-npm install --save axios-enhance
+npm install --save axios-enhanced
 ```
 
 ## Usage
 ### Example
 ```js
-import http from 'axios-enhance';
+import http from 'axios-enhanced';
 http({
     baseURL: 'http://www.beancharts.com',
     url: '/getUser',
@@ -36,7 +36,7 @@ http({
 
 ### Setup global options
 ```js
-import http, { Method, ContentType } from 'axios-enhance';
+import http, { Method, ContentType } from 'axios-enhanced';
 // need setup before invoke http()
 http.settings({
     baseURL: 'http://www.beancharts.com',
@@ -51,7 +51,7 @@ http.settings({
 
 ### Instance
 ```js
-import http, { Method, ContentType } from 'axios-enhance';
+import http, { Method, ContentType } from 'axios-enhanced';
 // default options with instance
 var instance = http.instance({
     baseURL: 'http://www.beancharts.com',
@@ -83,7 +83,7 @@ http({
 ### Preprocess request data
 Use for preproccess request options, return a object, it will not send request.
 ```js
-import { prepare } from 'axios-enhance';
+import { prepare } from 'axios-enhanced';
 // request: { url, method, headers, params, data }
 var request = prepare({
     baseURL: 'http://www.beancharts.com',
@@ -122,7 +122,7 @@ $.get({
 
 Use Antd Upload Component.
 ```js
-import { prepare, Method } from  'axios-enhance';
+import { prepare, Method } from 'axios-enhanced';
 import { Upload } from 'antd';
 
 function uploadFile(params) {
@@ -170,7 +170,7 @@ function render(props) {
 ### Use proxy
 proxyPath use baseURL
 ```js
-import { helpers } from 'axios-enhance';
+import { helpers } from 'axios-enhanced';
 // with none baseURL will request current location host, like '/http://localhost:8080/setUser'
 var promise = http({
     url: '/setUser',
@@ -187,7 +187,7 @@ var promise = http({
 
 proxyPath use String
 ```js
-import http from 'axios-enhance';
+import http from 'axios-enhanced';
 // will request '/api/setUser'
 var promise = http({
     baseURL: 'http://www.beancharts.com',
@@ -208,7 +208,7 @@ var promise = http({
 
 Use other xhr lib.
 ```js
-import { helpers } from 'axios-enhance';
+import { helpers } from 'axios-enhanced';
 // use other xhr lib, will request '/http://www.beancharts.com/setUser'
 $.ajax({
     url: `${helpers.proxy.proxyBaseURL('http://www.beancharts.com')}/setUser`,
@@ -325,7 +325,7 @@ http({
 ### Transform
 transformRequest  
 ```js
-import http, { Method, ContentType, helpers } from 'axios-enhance';
+import http, { Method, ContentType, helpers } from 'axios-enhanced';
 
 http({
     baseURL: 'http://www.beancharts.com',
@@ -358,7 +358,7 @@ http({
 ### Serializer
 Serialize parameters.
 ```js
-import http, { prepare, Method, ContentType, helpers } from 'axios-enhance';
+import http, { prepare, Method, ContentType, helpers } from 'axios-enhanced';
 
 http({
     baseURL: 'http://www.beancharts.com',
