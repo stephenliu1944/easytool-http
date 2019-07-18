@@ -1,7 +1,7 @@
 {
   "name": "axios-enhanced",
-  "version": "0.1.1",
-  "description": "Enhance axios features, use it like axios but more powerful.",
+  "version": "0.1.3",
+  "description": "Enhance axios features, use it like axios but more convenient.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "browser": "dist/xhr.umd.js",

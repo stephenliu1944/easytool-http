@@ -38,7 +38,8 @@ export default function(fileName) {
             alias({
                 constants: 'src/constants',
                 enums: 'src/enums',
-                helpers: 'src/helpers'
+                helpers: 'src/helpers',
+                utils: 'src/utils'
             }),
             babel({
                 exclude: 'node_modules/**' // only transpile our source code

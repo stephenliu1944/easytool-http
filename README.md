@@ -1,5 +1,5 @@
 # axios-enhanced
-Enhance axios features, use it like axios but more powerful.
+Enhance axios features, use it like axios but more convenient.
 
 ## Extension features
 cache,   
@@ -22,7 +22,7 @@ npm install --save axios-enhanced
 ```js
 import http from 'axios-enhanced';
 http({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/getUser',
     params: {
         id: 1
@@ -39,12 +39,12 @@ http({
 import http, { Method, ContentType } from 'axios-enhanced';
 // need setup before invoke http()
 http.settings({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     method: Method.POST,                                        // default is 'GET'
     contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED  // default is 'json'
+    withCredentials: true,                                      // default is false
     cache: false,                                               // default is true
-    proxyPath: __DEV__ && '/api',                               // default is ''
-    withCredentials: true,
+    proxyPath: __DEV__ && '/api',                               // default is false
     isDev: __DEV__
 });
 ```
@@ -52,9 +52,9 @@ http.settings({
 ### Instance
 ```js
 import http, { Method, ContentType } from 'axios-enhanced';
-// default options with instance
+// instance inherit default options
 var instance = http.instance({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     method: Method.POST,
     contentType: ContentType.MULTIPART_FORM_DATA
 });
@@ -71,7 +71,7 @@ instance.prepare({
 ### Handle file stream
 ```js
 http({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/assets/images/cat.png',
     responseType: 'blob'
 }).then((response) => {
@@ -84,14 +84,15 @@ http({
 Use for preproccess request options, return a object, it will not send request.
 ```js
 import { prepare } from 'axios-enhanced';
-// request: { url, method, headers, params, data }
+
 var request = prepare({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/getUser',
     params: {
         id: 1
     }
 });
+// request: { url, method, headers, params, data }
 ```
 
 Use for open or download file URL.
@@ -122,111 +123,74 @@ $.get({
 
 Use Antd Upload Component.
 ```js
-import { prepare, Method } from 'axios-enhanced';
 import { Upload } from 'antd';
+import { prepare, Method } from 'axios-enhanced';
 
-function uploadFile(params) {
-    return prepare({
-        baseURL: 'http://file.xxx.com',
-        url: '/api/file/upload',
-        method: Method.POST,
-        params
-    });
-}
-
-function render(props) {
-    const request = uploadFile(props);
-
-    return (
-        <Upload name="file" action={request.url} ></Upload>
-    );
-}
-```
-
-upload with header token.
-```js
-function uploadFile(params) {
-    return prepare({
-        baseURL: 'http://file.xxx.com',
-        url: '/api/file/upload',
-        method: Method.POST,
-        contentType: null,              // disable default contentType, use antd's
-        headers: {
-            token: 'xxxx-xxxx-xxxx'
-        },
-        params
-    });
-}
-
-function render(props) {
-    const request = uploadFile(props);
-
-    return (
-        <Upload name="file" action={request.url} headers={request.headers} ></Upload>
-    );
-}
-```
-
-### Use proxy
-proxyPath use baseURL
-```js
-import { helpers } from 'axios-enhanced';
-// with none baseURL will request current location host, like '/http://localhost:8080/setUser'
-var promise = http({
-    url: '/setUser',
-    proxyPath: true
+var request = prepare({
+    baseURL: 'http://file.xxx.com',
+    url: '/api/file/upload',
+    method: Method.POST,
+    contentType: null,              // disable default contentType, use antd's
+    headers: {
+        token: 'xxxx-xxxx-xxxx',
+        ...
+    },
+    params
 });
 
-// with baseURL will request specific host, like '/http://www.beancharts.com/setUser'
-var promise = http({
-    baseURL: 'http://www.beancharts.com',
-    url: '/setUser',
-    proxyPath: true
-});
+<Upload name="file" action={request.url} headers={request.headers} ></Upload>
 ```
 
-proxyPath use String
+### Use proxy path
+proxyPath is true.
 ```js
 import http from 'axios-enhanced';
-// will request '/api/setUser'
+
 var promise = http({
-    baseURL: 'http://www.beancharts.com',
-    url: '/setUser',
+    baseURL: 'http://api.xxx.com',
+    url: '/users',
+    proxyPath: __DEV__          // __DEV__ is true
+});
+// will request '/users'
+```
+
+proxyPath is String.
+```js
+var promise = http({
+    baseURL: 'http://api.xxx.com',
+    url: '/users',
     proxyPath: __DEV__ && '/api'  
 });
+// will request '/api/users'
 ```
 
-proxyPath use Function
+proxyPath is Function.
 ```js
-// will request '/api/setUser'
 var promise = http({
-    baseURL: 'http://www.beancharts.com',
-    url: '/setUser',
-    proxyPath: __DEV__ && (options) => '/api'
+    baseURL: 'http://api.xxx.com',
+    url: '/users',
+    proxyPath: __DEV__ && (baseURL, options) => '/api'
 });
+// will request '/api/users'
 ```
 
-Use other xhr lib.
+Use internal Function 'proxyBaseURL' to proxy baseURL.
 ```js
 import { helpers } from 'axios-enhanced';
-// use other xhr lib, will request '/http://www.beancharts.com/setUser'
-$.ajax({
-    url: `${helpers.proxy.proxyBaseURL('http://www.beancharts.com')}/setUser`,
-    success() {}
-});
 
-// or, will request '/api/setUser'
-$.ajax({
-    url: `${helpers.proxy.proxyBaseURL('/api')}/setUser`,
-    success() {}
+var promise = http({
+    baseURL: 'http://api.xxx.com',
+    url: '/users',
+    proxyPath: __DEV__ && helpers.proxy.proxyBaseURL
 });
+// will request '/http://api.xxx.com/users'
 ```
 
 ### Interceptors
 request interceptor
 ```js
 http({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/getUser',
     requestInterceptor(config) {
         config.headers.TOKEN = 'xxxxxx';
@@ -236,7 +200,7 @@ http({
 });
 // or
 http({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/getUser',
     requestInterceptor: [(config) => {
         // same with axios
@@ -251,7 +215,7 @@ http({
 response interceptor
 ```js
 http({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/getUser',
     requestInterceptor(response) {
         // same with axios
@@ -260,7 +224,7 @@ http({
 });
 // or
 http({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/getUser',
     requestInterceptor: [(response) => {
         // same with axios
@@ -276,7 +240,7 @@ http({
 beforeRequest
 ```js
 http({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/getUser',
     beforeRequest(resolve, reject, options) {
         // Do something before request is sent
@@ -293,7 +257,7 @@ afterResponse
 ```js
 
 http({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/getUser',
     afterResponse(resolve, reject, response, options) {
         var { data, status } = response;
@@ -304,7 +268,7 @@ http({
                 reject(response);
 
                 setTimeout(() => {
-                    location.href = `http://www.beancharts.com/login?callback=${encodeURIComponent(location.href)}`;
+                    location.href = `http://api.xxx.com/login?callback=${encodeURIComponent(location.href)}`;
                 }, 0);
                 break;
             case 403:   // maybe other http request, like get token
@@ -328,10 +292,11 @@ transformRequest
 import http, { Method, ContentType, helpers } from 'axios-enhanced';
 
 http({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/getUser',
-    transformRequest: [function (data, header) {    // serialize data form URL encoded.
-        if (header['Content-Type'] === ContentType.APPLICATION_X_WWW_FORM_URLENCODED) {
+    transformRequest: [function (data, headers, options) {     // extra argument 'options'
+        // serialize data form URL encoded.
+        if (headers['Content-Type'] === ContentType.APPLICATION_X_WWW_FORM_URLENCODED) {
             return helpers.qs.stringify(data, {             // e.g. https://www.npmjs.com/package/qs
                 arrayFormat: 'brackets',
                 allowDots: true
@@ -346,9 +311,9 @@ http({
 transformResponse
 ```js
 http({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/getUser',
-    transformResponse: [function (data) {
+    transformResponse: [function (data, headers, options) {     // extra arguments 'headers' and 'options'
         // same with axios
         return data;
     }]
@@ -361,7 +326,7 @@ Serialize parameters.
 import http, { prepare, Method, ContentType, helpers } from 'axios-enhanced';
 
 http({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/getUser',
     paramsSerializer(params) {
         return helpers.qs.stringify(params, {   // e.g. https://www.npmjs.com/package/qs
@@ -372,7 +337,7 @@ http({
 });
 // or
 prepare({
-    baseURL: 'http://www.beancharts.com',
+    baseURL: 'http://api.xxx.com',
     url: '/getUser',
     paramsSerializer(params) {
         return helpers.qs.stringify(params, {   // e.g. https://www.npmjs.com/package/qs
@@ -382,6 +347,7 @@ prepare({
     }
 });
 ```
+
 #### default paramsSerializer handler
 Set to false or rewrite it could change default behavior.
 ```js
@@ -410,7 +376,6 @@ paramsSerializer(params) {
  * @param {function} onError when catch error will occur.
  * @param {string | function} proxyPath proxy path, can be string or function, the function receive a options args and return a string.
  * @param {boolean} isDev dev mode print more log info.
- * @param {object} extension custom data field.
  * @return {object} - return a promise instance.
  */
 http(options)
@@ -468,7 +433,7 @@ ContentType
 ### helpers.proxy
 ```js
 /**
- * @desc rewrite baseURL like 'http://www.beancharts.com' to '/http://www.beancharts.com' for proxy matching
+ * @desc rewrite baseURL like 'http://api.xxx.com' to '/http://api.xxx.com' for proxy matching
  * @param {string} prefix default proxy path function, when baseURL is null, will use current browser location.
  */
 proxyBaseURL(baseURL)
@@ -476,56 +441,6 @@ proxyBaseURL(baseURL)
 
 ### helpers.qs
 refer to https://www.npmjs.com/package/qs
-
-### helpers.util
-```js
-export function isArray(obj)
-
-export function isString(obj)
-
-export function isDate(obj)
-
-export function isObject(obj)
-
-export function isNumber(obj)
-
-export function isFunction(obj)
-
-export function isFormData(obj)
-
-export function isIE()
-
-/**
- * @desc 判断参数是否为空, 包括null, undefined, [], '', {}
- * @param {object} obj 需判断的对象
- */
-export function isEmpty(obj)
-
-/**
- * @desc 判断参数是否不为空
- */
-export function isNotEmpty(obj)
-
-/**
- * @desc 判断参数是否为空字符串, 比isEmpty()多判断字符串中全是空格的情况, 如: '   '.
- * @param {string} str 需判断的字符串
- */
-export function isBlank(str)
-
-/**
- * @desc 判断参数是否不为空字符串
- */
-export function isNotBlank(obj)
-
-/**
- * @desc 函数节流
- * @url http://underscorejs.org/#throttle
- * @param {string} func 防抖函数
- * @param {string} wait 间隔时间
- * @param {string} options 可选项
- */
-export function throttle(func, wait, options)
-```
 
 ### axios options
 The following options are provided by the underlying axios library.

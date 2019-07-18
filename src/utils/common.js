@@ -1,20 +1,20 @@
+export function withHost(url) {
+    // TODO: 处理 www.www.www/abc 的情况
+    return !!url.match(/^(http[s]?:)?\/\//);
+}
+
 export function join(...args) {
     var paths = args.map((path) => {
-        if (!isString(path) || isBlank(path)) {
+        if (typeof path !== 'string' || path.trim().length === 0) {
             return '';
         }
-        // TODO: filter invalid string
-        path = path.replace(/^\/+/g, ($1) => '')
-            .replace(/\/+$/g, ($1) => '');
-
-        if (isBlank(path)) {
-            return '';
-        }          
-        // TODO: 首尾的 '/'应该保留
+        
+        path = path.replace(/^\/+/g, '').replace(/\/+$/g, '');
+         
         return path += '/';
     });
 
-    return paths.reduce((pre, curr) => pre + curr).slice(0, -1);
+    return paths.reduce((pre, curr) => pre + curr);
 }
 // url增加起始或末尾斜杠"/"
 function appendSlash(url, suffix) {
@@ -112,6 +112,10 @@ export function isArray(obj) {
 
 export function isString(obj) {
     return _getClass(obj).toLowerCase() === 'string';
+}
+
+export function isBoolean(obj) {
+    return _getClass(obj).toLowerCase() === 'boolean';
 }
 
 export function isDate(obj) {

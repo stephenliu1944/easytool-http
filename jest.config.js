@@ -23,7 +23,8 @@ module.exports = {
     // A map from regular expressions to module names that allow to stub out resources with a single module
     moduleNameMapper: {
         '^helpers(.*)$': '<rootDir>/src/helpers$1',
-        '^constants(.*)$': '<rootDir>/src/constants$1'
+        '^constants(.*)$': '<rootDir>/src/constants$1',
+        '^utils(.*)$': '<rootDir>/src/utils$1'
     },
     // A map from regular expressions to paths to transformers
     transform: {

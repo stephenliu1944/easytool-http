@@ -1,4 +1,4 @@
-import { isBlank } from 'helpers/util';
+import { isBlank } from 'utils/common';
 
 // 根据 baseURL 生成代理拦截的 url
 export function proxyBaseURL(baseURL = '') {

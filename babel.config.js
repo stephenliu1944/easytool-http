@@ -20,7 +20,8 @@ module.exports = function(api) {
             alias: {
                 '^constants/(.+)': './src/constants/\\1',
                 '^enums/(.+)': './src/enums/\\1',
-                '^helpers/(.+)': './src/helpers/\\1'
+                '^helpers/(.+)': './src/helpers/\\1',
+                '^utils/(.+)': './src/utils/\\1'
             }
         }]
     ];

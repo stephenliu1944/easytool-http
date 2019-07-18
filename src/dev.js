@@ -1,6 +1,5 @@
 // 该类用于测试模块
 import httpRequest, { prepare, helpers, ContentType } from './index';
-import qs from 'qs';
 
 httpRequest.settings({
     baseURL: '//192.232.222.3333:8888/service',

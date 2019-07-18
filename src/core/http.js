@@ -3,7 +3,7 @@ import axios from 'axios';
 import { handleHeaders, handleCache, handleProxyPath, handleReject, handleBeforeRequest, handleTransformData, handleInterceptor } from './handler';
 import { transformRequestDefault, transformResponseDefault, transformWrapper } from './transformData';
 import { Method, ContentType } from 'enums/common';
-import { adjustBaseURL, adjustURL, log, isObject, isEmpty, isBlank } from 'helpers/util';
+import { adjustBaseURL, adjustURL, log, isObject, isEmpty, isBlank } from 'utils/common';
 
 // global settings
 var defaults = {

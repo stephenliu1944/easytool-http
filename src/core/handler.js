@@ -1,6 +1,5 @@
-import { proxyBaseURL } from 'helpers/proxy';
 import { Method } from 'enums/common';
-import { appendPrefixSlash, isString, isArray, isNotBlank, isFunction } from 'helpers/util';
+import { join, withHost, isString, isArray, isNotBlank, isFunction } from 'utils/common';
 
 function hasEntityBody(method = '') {
     return [Method.POST, Method.PUT, Method.PATCH].includes(method.toLowerCase());
@@ -61,19 +60,29 @@ export function handleProxyPath(options) {
     
     // 为 url 增加代理服务拦截的path
     if (proxyPath) {
-        if (proxyPath === true) {                   // 开启后, 默认代理 BaseURl
-            _baseURL = proxyBaseURL(baseURL);
-        } else if (isString(proxyPath)) {           // 如果是字符串则加在请求的 URL 最前面, 并移除原有请求的 Host 部分.
-            _baseURL = proxyPath.replace(/(\/)$/, '');
-            // 根路径加上 "/" 请求当前dev服务
-            _baseURL = appendPrefixSlash(_baseURL);
-            if (isNotBlank(baseURL)) {
-                // 根路径后加上非 Host 部分路径, 如: /api
-                _baseURL = _baseURL + baseURL.replace(/^(http[s]?:)?\/\//, '')
-                    .replace(/^[\w\.:]+/, '');
+        if (isFunction(proxyPath)) {                // 如果是方法则交给方法处理 
+            _baseURL = proxyPath(baseURL, options);
+        } else {    // string or boolean
+            let prefix = isString(proxyPath) ? proxyPath : '/';
+
+            if (isBlank(baseURL)) {
+                _baseURL = prefix;
+            } else {
+                // baseURL包含 host 部分
+                if (withHost(baseURL)) {
+                    // 移除 host 部分, 如: http://xxx.xxx.xxx
+                    _baseURL = baseURL.replace(/^(http[s]?:)?\/\//, '').replace(/^[\w\.:\-]+/, '');
+                } else {
+                    _baseURL = baseURL;
+                }
+                _baseURL = join(prefix, _baseURL);                                
             }
-        } else if (isFunction(proxyPath)) {        // 如果是方法则交给方法处理 
-            _baseURL = proxyPath(options);
+         
+            _baseURL = _baseURL.replace(/(^\/*)/, '/').replace(/(\/*$)/, '');
+
+            if (_baseURL === '/') {
+                _baseURL = null;
+            }
         }
     } else {
         _baseURL = baseURL;

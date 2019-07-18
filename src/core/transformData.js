@@ -1,6 +1,6 @@
 import qs from 'qs';
 import { ContentType } from 'enums/common';
-import { isObject, isArrayBufferView, isURLSearchParams, normalizeHeaderName } from 'helpers/util';
+import { isObject, isArrayBufferView, isURLSearchParams, normalizeHeaderName } from 'utils/common';
 
 export function transformRequestDefault(data, headers) {
     var contentType = normalizeHeaderName(headers, 'Content-Type');
