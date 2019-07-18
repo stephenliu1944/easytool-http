@@ -1,5 +1,5 @@
 import { Method } from 'enums/common';
-import { join, withHost, isString, isArray, isNotBlank, isFunction } from 'utils/common';
+import { join, withHost, isString, isArray, isBlank, isFunction } from 'utils/common';
 
 function hasEntityBody(method = '') {
     return [Method.POST, Method.PUT, Method.PATCH].includes(method.toLowerCase());
