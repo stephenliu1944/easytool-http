@@ -126,6 +126,9 @@ export function prepare(options) {
                 url += '?t=' + this.params.t;
             }
             return url;
+        },
+        toURL() {
+            return this.toString();
         }
     };
 }

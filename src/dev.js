@@ -114,4 +114,4 @@ var url = prepare({
     }
 });
 
-console.log('url ', url.toString());
+console.log('url ', url.toURL());

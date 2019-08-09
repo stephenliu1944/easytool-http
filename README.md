@@ -73,10 +73,21 @@ instance.prepare({
 http({
     baseURL: 'http://api.xxx.com',
     url: '/assets/images/cat.png',
-    responseType: 'blob'
+    responseType: 'blob'                // IE10+
 }).then((response) => {
-    var url = window.URL.createObjectURL(response.data);
-    window.open(url);
+    var blob = response.data;
+    // response.headers['content-disposition']; // get filename from Content-Disposition
+    // IE10-Edge
+    if ('msSaveOrOpenBlob' in window.navigator) {
+        window.navigator.msSaveOrOpenBlob(blob, 'screenshot.png');
+    } else {
+        var a = document.createElement('a');
+        a.href = window.URL.createObjectURL(blob);
+        a.download = 'screenshot.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
 });
 ```
 
@@ -104,19 +115,19 @@ var request = prepare({
         id: 1
     }
 });
-// request.toString() = url + params(need to set paramsSerializer)
-window.open(request.toString());    // http://file.xxx.com/file?id=1
+// request.toURL() = url + params(need to set paramsSerializer)
+window.open(request.toURL());    // http://file.xxx.com/file?id=1
 // or
-<a href={request.toString()} target="_blank" >Download</a>
+<a href={request.toURL()} target="_blank" >Download</a>
 ```
 
 Use jQuery ajax lib.
 ```js
 // or use jquery ajax
 $.get({
-    url: request.url,                            // url was already proxy
+    url: request.toURL(),      // url was already proxy
     type: request.method,
-    data: request.params || request.data         // params was already serialized
+    data: request.data         // params was already serialized
     headers: request.headers
 })
 ```
@@ -138,7 +149,7 @@ var request = prepare({
     params
 });
 
-<Upload name="file" action={request.url} headers={request.headers} ></Upload>
+<Upload name="file" action={request.toURL()} headers={request.headers} ></Upload>
 ```
 
 ### Use proxy path
