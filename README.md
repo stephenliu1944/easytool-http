@@ -153,16 +153,16 @@ var request = prepare({
 ```
 
 ### Use proxy path
-proxyPath is true.
+proxyPath will proxy the request to local server with specific path.
 ```js
 import http from 'axios-enhanced';
 
 var promise = http({
     baseURL: 'http://api.xxx.com',
     url: '/users',
-    proxyPath: __DEV__          // __DEV__ is true
+    proxyPath: true
 });
-// will request '/users'
+// will request ' http://localhost/users'
 ```
 
 proxyPath is String.
@@ -170,9 +170,9 @@ proxyPath is String.
 var promise = http({
     baseURL: 'http://api.xxx.com',
     url: '/users',
-    proxyPath: __DEV__ && '/api'  
+    proxyPath: '/api'  
 });
-// will request '/api/users'
+// will request 'http://localhost/api/users'
 ```
 
 proxyPath is Function.
@@ -180,9 +180,9 @@ proxyPath is Function.
 var promise = http({
     baseURL: 'http://api.xxx.com',
     url: '/users',
-    proxyPath: __DEV__ && (baseURL, options) => '/api'
+    proxyPath: (baseURL, options) => '/proxy'
 });
-// will request '/api/users'
+// will request 'http://localhost/proxy/users'
 ```
 
 Use internal Function 'proxyBaseURL' to proxy baseURL.
@@ -192,9 +192,9 @@ import { helpers } from 'axios-enhanced';
 var promise = http({
     baseURL: 'http://api.xxx.com',
     url: '/users',
-    proxyPath: __DEV__ && helpers.proxy.proxyBaseURL
+    proxyPath: helpers.proxy.proxyBaseURL
 });
-// will request '/http://api.xxx.com/users'
+// will request 'http://localhost/http://api.xxx.com/users'
 ```
 
 ### Interceptors
