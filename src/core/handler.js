@@ -91,16 +91,22 @@ export function handleProxyPath(options) {
     return _baseURL;
 }
 
-// 用于处理用户手动调用的 reject(), 关注性能问题
-export function handleReject(reject, options) {
-    var { isDev, onError } = options;
-
+// 用于处理用户手动调用的 reject()
+// TODO: 关注性能问题
+export function handleReject(reject, response, options) {
     return function(error) {
+        var { config, request } = response;
+        var { isDev, onError } = options;
+
         if (isDev) {
             console.error(error);
         }
-
-        onError && onError(error);
+        // 确保 onError 的参数结构和 catch 中的 onError 一致.
+        onError && onError({
+            config,
+            request,
+            response
+        });
         
         reject(error);
     };

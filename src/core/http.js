@@ -219,7 +219,8 @@ export function httpRequest(opts) {
 
                 // 配置了响应拦截器, 自行处理 resolve 和 reject 状态.
                 if (afterResponse) {
-                    afterResponse(resolve, handleReject(reject, _opts), response, _opts);
+                    let rejectWrapper = handleReject(reject, response, _opts);
+                    afterResponse(resolve, rejectWrapper, response, _opts);
                 } else {
                     resolve(response);
                 }

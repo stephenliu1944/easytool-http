@@ -375,17 +375,17 @@ paramsSerializer(params) {
  * @desc wrap and extension axios lib, suport all options with axios.
  * @param {axios.options...} axios options.
  * @param {boolean} cache enable cache, default true.
- * @param {function} cancel wrap CancelToken of axios, function receive a cancel args.
+ * @param {function} cancel wrap CancelToken of axios, function receive a cancel argument.
  * @param {function} paramsSerializer same with axios options. false to disable default handler.
  * @param {string} contentType HTTP request header Content-Type, default 'application/json'.
  * @param {function|array} requestInterceptor wrap axios's interceptors.request.use().
  * @param {function|array} responseInterceptor wrap axios's interceptors.response.use().
  * @param {function|array} transformRequest wrap axios's transformRequest.
  * @param {function|array} transformResponse wrap axios's transformResponse.
- * @param {function} beforeRequest asynchronize process request interceptor, it's receive 3 args: (resolve, reject, options).
- * @param {function} afterResponse asynchronize process response interceptor, it's receive 4 args: (resolve, reject, response, options).
- * @param {function} onError when catch error will occur.
- * @param {string | function} proxyPath proxy path, can be string or function, the function receive a options args and return a string.
+ * @param {function} beforeRequest asynchronize process request interceptor, function receive (resolve, reject, options) args.
+ * @param {function} afterResponse asynchronize process response interceptor, function receive (resolve, reject, response, options) args.
+ * @param {function} onError when error was occur, it will be invoked before promise.catch(), function receive a error object which include (config, request, response, message, stack).
+ * @param {string | function} proxyPath proxy path, can be string or function, the function receive (baseURL, options) args and return a string.
  * @param {boolean} isDev dev mode print more log info.
  * @return {object} - return a promise instance.
  */
