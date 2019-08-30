@@ -1,7 +1,5 @@
 # axios-enhanced
-Enhance axios features, use it like axios but more convenient.  
-
-README: [English](https://github.com/stephenliu1944/beancommons-http/blob/dev/README.md) | [简体中文](https://github.com/stephenliu1944/beancommons-http/blob/dev/README-zh_CN.md)
+Enhance axios features, use it like axios but more convenient.
 
 ## Extension features
 cache,   

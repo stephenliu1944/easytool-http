@@ -1,30 +1,8 @@
-import qs from 'qs';
 import axios from 'axios';
-import { handleHeaders, handleCache, handleProxyPath, handleReject, handleBeforeRequest, handleTransformData, handleInterceptor } from './handler';
-import { transformRequestDefault, transformResponseDefault, transformWrapper } from './transformData';
-import { Method, ContentType } from 'enums/common';
-import { adjustBaseURL, adjustURL, log, isObject, isEmpty, isBlank } from 'utils/common';
+import { defaults, initOptions } from './defaults';
+import { handleHeaders, handleCache, handleProxyPath, handleReject, handleBeforeRequest, handleInterceptor } from './handler';
+import { log, isEmpty, isBlank } from 'utils/common';
 
-// global settings
-var defaults = {
-    cache: true,
-    // axios的默认参数
-    method: Method.GET,
-    responseType: 'json',
-    // withCredentials: true,                        // 跨域请求带认证信息，譬如 Cookie, SSL Certificates，HTTP Authentication
-    // 扩展的属性默认值
-    contentType: ContentType.APPLICATION_JSON,
-    paramsSerializer(params) {
-        if (isObject(params)) {
-            return qs.stringify(params, {            
-                allowDots: true
-            });
-        }
-        return params;
-    },
-    // proxyPath: '/proxy',
-    isDev: false
-};
 var requestInterceptors;
 var responseInterceptors;
 
@@ -47,91 +25,6 @@ Promise.prototype.finally = function(callback) {
         })
     );
 };
-
-function initOptions(opts) {
-    if (!opts) {
-        return;
-    }
-
-    var { baseURL, url, method, contentType, transformRequest, transformResponse } = opts;
-
-    return Object.assign({}, opts, {
-        baseURL: adjustBaseURL(baseURL),
-        url: adjustURL(url),
-        method: method?.toLowerCase(),
-        contentType: contentType?.toLowerCase(),
-        transformRequest: handleTransformData(transformRequest, transformRequestDefault, transformWrapper, opts),
-        transformResponse: handleTransformData(transformResponse, transformResponseDefault, transformWrapper, opts)
-    });
-}
-
-export function prepare(options) {
-    if (isEmpty(options)) {
-        throw 'options is required.';
-    }
-
-    if (isBlank(options.url)) {
-        throw 'url is required.';
-    }
-
-    options = Object.assign({}, defaults, options);
-    var beforeRequest = options.beforeRequest;
-    
-    if (beforeRequest) {
-        // TODO: httpRequest是通过resolve(opts)接收的参数, 这里行为不一致
-        options = beforeRequest((opts) => opts, (error) => {throw error;}, options) || options;
-    }
-
-    var _opts = initOptions(options);
-    var { url = '', method, paramsSerializer } = _opts;
-    var _url = url;
-    
-    // 处理 header
-    _opts.headers = handleHeaders(_opts);
-
-    // 处理代理路径
-    var _baseURL = handleProxyPath(_opts) || '';
-    
-    // 处理缓存
-    _opts.params = handleCache(_opts);
-    
-    if (_opts.requestInterceptor) {
-        let use = handleInterceptor(_opts.requestInterceptor);
-        _opts = use.success && use.success(_opts) || _opts;
-    }
-
-    // 处理 transformRequest(data, header)
-    if (_opts.transformRequest) {
-        _opts.transformRequest.forEach((transform) => {
-            _opts.data = transform(_opts.data, _opts.headers);
-        });
-    }
-    
-    // 序列化 params
-    if (paramsSerializer) {
-        _opts.params = paramsSerializer(_opts.params);
-    }
-
-    return {
-        method,
-        url: _baseURL + _url,
-        headers: _opts.headers,
-        params: _opts.params,
-        data: _opts.data,
-        toString() {
-            var url = this.url;
-            if (typeof this.params === 'string') {
-                url += '?' + this.params;
-            } else if (typeof this.params === 'object' && this.params.t) {
-                url += '?t=' + this.params.t;
-            }
-            return url;
-        },
-        toURL() {
-            return this.toString();
-        }
-    };
-}
 
 export function httpRequest(opts) {
     if (isEmpty(opts)) {

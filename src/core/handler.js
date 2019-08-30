@@ -1,5 +1,6 @@
 import { Method } from 'enums/common';
-import { join, withHost, isString, isArray, isBlank, isFunction } from 'utils/common';
+import { join, withHost } from 'utils/url';
+import { isString, isArray, isBlank, isFunction } from 'utils/common';
 
 function hasEntityBody(method = '') {
     return [Method.POST, Method.PUT, Method.PATCH].includes(method.toLowerCase());
@@ -23,9 +24,9 @@ export function handleHeaders(options, isXHR) {
     var { headers, method, contentType } = options;
     var _headers = Object.assign({}, headers);
     
-    if (isXHR) {
-        _headers['X-Requested-With'] = 'XMLHttpRequest';
-    }
+    // if (isXHR) {
+    //     _headers['X-Requested-With'] = 'XMLHttpRequest';
+    // }
     
     if (hasEntityBody(method) && contentType) {
         _headers['Content-Type'] = contentType;
@@ -110,26 +111,6 @@ export function handleReject(reject, response, options) {
         
         reject(error);
     };
-}
-
-export function handleTransformData(transform, transformDefault, wrapper, opts) {
-    var transformList = [];
-
-    if (isFunction(transform)) {
-        transformList.push(transform);
-    } else if (isArray(transform)) {
-        transformList.push(...transform);
-    }
-
-    if (transformDefault) {
-        transformList.push(transformDefault);
-    }
-
-    if (wrapper) {
-        transformList = transformList.map((fn) => wrapper(fn, opts));
-    }
-    
-    return transformList;
 }
 
 export function handleInterceptor(interceptor) {
