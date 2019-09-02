@@ -3,9 +3,6 @@ import { defaults, initOptions } from './defaults';
 import { handleHeaders, handleCache, handleProxyPath, handleReject, handleBeforeRequest, handleInterceptor } from './handler';
 import { log, isEmpty, isBlank } from 'utils/common';
 
-var requestInterceptors;
-var responseInterceptors;
-
 Promise.prototype.done = function(onFulfilled, onRejected) {
     this.then(onFulfilled, onRejected)
         .catch(function(reason) {
@@ -47,7 +44,6 @@ export function httpRequest(opts) {
             }
 
             var _opts = initOptions(options);
-
             var {
                 // axios参数
                 baseURL,
@@ -70,25 +66,26 @@ export function httpRequest(opts) {
                 // axios其他参数
                 ...other            
             } = _opts;
-          
+            var requestInterceptorInstance;
+            var responseInterceptorInstance;
+            // 创建一个 axios 实例
+            const instance = axios.create();
+
             if (isDev) {
                 log({ url, baseURL, method, data, params }, 'Request');
             }
-        
-            const instance = axios.create();
+            
             // 处理请求拦截器 requestInterceptor = function or [success, error]
             if (requestInterceptor) {
-                // requestInterceptors = requestInterceptors || {};
                 let use = handleInterceptor(requestInterceptor);
                 // 该实例在注销 interceptor 时使用
-                let reqInterceptor = instance.interceptors.request.use(use.success, use.error);
+                requestInterceptorInstance = instance.interceptors.request.use(use.success, use.error);
             }
             // 处理响应拦截器 responseInterceptor = function or [success, error]
             if (responseInterceptor) {
-                // responseInterceptors = responseInterceptors || {};
                 let use = handleInterceptor(responseInterceptor);
                 // 该实例在注销 interceptor 时使用
-                let respInterceptor = instance.interceptors.response.use(use.success, use.error);
+                responseInterceptorInstance = instance.interceptors.response.use(use.success, use.error);
             }
             
             // 调用 axios 库
@@ -100,7 +97,6 @@ export function httpRequest(opts) {
                 params: handleCache(_opts),
                 paramsSerializer,
                 data,
-                // data: handleData(options),
                 cancelToken: cancel && new axios.CancelToken(cancel),
                 ...other
             }).then(function(response) {
@@ -128,13 +124,10 @@ export function httpRequest(opts) {
                     // The request was made but no response was received
                     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
                     console.error('Nonresponse Error:', message);
-                } else if (config) {
-                    // Something happened in setting up the request that triggered an Error
-                    console.error('Setting up Error:', message);
                 } else {
-                    // afterResponse 抛出的错误
-                    console.error('AfterResponse Error:', message);
-                }
+                    // Something happened in setting up the request that triggered an Error
+                    console.error('Error:', message);
+                } 
 
                 if (isDev) {
                     console.error(error);
@@ -143,6 +136,9 @@ export function httpRequest(opts) {
                 onError && onError(error);
     
                 reject(error);
+            }).finally(function() {
+                requestInterceptorInstance && instance.interceptors.request.eject(requestInterceptorInstance);
+                responseInterceptorInstance && instance.interceptors.response.eject(responseInterceptorInstance);
             });
         }, function(error) {
             // beforeRequest 抛出的错误

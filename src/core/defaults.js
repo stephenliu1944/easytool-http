@@ -40,7 +40,7 @@ export function initOptions(opts) {
         url: adjustURL(url),
         method: method,
         contentType: contentType?.toLowerCase(),
-        transformRequest: method !== Method.GET && [...transformRequest, transformRequestDefault].map((fn) => transformWrapper(fn, opts)),
+        transformRequest: method === Method.GET ? undefined : [...transformRequest, transformRequestDefault].map((fn) => transformWrapper(fn, opts)),
         transformResponse: [transformResponseDefault, ...transformResponse].map((fn) => transformWrapper(fn, opts))
     });
 }

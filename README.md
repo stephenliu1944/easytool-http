@@ -4,15 +4,14 @@ Enhance axios features, use it like axios but more convenient.
 README: [English](https://github.com/stephenliu1944/beancommons-http/blob/dev/README.md) | [简体中文](https://github.com/stephenliu1944/beancommons-http/blob/dev/README-zh_CN.md)
 
 ## Extension features
-cache,   
-contentType,  
-beforeRequest,   
-afterResponse,   
-proxyPath,   
-onError,  
-prepare,  
-helpers,  
-...
+- cache
+- contentType
+- beforeRequest
+- afterResponse
+- proxyPath
+- onError
+- prepare
+- helpers
 
 ## Install
 ```
@@ -36,7 +35,8 @@ http({
 });
 ```
 
-### Setup global options
+### settings
+settings is used for setup global options.
 ```js
 import http, { Method, ContentType } from 'axios-enhanced';
 // need setup before invoke http()
@@ -51,10 +51,11 @@ http.settings({
 });
 ```
 
-### Instance
+### instance
+instance method is used for set instance options and it will inherit global options.
 ```js
 import http, { Method, ContentType } from 'axios-enhanced';
-// instance inherit default options
+
 var instance = http.instance({
     baseURL: 'http://api.xxx.com',
     method: Method.POST,
@@ -65,36 +66,13 @@ instance({
     url: '/getUser'
 });
 // or
-instance.prepare({
+var request = instance.prepare({
     url: '/getUser'
 });
 ```
 
-### Handle file stream
-```js
-http({
-    baseURL: 'http://api.xxx.com',
-    url: '/assets/images/cat.png',
-    responseType: 'blob'                // IE10+
-}).then((response) => {
-    var blob = response.data;
-    // response.headers['content-disposition']; // get filename from Content-Disposition
-    // IE10-Edge
-    if ('msSaveOrOpenBlob' in window.navigator) {
-        window.navigator.msSaveOrOpenBlob(blob, 'screenshot.png');
-    } else {
-        var a = document.createElement('a');
-        a.href = window.URL.createObjectURL(blob);
-        a.download = 'screenshot.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
-});
-```
-
-### Preprocess request data
-Use for preproccess request options, return a object, it will not send request.
+### prepare
+prepare is used for preproccess request options, return a object, it will not send request.
 ```js
 import { prepare } from 'axios-enhanced';
 
@@ -117,7 +95,7 @@ var request = prepare({
         id: 1
     }
 });
-// request.toURL() = url + params(need to set paramsSerializer)
+// request.toURL() = url + params(rewrite paramsSerializer option to change default serialize behavior)
 window.open(request.toURL());    // http://file.xxx.com/file?id=1
 // or
 <a href={request.toURL()} target="_blank" >Download</a>
@@ -154,11 +132,34 @@ var request = prepare({
 <Upload name="file" action={request.toURL()} headers={request.headers} ></Upload>
 ```
 
-### Use proxy path
-proxyPath will proxy the request to local server with specific path.
+### Handle file stream
 ```js
-import http from 'axios-enhanced';
+http({
+    baseURL: 'http://api.xxx.com',
+    url: '/assets/images/cat.png',
+    responseType: 'blob'                // IE10+
+}).then((response) => {
+    var blob = response.data;
+    // response.headers['content-disposition']; // get filename from Content-Disposition
+    // IE10-Edge
+    if ('msSaveOrOpenBlob' in window.navigator) {
+        window.navigator.msSaveOrOpenBlob(blob, 'screenshot.png');
+    } else {
+        var a = document.createElement('a');
+        a.href = window.URL.createObjectURL(blob);
+        a.download = 'screenshot.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+});
+```
 
+### proxyPath
+proxyPath will proxy the request to local server and add the config proxyPath to the top of url.
+
+proxyPath is true.
+```js
 var promise = http({
     baseURL: 'http://api.xxx.com',
     url: '/users',
@@ -206,8 +207,8 @@ http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
     requestInterceptor(config) {
+        // Do something before request is sent
         config.headers.TOKEN = 'xxxxxx';
-        // same with axios
         return config;
     }
 });
@@ -216,10 +217,10 @@ http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
     requestInterceptor: [(config) => {
-        // same with axios
+        // Do something before request is sent
         return config;
     }, (error) => {
-        // same with axios
+        // Do something with request error
         return Promise.reject(error);
     }]
 });
@@ -231,7 +232,7 @@ http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
     requestInterceptor(response) {
-        // same with axios
+        // Do something with response data
         return response;
     }
 });
@@ -240,10 +241,10 @@ http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
     requestInterceptor: [(response) => {
-        // same with axios
+        // Do something with response data
         return response;
     }, (error) => {
-        // same with axios
+        // Do something with response error
         return Promise.reject(error);
     }]
 });
@@ -284,14 +285,7 @@ http({
                     location.href = `http://api.xxx.com/login?callback=${encodeURIComponent(location.href)}`;
                 }, 0);
                 break;
-            case 403:   // maybe other http request, like get token
-                setTimeout(() => {
-                    // finish the request.
-                    resolve(data);  
-                }, 2000);
-                break;
-            case 500:
-                // throw a error.
+            case 500:   // throw a error.
                 reject(response);
                 break;
         }
@@ -307,17 +301,18 @@ import http, { Method, ContentType, helpers } from 'axios-enhanced';
 http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
-    transformRequest: [function (data, headers, options) {     // extra argument 'options'
+    transformRequest(data, headers, options) {     // extra argument 'options'
         // serialize data form URL encoded.
         if (headers['Content-Type'] === ContentType.APPLICATION_X_WWW_FORM_URLENCODED) {
-            return helpers.qs.stringify(data, {             // e.g. https://www.npmjs.com/package/qs
+            // e.g. https://www.npmjs.com/package/qs
+            return helpers.qs.stringify(data, {
                 arrayFormat: 'brackets',
                 allowDots: true
             });
         }
 
         return data;
-    }]
+    }
 });
 ```
 
@@ -326,14 +321,14 @@ transformResponse
 http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
-    transformResponse: [function (data, headers, options) {     // extra arguments 'headers' and 'options'
+    transformResponse: [function (data, headers, options) {     // extra arguments headers and options args
         // same with axios
         return data;
     }]
 });
 ```
 
-### Serializer
+### paramsSerializer
 Serialize parameters.
 ```js
 import http, { prepare, Method, ContentType, helpers } from 'axios-enhanced';
@@ -371,24 +366,41 @@ paramsSerializer(params) {
 }
 ```
 
+### cancel
+simplify cancelToken.
+```js
+var abort;
+
+http({
+    baseURL: 'http://api.xxx.com',
+    url: '/getUser',
+    cancel(c) {
+        abort = c;
+    }
+});
+
+setTimeout(() => abort());
+```
+
 ## API
+Extension features
 ```js
 /**
  * @desc wrap and extension axios lib, suport all options with axios.
- * @param {axios.options...} axios options.
  * @param {boolean} cache enable cache, default true.
  * @param {function} cancel wrap CancelToken of axios, function receive a cancel argument.
  * @param {function} paramsSerializer same with axios options. false to disable default handler.
  * @param {string} contentType HTTP request header Content-Type, default 'application/json'.
- * @param {function|array} requestInterceptor wrap axios's interceptors.request.use().
- * @param {function|array} responseInterceptor wrap axios's interceptors.response.use().
- * @param {function|array} transformRequest wrap axios's transformRequest.
- * @param {function|array} transformResponse wrap axios's transformResponse.
+ * @param {function|array} transformRequest wrap axios's transformRequest and extend arguments with (data, headers, options).
+ * @param {function|array} transformResponse wrap axios's transformResponse and extend arguments with (data, headers, options).
+ * @param {function|array} requestInterceptor wrap axios.interceptors.request.use(success, error) method.
+ * @param {function|array} responseInterceptor wrap axios.interceptors.response.use(success, error) method.
  * @param {function} beforeRequest asynchronize process request interceptor, function receive (resolve, reject, options) args.
  * @param {function} afterResponse asynchronize process response interceptor, function receive (resolve, reject, response, options) args.
  * @param {function} onError when error was occur, it will be invoked before promise.catch(), function receive a error object which include (config, request, response, message, stack).
- * @param {string | function} proxyPath proxy path, can be string or function, the function receive (baseURL, options) args and return a string.
+ * @param {string | function} proxyPath proxyPath will proxy the request to local server and add the config proxyPath to the top of url, it could be boolean, string or function, function receive (baseURL, options) args and return a string.
  * @param {boolean} isDev dev mode print more log info.
+ * @other refer to https://github.com/axios/axios
  * @return {object} - return a promise instance.
  */
 http(options)
@@ -438,7 +450,6 @@ Method
  * IMAGE_JPEG: 'image/jpeg',
  * IMAGE_GIF: 'image/gif',
  * IMAGE_PNG: 'image/png'
- * ...
  */
 ContentType
 ```
@@ -447,68 +458,11 @@ ContentType
 ```js
 /**
  * @desc rewrite baseURL like 'http://api.xxx.com' to '/http://api.xxx.com' for proxy matching
- * @param {string} prefix default proxy path function, when baseURL is null, will use current browser location.
+ * @param {string} baseURL when baseURL is null, will use location.host.
+ * @return {string} proxyPath
  */
 proxyBaseURL(baseURL)
 ```
 
 ### helpers.qs
 refer to https://www.npmjs.com/package/qs
-
-### axios options
-The following options are provided by the underlying axios library.
-```js
-// `timeout` specifies the number of milliseconds before the request times out.
-// If the request takes longer than `timeout`, the request will be aborted.
-timeout: 1000, // default is `0` (no timeout)
-
-// `withCredentials` indicates whether or not cross-site Access-Control requests
-// should be made using credentials
-withCredentials: false, // default
-
-// `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
-// This will set an `Authorization` header, overwriting any existing
-// `Authorization` custom headers you have set using `headers`.
-// Please note that only HTTP Basic auth is configurable through this parameter.
-// For Bearer tokens and such, use `Authorization` custom headers instead.
-auth: {
-    username: 'janedoe',
-    password: 's00pers3cret'
-},
-
-// `responseType` indicates the type of data that the server will respond with
-// options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
-//   browser only: 'blob'
-responseType: 'json', // default
-
-// `responseEncoding` indicates encoding to use for decoding responses
-// Note: Ignored for `responseType` of 'stream' or client-side requests
-responseEncoding: 'utf8', // default
-
-// `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
-xsrfCookieName: 'XSRF-TOKEN', // default
-
-// `xsrfHeaderName` is the name of the http header that carries the xsrf token value
-xsrfHeaderName: 'X-XSRF-TOKEN', // default
-
-// `onUploadProgress` allows handling of progress events for uploads
-onUploadProgress: function (progressEvent) {
-// Do whatever you want with the native progress event
-},
-
-// `onDownloadProgress` allows handling of progress events for downloads
-onDownloadProgress: function (progressEvent) {
-// Do whatever you want with the native progress event
-},
-
-// `maxContentLength` defines the max size of the http response content in bytes allowed
-maxContentLength: 2000,
-
-// `validateStatus` defines whether to resolve or reject the promise for a given
-// HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
-// or `undefined`), the promise will be resolved; otherwise, the promise will be
-// rejected.
-validateStatus: function (status) {
-    return status >= 200 && status < 300; // default
-}
-```

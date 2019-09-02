@@ -4,7 +4,7 @@ import htmlTemplate from 'rollup-plugin-generate-html-template';
 import base, { rollupMerge } from './rollup.config.base';
 import pkg from './package.json';
 
-const { local } = pkg.devServer;
+const { local } = pkg.devEnvironments.servers;
 const BUILD_PATH = 'build';
 const FILE_NAME = 'index';
 

@@ -1,4 +1,5 @@
 // 该类用于测试模块
+import 'core-js';
 import httpRequest, { prepare, helpers, ContentType } from './index';
 
 httpRequest.settings({
@@ -16,26 +17,26 @@ httpRequest.settings({
     //     });
     // },
     beforeRequest(resolve, reject, options) {
-        console.log('beforeRequest:', options);
+        console.log('------beforeRequest------:', options);
         resolve(options);
     },
     requestInterceptor: [(config) => {
-        console.log('------------requestInterceptor-------');
+        console.log('------requestInterceptor------');
         config.headers['token'] = 1;
         config.params.token = 'aaaaaaaaaaaaaaaa';
         return config;
     }, () => {}],
-    transformRequest: [function(data, headers, options) {
-        console.log('------------transformRequest-------', this, headers);
+    transformRequest(data, headers, options) {
+        console.log('------transformRequest------', this, headers);
         
         return data;
-    }],
+    },
     transformResponse: [function(data, headers, options) {
-        console.log('------------transformResponse-------', data);
+        console.log('------transformResponse------', data);
         return { name: 'stephen' };
     }],
     responseInterceptor(response) {
-        console.log('------------responseInterceptor-------', response);
+        console.log('------responseInterceptor------', response);
         return response;
     },
     afterResponse(resolve, reject, response) {
@@ -46,16 +47,17 @@ httpRequest.settings({
         return status >= 200 && status < 600; // default
     },
     onError() {
-        console.log('-----onError-----');
+        console.log('------onError------');
     }
 });
 
+var abort;
 httpRequest({
-    baseURL: 'http://tpic.home.news.cn',
-    url: '/getIpInfo.php',
+    baseURL: 'http://localhost:3000',
+    url: '/user/123',
     contentType: ContentType.APPLICATION_JSON,
-    method: 'post',
-    proxyPath: true,
+    // method: 'post',
+    // proxyPath: true,
     // params: {
     //     ip: '210.75.225.254'
     // }, 
@@ -76,6 +78,10 @@ httpRequest({
         a: 1,
         b: 2,
         c: 3
+    },    
+    cancel(c) {
+        console.log('------cancel------', c);
+        abort = c;
     }
     // paramsSerializer: null
     // paramsSerializer: function(params) {
@@ -90,7 +96,9 @@ httpRequest({
     console.log('fail->>', e);
 });
 
-var url = prepare({
+setTimeout(() => abort());
+
+/* var url = prepare({
     // baseURL: 'http://ip.taobao.com/service/',
     url: '/getIpInfo.php',
     method: 'post',
@@ -114,4 +122,4 @@ var url = prepare({
     }
 });
 
-console.log('url ', url.toURL());
+console.log('url ', url.toURL()); */

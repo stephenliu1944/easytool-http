@@ -1,24 +1,23 @@
 # axios-enhanced
-Enhance axios features, use it like axios but more convenient.
+扩展了axios库的一些功能, 完全兼容 axios 的语法, 简化了一些操作.
 
-## Extension features
-cache,   
-contentType,  
-beforeRequest,   
-afterResponse,   
-proxyPath,   
-onError,  
-prepare,  
-helpers,  
-...
+## 扩展特性
+- cache
+- contentType
+- beforeRequest
+- afterResponse
+- proxyPath
+- onError
+- prepare
+- helpers
 
-## Install
+## 安装
 ```
 npm install --save axios-enhanced
 ```
 
-## Usage
-### Example
+## 使用
+### 示例
 ```js
 import http from 'axios-enhanced';
 http({
@@ -34,25 +33,27 @@ http({
 });
 ```
 
-### Setup global options
+### settings
+该方法用于配置全局的请求默认参数
 ```js
 import http, { Method, ContentType } from 'axios-enhanced';
-// need setup before invoke http()
+// 需要在调用 http 请求之前配置
 http.settings({
     baseURL: 'http://api.xxx.com',
-    method: Method.POST,                                        // default is 'GET'
-    contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED  // default is 'json'
-    withCredentials: true,                                      // default is false
-    cache: false,                                               // default is true
-    proxyPath: __DEV__ && '/api',                               // default is false
+    method: Method.POST,                                        // 默认为 'GET'
+    contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED  // 默认为 'json'
+    withCredentials: true,                                      // 默认为 false
+    cache: false,                                               // 默认为 true
+    proxyPath: __DEV__ && '/api',                               // 默认为 false
     isDev: __DEV__
 });
 ```
 
 ### Instance
+该方法用于配置实例请求的默认参数, 会继承全局配置
 ```js
 import http, { Method, ContentType } from 'axios-enhanced';
-// instance inherit default options
+
 var instance = http.instance({
     baseURL: 'http://api.xxx.com',
     method: Method.POST,
@@ -68,7 +69,79 @@ instance.prepare({
 });
 ```
 
-### Handle file stream
+### prepare
+该方法用于预处理请求参数, 不会真正发起 http 请求, 但同样会依次执行配置的:  
+beforeRequest() > requestInterceptor() > transformRequest() > paramsSerializer() 等方法, 同时返回一个预处理对象, 包括以下属性:  
+{ url, method, headers, params, data }
+该方法用于使用其他方式的 http 请求, 但又希望统一处理数据项.
+```js
+import { prepare } from 'axios-enhanced';
+
+var request = prepare({
+    baseURL: 'http://api.xxx.com',
+    url: '/getUser',
+    params: {
+        id: 1
+    }
+});
+// request: { url, method, headers, params, data }
+```
+
+使用 window.open()
+```js
+var request = prepare({
+    baseURL: 'http://file.xxx.com',
+    url: '/file',
+    params: {
+        id: 1
+    }
+});
+// request.toURL() = url + params(配置 paramsSerializer 参数可覆盖默认序列化行为)
+window.open(request.toURL());    // http://file.xxx.com/file?id=1
+// or
+<a href={request.toURL()} target="_blank" >Download</a>
+```
+
+使用 JQuery ajax 库.
+```js
+var request = prepare({
+    baseURL: 'http://api.xxx.com',
+    url: '/user',
+    proxyPath: '/api',
+    params: {
+        id: 1
+    }
+});
+
+$.ajax({
+    url: request.toURL(),      // http://api.xxx.com/api/user?id=1  (配置了 proxyPath 也会一并处理)
+    type: request.method,
+    data: request.data
+    headers: request.headers
+})
+```
+
+使用 Antd 上传组件.
+```js
+import { Upload } from 'antd';
+import { prepare, Method } from 'axios-enhanced';
+
+var request = prepare({
+    baseURL: 'http://file.xxx.com',
+    url: '/api/file/upload',
+    method: Method.POST,
+    contentType: null,              // 取消默认参数配置, 使用 antd 的配置
+    headers: {
+        token: 'xxxx-xxxx-xxxx',
+        ...
+    },
+    params
+});
+
+<Upload name="file" action={request.toURL()} headers={request.headers} ></Upload>
+```
+
+### 文件流下载
 ```js
 http({
     baseURL: 'http://api.xxx.com',
@@ -76,7 +149,7 @@ http({
     responseType: 'blob'                // IE10+
 }).then((response) => {
     var blob = response.data;
-    // response.headers['content-disposition']; // get filename from Content-Disposition
+    // response.headers['content-disposition']; // 从 Content-Disposition 响应头获取文件名信息
     // IE10-Edge
     if ('msSaveOrOpenBlob' in window.navigator) {
         window.navigator.msSaveOrOpenBlob(blob, 'screenshot.png');
@@ -91,81 +164,20 @@ http({
 });
 ```
 
-### Preprocess request data
-Use for preproccess request options, return a object, it will not send request.
+### proxyPath
+配置该属性会将请求转发到本地服务, 并在请求的 url 前加上配置的代理路径, 方便代理服务根据请求的路径转发到指定的后端服务.  支持的参数类型: Boolean, String, Function.
+
+proxyPath 是 true.
 ```js
-import { prepare } from 'axios-enhanced';
-
-var request = prepare({
-    baseURL: 'http://api.xxx.com',
-    url: '/getUser',
-    params: {
-        id: 1
-    }
-});
-// request: { url, method, headers, params, data }
-```
-
-Use for open or download file URL.
-```js
-var request = prepare({
-    baseURL: 'http://file.xxx.com',
-    url: '/file',
-    params: {
-        id: 1
-    }
-});
-// request.toURL() = url + params(need to set paramsSerializer)
-window.open(request.toURL());    // http://file.xxx.com/file?id=1
-// or
-<a href={request.toURL()} target="_blank" >Download</a>
-```
-
-Use jQuery ajax lib.
-```js
-// or use jquery ajax
-$.get({
-    url: request.toURL(),      // url was already proxy
-    type: request.method,
-    data: request.data         // params was already serialized
-    headers: request.headers
-})
-```
-
-Use Antd Upload Component.
-```js
-import { Upload } from 'antd';
-import { prepare, Method } from 'axios-enhanced';
-
-var request = prepare({
-    baseURL: 'http://file.xxx.com',
-    url: '/api/file/upload',
-    method: Method.POST,
-    contentType: null,              // disable default contentType, use antd's
-    headers: {
-        token: 'xxxx-xxxx-xxxx',
-        ...
-    },
-    params
-});
-
-<Upload name="file" action={request.toURL()} headers={request.headers} ></Upload>
-```
-
-### Use proxy path
-proxyPath will proxy the request to local server with specific path.
-```js
-import http from 'axios-enhanced';
-
 var promise = http({
     baseURL: 'http://api.xxx.com',
     url: '/users',
     proxyPath: true
 });
-// will request ' http://localhost/users'
+// 将请求 ' http://localhost/users'
 ```
 
-proxyPath is String.
+proxyPath 是 String 类型.
 ```js
 var promise = http({
     baseURL: 'http://api.xxx.com',
@@ -175,7 +187,7 @@ var promise = http({
 // will request 'http://localhost/api/users'
 ```
 
-proxyPath is Function.
+proxyPath 是 Function 类型.
 ```js
 var promise = http({
     baseURL: 'http://api.xxx.com',
@@ -185,7 +197,7 @@ var promise = http({
 // will request 'http://localhost/proxy/users'
 ```
 
-Use internal Function 'proxyBaseURL' to proxy baseURL.
+使用内部方法代理 baseURL 部分.
 ```js
 import { helpers } from 'axios-enhanced';
 
@@ -198,14 +210,16 @@ var promise = http({
 ```
 
 ### Interceptors
+本库简化了使用拦截器的操作.  
+
 request interceptor
 ```js
 http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
     requestInterceptor(config) {
+        // Do something before request is sent
         config.headers.TOKEN = 'xxxxxx';
-        // same with axios
         return config;
     }
 });
@@ -214,10 +228,10 @@ http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
     requestInterceptor: [(config) => {
-        // same with axios
+        // Do something before request is sent
         return config;
     }, (error) => {
-        // same with axios
+        // Do something with request error
         return Promise.reject(error);
     }]
 });
@@ -229,7 +243,7 @@ http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
     requestInterceptor(response) {
-        // same with axios
+        // Do something with response data
         return response;
     }
 });
@@ -238,27 +252,29 @@ http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
     requestInterceptor: [(response) => {
-        // same with axios
+        // Do something with response data
         return response;
     }, (error) => {
-        // same with axios
+        // Do something with response error
         return Promise.reject(error);
     }]
 });
 ```
 
 ### Asynchronize Interceptors
+增加了2个异步拦截器, 用于异步操作后继续执行.  
+
 beforeRequest
 ```js
 http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
     beforeRequest(resolve, reject, options) {
-        // Do something before request is sent
+        // 在请求前的一些逻辑处理, 比如记录日志
         setTimeout(() => {
-            resolve(options);                   // will continue to process.
+            resolve(options);                   // 调用 resolve() 后会继续处理.
             // or
-            reject('some error message.');      // will abort http request.
+            reject('some error message.');      // 调用 reject() 后会终止请求.
         }, 2000)
     }
 });
@@ -273,23 +289,16 @@ http({
     afterResponse(resolve, reject, response, options) {
         var { data, status } = response;
         switch (status) {
-            case 200:   // continue to process.
+            case 200:
                 resolve(data);
-            case 401:   // need log in
+            case 401:
                 reject(response);
 
                 setTimeout(() => {
                     location.href = `http://api.xxx.com/login?callback=${encodeURIComponent(location.href)}`;
                 }, 0);
                 break;
-            case 403:   // maybe other http request, like get token
-                setTimeout(() => {
-                    // finish the request.
-                    resolve(data);  
-                }, 2000);
-                break;
             case 500:
-                // throw a error.
                 reject(response);
                 break;
         }
@@ -298,6 +307,8 @@ http({
 ```
 
 ### Transform
+简化了 transform 方法, 并增加了传入的参数.  
+
 transformRequest  
 ```js
 import http, { Method, ContentType, helpers } from 'axios-enhanced';
@@ -305,17 +316,18 @@ import http, { Method, ContentType, helpers } from 'axios-enhanced';
 http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
-    transformRequest: [function (data, headers, options) {     // extra argument 'options'
-        // serialize data form URL encoded.
+    transformRequest(data, headers, options) {     // 增加了 options 参数
+        // 序列化 data 数据
         if (headers['Content-Type'] === ContentType.APPLICATION_X_WWW_FORM_URLENCODED) {
-            return helpers.qs.stringify(data, {             // e.g. https://www.npmjs.com/package/qs
+            // e.g. https://www.npmjs.com/package/qs
+            return helpers.qs.stringify(data, {
                 arrayFormat: 'brackets',
                 allowDots: true
             });
         }
 
         return data;
-    }]
+    }
 });
 ```
 
@@ -324,15 +336,16 @@ transformResponse
 http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
-    transformResponse: [function (data, headers, options) {     // extra arguments 'headers' and 'options'
+    transformResponse(data, headers, options) {     // 增加了 headers 和 options 参数
         // same with axios
         return data;
-    }]
+    }
 });
 ```
 
-### Serializer
-Serialize parameters.
+### paramsSerializer
+序列化请求参数.  
+helpers 对象内置了 qs 模块便于序列化处理.
 ```js
 import http, { prepare, Method, ContentType, helpers } from 'axios-enhanced';
 
@@ -359,8 +372,8 @@ prepare({
 });
 ```
 
-#### default paramsSerializer handler
-Set to false or rewrite it could change default behavior.
+#### 默认的 paramsSerializer 处理
+将该选项设置为 false 或重写它可改变默认行为.
 ```js
 paramsSerializer(params) {
     return helpers.qs.stringify(params, {
@@ -369,47 +382,64 @@ paramsSerializer(params) {
 }
 ```
 
+### cancel
+简化了 cancel 操作
+```js
+var abort;
+
+http({
+    baseURL: 'http://api.xxx.com',
+    url: '/getUser',
+    cancel(c) {
+        abort = c;
+    }
+});
+
+setTimeout(() => abort());
+```
+
 ## API
+扩展特性
 ```js
 /**
- * @desc wrap and extension axios lib, suport all options with axios.
- * @param {axios.options...} axios options.
- * @param {boolean} cache enable cache, default true.
- * @param {function} cancel wrap CancelToken of axios, function receive a cancel argument.
- * @param {function} paramsSerializer same with axios options. false to disable default handler.
- * @param {string} contentType HTTP request header Content-Type, default 'application/json'.
- * @param {function|array} requestInterceptor wrap axios's interceptors.request.use().
- * @param {function|array} responseInterceptor wrap axios's interceptors.response.use().
- * @param {function|array} transformRequest wrap axios's transformRequest.
- * @param {function|array} transformResponse wrap axios's transformResponse.
- * @param {function} beforeRequest asynchronize process request interceptor, function receive (resolve, reject, options) args.
- * @param {function} afterResponse asynchronize process response interceptor, function receive (resolve, reject, response, options) args.
- * @param {function} onError when error was occur, it will be invoked before promise.catch(), function receive a error object which include (config, request, response, message, stack).
- * @param {string | function} proxyPath proxy path, can be string or function, the function receive (baseURL, options) args and return a string.
- * @param {boolean} isDev dev mode print more log info.
- * @return {object} - return a promise instance.
+ * @desc 扩展, 简化 axios 的参数信息.
+ * @param {boolean} cache 是否启用浏览器缓存, 默认 true.
+ * @param {function} cancel 封装了 CancelToken 对象, 该方法接收一个 cancel 方法参数, 执行该方法则终止请求.
+ * @param {function} paramsSerializer 序列化请求参数(与 axios一致). 设置为 false 取消默认序列化行为.
+ * @param {string} contentType 请求头的 Content-Type 信息, 默认为 'application/json'.
+ * @param {function|array} transformRequest 封装了 axios 的 transformRequest 方法, 扩展了接收参数(data, headers, options).
+ * @param {function|array} transformResponse 封装了 axios 的 transformResponse 方法, 扩展了接收参数(data, headers, options).
+ * @param {function|array} requestInterceptor 封装了 axios.interceptors.request.use(success, error) 方法.
+ * @param {function|array} responseInterceptor 封装了 axios.interceptors.response.use(success, error) 方法.
+ * @param {function} beforeRequest 异步请求拦截器, 方法接收三个参数 (resolve, reject, options), 执行 resolve() 方法继续处理, 执行 reject() 方法终止请求, options 为请求参数.
+ * @param {function} afterResponse 异步响应拦截器, 方法接收四个参数 (resolve, reject, response, options), 执行 resolve() 方法响应成功, 执行 reject() 方法响应失败, response 为响应数据, options 为请求参数.
+ * @param {function} onError 当请求出错时会调用该方法, 该方法在 promise.catch() 之前执行, 方法接收一个 error 对象, 对象包含 (config, request, response, message, stack) 属性.
+ * @param {string | function} proxyPath 配置该属性会将请求转发到本地服务, 并在请求的 url 前加上配置的代理路径, 方便代理服务根据请求的路径转发到指定的后端服务.  支持的参数类型: Boolean, String, Function, 为方法时接收 (baseURL, options) 两个参数, 并且需要返回一个字符串作为代理路径.
+ * @param {boolean} isDev 开发模式会打印请求和响应的日志信息.
+ * @other 参考 https://github.com/axios/axios
+ * @return {object} - 返回一个 promise 实例对象.
  */
 http(options)
 
 /**
- * @desc set global options
+ * @desc 配置全局默认选项
  */
 http.settings(options)
 
 /**
- * @desc create a new instance
+ * @desc 创建一个请求实例对象
  */
 http.instance(options)
 
 /**
- * @desc return a preproccess object, includes { method, url, headers, params, data } properties.
- * @param {object} options same with http(options).
- * @return {object} - return a preprocess options.
+ * @desc 该方法用于预处理请求参数, 不会真正发起 http 请求.
+ * @param {object} options 与 http(options) 相同.
+ * @return {object} - 返回一个预请求对象, 包含 { method, url, headers, params, data } 属性.
  */
 prepare(options)
 
 /**
- * @desc general http method
+ * @desc 通用的 HTTP 请求方法
  * @props
  * HEAD: 'head',
  * GET: 'get',
@@ -423,7 +453,7 @@ prepare(options)
 Method
 
 /**
- * @desc general content type
+ * @desc 通用的 content-type 信息
  * @props
  * MULTIPART_FORM_DATA: 'multipart/form-data',
  * APPLICATION_JSON: 'application/json',
@@ -436,7 +466,6 @@ Method
  * IMAGE_JPEG: 'image/jpeg',
  * IMAGE_GIF: 'image/gif',
  * IMAGE_PNG: 'image/png'
- * ...
  */
 ContentType
 ```
@@ -444,69 +473,12 @@ ContentType
 ### helpers.proxy
 ```js
 /**
- * @desc rewrite baseURL like 'http://api.xxx.com' to '/http://api.xxx.com' for proxy matching
- * @param {string} prefix default proxy path function, when baseURL is null, will use current browser location.
+ * @desc 帮助方法, 用于代理 baseURL 部分. 会重写 baseURL, 如 'http://api.xxx.com' to '/http://api.xxx.com'
+ * @param {string} baseURL 当 baseURL 为空时, 会使用 location.host.
+ * @return {string} proxyPath
  */
 proxyBaseURL(baseURL)
 ```
 
 ### helpers.qs
-refer to https://www.npmjs.com/package/qs
-
-### axios options
-The following options are provided by the underlying axios library.
-```js
-// `timeout` specifies the number of milliseconds before the request times out.
-// If the request takes longer than `timeout`, the request will be aborted.
-timeout: 1000, // default is `0` (no timeout)
-
-// `withCredentials` indicates whether or not cross-site Access-Control requests
-// should be made using credentials
-withCredentials: false, // default
-
-// `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
-// This will set an `Authorization` header, overwriting any existing
-// `Authorization` custom headers you have set using `headers`.
-// Please note that only HTTP Basic auth is configurable through this parameter.
-// For Bearer tokens and such, use `Authorization` custom headers instead.
-auth: {
-    username: 'janedoe',
-    password: 's00pers3cret'
-},
-
-// `responseType` indicates the type of data that the server will respond with
-// options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
-//   browser only: 'blob'
-responseType: 'json', // default
-
-// `responseEncoding` indicates encoding to use for decoding responses
-// Note: Ignored for `responseType` of 'stream' or client-side requests
-responseEncoding: 'utf8', // default
-
-// `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
-xsrfCookieName: 'XSRF-TOKEN', // default
-
-// `xsrfHeaderName` is the name of the http header that carries the xsrf token value
-xsrfHeaderName: 'X-XSRF-TOKEN', // default
-
-// `onUploadProgress` allows handling of progress events for uploads
-onUploadProgress: function (progressEvent) {
-// Do whatever you want with the native progress event
-},
-
-// `onDownloadProgress` allows handling of progress events for downloads
-onDownloadProgress: function (progressEvent) {
-// Do whatever you want with the native progress event
-},
-
-// `maxContentLength` defines the max size of the http response content in bytes allowed
-maxContentLength: 2000,
-
-// `validateStatus` defines whether to resolve or reject the promise for a given
-// HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
-// or `undefined`), the promise will be resolved; otherwise, the promise will be
-// rejected.
-validateStatus: function (status) {
-    return status >= 200 && status < 300; // default
-}
-```
+参考 https://www.npmjs.com/package/qs
