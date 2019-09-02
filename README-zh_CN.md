@@ -1,5 +1,5 @@
 # axios-enhanced
-扩展了axios库的一些功能, 完全兼容 axios 的语法, 简化了一些操作.
+扩展了 axios 的功能, 简化了部分操作, 兼容 axios 语法.
 
 ## 扩展特性
 - cache
