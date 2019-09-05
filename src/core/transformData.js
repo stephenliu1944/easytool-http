@@ -1,6 +1,6 @@
 import qs from 'qs';
 import { ContentType } from 'enums/common';
-import { isObject, isArrayBufferView, isURLSearchParams, normalizeHeaderName } from 'utils/common';
+import { isObject, isArray, isArrayBufferView, isURLSearchParams, normalizeHeaderName } from 'utils/common';
 
 export function transformRequestDefault(data, headers) {
     var contentType = normalizeHeaderName(headers, 'Content-Type');
@@ -18,7 +18,7 @@ export function transformRequestDefault(data, headers) {
     }
 
     if (contentType === ContentType.APPLICATION_JSON) {
-        if (isObject(data)) {
+        if (isObject(data) || isArray(data)) {
             return JSON.stringify(data);
         }
     }

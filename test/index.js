@@ -1,6 +1,6 @@
 // 该类用于测试模块
 import 'core-js';
-import httpRequest, { prepare, helpers, ContentType } from './index';
+import httpRequest, { prepare, helpers, ContentType } from '../src/index';
 
 httpRequest.settings({
     baseURL: '//192.232.222.3333:8888/service',
@@ -56,7 +56,7 @@ httpRequest({
     baseURL: 'http://localhost:3000',
     url: '/user/123',
     contentType: ContentType.APPLICATION_JSON,
-    // method: 'post',
+    method: 'post',
     // proxyPath: true,
     // params: {
     //     ip: '210.75.225.254'
@@ -69,11 +69,11 @@ httpRequest({
         },
         t5: [1, 2, 3]
     },
-    data: {
+    data: [{
         d1: 'a',
         d2: 'aa/d.fe',
         d3: [1, 2, 3]
-    },
+    }],
     log: {
         a: 1,
         b: 2,
@@ -96,7 +96,7 @@ httpRequest({
     console.log('fail->>', e);
 });
 
-setTimeout(() => abort());
+// setTimeout(() => abort());
 
 /* var url = prepare({
     // baseURL: 'http://ip.taobao.com/service/',
