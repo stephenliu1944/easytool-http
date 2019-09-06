@@ -106,7 +106,8 @@ export function handleReject(reject, response, options) {
         onError && onError({
             config,
             request,
-            response
+            response,
+            message: error
         });
         
         reject(error);
