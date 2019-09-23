@@ -1,4 +1,4 @@
-# axios-enhanced
+# @middlend/http
 Enhance axios features, use it like axios but more convenient.  
 
 README: [English](https://github.com/stephenliu1944/beancommons-http/blob/dev/README.md) | [简体中文](https://github.com/stephenliu1944/beancommons-http/blob/dev/README-zh_CN.md)
@@ -15,13 +15,13 @@ README: [English](https://github.com/stephenliu1944/beancommons-http/blob/dev/RE
 
 ## Install
 ```
-npm install --save axios-enhanced
+npm install --save @middlend/http
 ```
 
 ## Usage
 ### Example
 ```js
-import http from 'axios-enhanced';
+import http from '@middlend/http';
 http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
@@ -38,7 +38,7 @@ http({
 ### settings
 settings is used for setup global options.
 ```js
-import http, { Method, ContentType } from 'axios-enhanced';
+import http, { Method, ContentType } from '@middlend/http';
 // need setup before invoke http()
 http.settings({
     baseURL: 'http://api.xxx.com',
@@ -54,7 +54,7 @@ http.settings({
 ### instance
 instance method is used for set instance options and it will inherit global options.
 ```js
-import http, { Method, ContentType } from 'axios-enhanced';
+import http, { Method, ContentType } from '@middlend/http';
 
 var instance = http.instance({
     baseURL: 'http://api.xxx.com',
@@ -72,9 +72,21 @@ var request = instance.prepare({
 ```
 
 ### prepare
-prepare is used for preproccess request options, return a object, it will not send request.
+prepare is used for preproccess request options, it will not send request but still execute below method:
+beforeRequest() > proxyPath() > requestInterceptor() > transformRequest() > paramsSerializer(), and return a preproccess object:  
 ```js
-import { prepare } from 'axios-enhanced';
+{
+    url,
+    method,
+    headers,
+    params,
+    data,
+    toURL()
+}
+```
+Demo
+```js
+import { prepare } from '@middlend/http';
 
 var request = prepare({
     baseURL: 'http://api.xxx.com',
@@ -115,7 +127,7 @@ $.get({
 Use Antd Upload Component.
 ```js
 import { Upload } from 'antd';
-import { prepare, Method } from 'axios-enhanced';
+import { prepare, Method } from '@middlend/http';
 
 var request = prepare({
     baseURL: 'http://file.xxx.com',
@@ -190,7 +202,7 @@ var promise = http({
 
 Use internal Function 'proxyBaseURL' to proxy baseURL.
 ```js
-import { helpers } from 'axios-enhanced';
+import { helpers } from '@middlend/http';
 
 var promise = http({
     baseURL: 'http://api.xxx.com',
@@ -296,7 +308,7 @@ http({
 ### Transform
 transformRequest  
 ```js
-import http, { Method, ContentType, helpers } from 'axios-enhanced';
+import http, { Method, ContentType, helpers } from '@middlend/http';
 
 http({
     baseURL: 'http://api.xxx.com',
@@ -331,7 +343,7 @@ http({
 ### paramsSerializer
 Serialize parameters.
 ```js
-import http, { prepare, Method, ContentType, helpers } from 'axios-enhanced';
+import http, { prepare, Method, ContentType, helpers } from '@middlend/http';
 
 http({
     baseURL: 'http://api.xxx.com',

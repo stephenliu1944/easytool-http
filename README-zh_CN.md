@@ -1,4 +1,4 @@
-# axios-enhanced
+# @middlend/http
 扩展了 axios 的功能, 简化了部分操作, 兼容 axios 语法.
 
 ## 扩展特性
@@ -13,13 +13,13 @@
 
 ## 安装
 ```
-npm install --save axios-enhanced
+npm install --save @middlend/http
 ```
 
 ## 使用
 ### 示例
 ```js
-import http from 'axios-enhanced';
+import http from '@middlend/http';
 http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
@@ -36,7 +36,7 @@ http({
 ### settings
 该方法用于配置全局的请求默认参数
 ```js
-import http, { Method, ContentType } from 'axios-enhanced';
+import http, { Method, ContentType } from '@middlend/http';
 // 需要在调用 http 请求之前配置
 http.settings({
     baseURL: 'http://api.xxx.com',
@@ -52,7 +52,7 @@ http.settings({
 ### Instance
 该方法用于配置实例请求的默认参数, 会继承全局配置
 ```js
-import http, { Method, ContentType } from 'axios-enhanced';
+import http, { Method, ContentType } from '@middlend/http';
 
 var instance = http.instance({
     baseURL: 'http://api.xxx.com',
@@ -70,12 +70,21 @@ instance.prepare({
 ```
 
 ### prepare
-该方法用于预处理请求参数, 不会真正发起 http 请求, 但同样会依次执行配置的:  
-beforeRequest() > requestInterceptor() > transformRequest() > paramsSerializer() 等方法, 同时返回一个预处理对象, 包括以下属性:  
-{ url, method, headers, params, data }
-该方法用于使用其他方式的 http 请求, 但又希望统一处理数据项.
+该方法用于预处理请求参数, 不会真正发起 http 请求, 但同样会依次执行请求前的生命周期函数:  
+beforeRequest() > proxyPath() > requestInterceptor() > transformRequest() > paramsSerializer(), 同时返回一个预处理对象, 包括以下属性:  
 ```js
-import { prepare } from 'axios-enhanced';
+{
+    url,
+    method,
+    headers,        // 处理后的 headers 信息
+    params,         // 被序列化后的参数
+    data,           // 被处理后的数据
+    toURL()         // 生成预处理后的 url
+}
+```
+Demo
+```js
+import { prepare } from '@middlend/http';
 
 var request = prepare({
     baseURL: 'http://api.xxx.com',
@@ -124,7 +133,7 @@ $.ajax({
 使用 Antd 上传组件.
 ```js
 import { Upload } from 'antd';
-import { prepare, Method } from 'axios-enhanced';
+import { prepare, Method } from '@middlend/http';
 
 var request = prepare({
     baseURL: 'http://file.xxx.com',
@@ -199,7 +208,7 @@ var promise = http({
 
 使用内部方法代理 baseURL 部分.
 ```js
-import { helpers } from 'axios-enhanced';
+import { helpers } from '@middlend/http';
 
 var promise = http({
     baseURL: 'http://api.xxx.com',
@@ -311,7 +320,7 @@ http({
 
 transformRequest  
 ```js
-import http, { Method, ContentType, helpers } from 'axios-enhanced';
+import http, { Method, ContentType, helpers } from '@middlend/http';
 
 http({
     baseURL: 'http://api.xxx.com',
@@ -347,7 +356,7 @@ http({
 序列化请求参数.  
 helpers 对象内置了 qs 模块便于序列化处理.
 ```js
-import http, { prepare, Method, ContentType, helpers } from 'axios-enhanced';
+import http, { prepare, Method, ContentType, helpers } from '@middlend/http';
 
 http({
     baseURL: 'http://api.xxx.com',
