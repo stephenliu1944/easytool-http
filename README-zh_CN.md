@@ -1,4 +1,4 @@
-# @middlend/http
+# @easytool/http
 扩展了 axios 的功能, 简化了部分操作, 兼容 axios 语法.
 
 ## 扩展特性
@@ -13,13 +13,13 @@
 
 ## 安装
 ```
-npm install --save @middlend/http
+npm install --save @easytool/http
 ```
 
 ## 使用
 ### 示例
 ```js
-import http from '@middlend/http';
+import http from '@easytool/http';
 http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
@@ -36,7 +36,7 @@ http({
 ### settings
 该方法用于配置全局的请求默认参数
 ```js
-import http, { Method, ContentType } from '@middlend/http';
+import http, { Method, ContentType } from '@easytool/http';
 // 需要在调用 http 请求之前配置
 http.settings({
     baseURL: 'http://api.xxx.com',
@@ -52,7 +52,7 @@ http.settings({
 ### Instance
 该方法用于配置实例请求的默认参数, 会继承全局配置
 ```js
-import http, { Method, ContentType } from '@middlend/http';
+import http, { Method, ContentType } from '@easytool/http';
 
 var instance = http.instance({
     baseURL: 'http://api.xxx.com',
@@ -84,7 +84,7 @@ beforeRequest() > proxyPath() > requestInterceptor() > transformRequest() > para
 ```
 Demo
 ```js
-import { prepare } from '@middlend/http';
+import { prepare } from '@easytool/http';
 
 var request = prepare({
     baseURL: 'http://api.xxx.com',
@@ -133,7 +133,7 @@ $.ajax({
 使用 Antd 上传组件.
 ```js
 import { Upload } from 'antd';
-import { prepare, Method } from '@middlend/http';
+import { prepare, Method } from '@easytool/http';
 
 var request = prepare({
     baseURL: 'http://file.xxx.com',
@@ -208,7 +208,7 @@ var promise = http({
 
 使用内部方法代理 baseURL 部分.
 ```js
-import { helpers } from '@middlend/http';
+import { helpers } from '@easytool/http';
 
 var promise = http({
     baseURL: 'http://api.xxx.com',
@@ -320,7 +320,7 @@ http({
 
 transformRequest  
 ```js
-import http, { Method, ContentType, helpers } from '@middlend/http';
+import http, { Method, ContentType, helpers } from '@easytool/http';
 
 http({
     baseURL: 'http://api.xxx.com',
@@ -356,7 +356,7 @@ http({
 序列化请求参数.  
 helpers 对象内置了 qs 模块便于序列化处理.
 ```js
-import http, { prepare, Method, ContentType, helpers } from '@middlend/http';
+import http, { prepare, Method, ContentType, helpers } from '@easytool/http';
 
 http({
     baseURL: 'http://api.xxx.com',

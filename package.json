@@ -1,10 +1,10 @@
 {
-  "name": "@middlend/http",
+  "name": "@easytool/http",
   "version": "0.1.1",
   "description": "Enhance axios features, use it like axios but more convenient.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
-  "browser": "dist/xhr.umd.js",
+  "browser": "dist/index.umd.js",
   "libraryName": "http",
   "license": "MIT",
   "author": "Stephen Liu",

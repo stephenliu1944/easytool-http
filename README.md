@@ -1,4 +1,4 @@
-# @middlend/http
+# @easytool/http
 Enhance axios features, use it like axios but more convenient.  
 
 README: [English](https://github.com/stephenliu1944/beancommons-http/blob/dev/README.md) | [简体中文](https://github.com/stephenliu1944/beancommons-http/blob/dev/README-zh_CN.md)
@@ -15,13 +15,13 @@ README: [English](https://github.com/stephenliu1944/beancommons-http/blob/dev/RE
 
 ## Install
 ```
-npm install --save @middlend/http
+npm install --save @easytool/http
 ```
 
 ## Usage
 ### Example
 ```js
-import http from '@middlend/http';
+import http from '@easytool/http';
 http({
     baseURL: 'http://api.xxx.com',
     url: '/getUser',
@@ -38,7 +38,7 @@ http({
 ### settings
 settings is used for setup global options.
 ```js
-import http, { Method, ContentType } from '@middlend/http';
+import http, { Method, ContentType } from '@easytool/http';
 // need setup before invoke http()
 http.settings({
     baseURL: 'http://api.xxx.com',
@@ -54,7 +54,7 @@ http.settings({
 ### instance
 instance method is used for set instance options and it will inherit global options.
 ```js
-import http, { Method, ContentType } from '@middlend/http';
+import http, { Method, ContentType } from '@easytool/http';
 
 var instance = http.instance({
     baseURL: 'http://api.xxx.com',
@@ -86,7 +86,7 @@ beforeRequest() > proxyPath() > requestInterceptor() > transformRequest() > para
 ```
 Demo
 ```js
-import { prepare } from '@middlend/http';
+import { prepare } from '@easytool/http';
 
 var request = prepare({
     baseURL: 'http://api.xxx.com',
@@ -127,7 +127,7 @@ $.get({
 Use Antd Upload Component.
 ```js
 import { Upload } from 'antd';
-import { prepare, Method } from '@middlend/http';
+import { prepare, Method } from '@easytool/http';
 
 var request = prepare({
     baseURL: 'http://file.xxx.com',
@@ -202,7 +202,7 @@ var promise = http({
 
 Use internal Function 'proxyBaseURL' to proxy baseURL.
 ```js
-import { helpers } from '@middlend/http';
+import { helpers } from '@easytool/http';
 
 var promise = http({
     baseURL: 'http://api.xxx.com',
@@ -308,7 +308,7 @@ http({
 ### Transform
 transformRequest  
 ```js
-import http, { Method, ContentType, helpers } from '@middlend/http';
+import http, { Method, ContentType, helpers } from '@easytool/http';
 
 http({
     baseURL: 'http://api.xxx.com',
@@ -343,7 +343,7 @@ http({
 ### paramsSerializer
 Serialize parameters.
 ```js
-import http, { prepare, Method, ContentType, helpers } from '@middlend/http';
+import http, { prepare, Method, ContentType, helpers } from '@easytool/http';
 
 http({
     baseURL: 'http://api.xxx.com',
