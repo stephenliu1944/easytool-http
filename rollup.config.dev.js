@@ -15,8 +15,7 @@ export default rollupMerge(base(), {
         format: 'umd'
     },
     plugins: [
-        json(),
-        // web服务
+        json(),        
         serve({ 				
             host: '0.0.0.0',
             port: local,

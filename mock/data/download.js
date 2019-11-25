@@ -9,6 +9,6 @@ module.exports = [{
             'Content-Type': 'text/plain',
             'Content-Disposition': 'attachment;filename=sample.txt;'
         },
-        body: '/sample.txt'
+        body: '<static>/sample.txt'
     }
 }];
