@@ -45,7 +45,7 @@ export function handleCache(options) {
 
     // 增加缓存
     if (!cache) {
-        _params.t = new Date().getTime();
+        _params.t = Math.random().toString().substring(2, 8);
     }
 
     return _params;
