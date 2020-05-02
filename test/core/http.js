@@ -1,8 +1,8 @@
-import http, { prepare, helpers } from '../src/index';
+import http, { prepareRequest, helpers } from '../src/index';
 
 describe('ReturnType is promise', function() {
     it('xxx', function() {
-        var url = prepare({
+        var url = prepareRequest({
             // baseURL: 'http://ip.taobao.com/service/',
             url: '/getIpInfo.php',
             params: {

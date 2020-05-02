@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { defaults, initOptions } from './defaults';
+import prepareRequest from './prepareRequest';
 import { handleHeaders, handleCache, handleProxyPath, handleReject, handleBeforeRequest, handleInterceptor } from './handler';
 import { log, isEmpty, isBlank } from 'utils/common';
 
@@ -157,9 +158,9 @@ httpRequest.instance = function(defaultOpts) {
         return httpRequest(_opts);
     }
 
-    _instance.prepare = function(opts) {
+    _instance.prepareRequest = function(opts) {
         var _opts = Object.assign({}, defaultOpts, opts);
-        return prepare(_opts);
+        return prepareRequest(_opts);
     };
  
     return _instance;

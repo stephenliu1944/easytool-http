@@ -2,7 +2,7 @@ import { defaults, initOptions } from './defaults';
 import { handleHeaders, handleCache, handleProxyPath, handleInterceptor } from './handler';
 import { isEmpty, isBlank } from 'utils/common';
 
-export function prepare(options) {
+export default function(options) {
     if (isEmpty(options)) {
         throw 'options is required.';
     }

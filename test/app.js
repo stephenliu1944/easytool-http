@@ -1,6 +1,6 @@
 // 该类用于测试模块
 import 'core-js';
-import httpRequest, { prepare, helpers, ContentType } from '../src/index';
+import httpRequest, { prepareRequest, helpers, ContentType } from '../src/index';
 
 httpRequest.settings({
     baseURL: '//192.232.222.3333:8888/service',
@@ -41,7 +41,7 @@ httpRequest.settings({
     },
     afterResponse(resolve, reject, response) {
         // throw Error('abc');
-        reject(response);
+        resolve(response);
     },
     validateStatus(status) {
         return status >= 200 && status < 600; // default
@@ -98,7 +98,7 @@ httpRequest({
 
 // setTimeout(() => abort());
 
-/* var url = prepare({
+var url = prepareRequest({
     // baseURL: 'http://ip.taobao.com/service/',
     url: '/getIpInfo.php',
     method: 'post',
@@ -122,4 +122,4 @@ httpRequest({
     }
 });
 
-console.log('url ', url.toURL()); */
+console.log('url ', url.toURL());

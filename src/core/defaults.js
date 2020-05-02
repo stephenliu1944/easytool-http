@@ -7,9 +7,6 @@ import { isArray, isObject } from 'utils/common';
 // global settings
 export var defaults = {
     cache: true,
-    // axios的默认参数
-    method: Method.GET,
-    responseType: 'json',
     // 扩展的属性默认值
     contentType: ContentType.APPLICATION_JSON,
     paramsSerializer(params) {
