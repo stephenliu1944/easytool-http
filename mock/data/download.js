@@ -6,7 +6,7 @@ module.exports = [{
     response: {
         delay: 2000,
         headers: {
-            'Content-Type': 'text/plain',
+            'Content-Type': 'application/octet-stream',
             'Content-Disposition': 'attachment;filename=sample.txt;'
         },
         body: '<static>/sample.txt'
