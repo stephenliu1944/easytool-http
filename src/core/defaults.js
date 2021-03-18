@@ -17,7 +17,6 @@ export var defaults = {
         }
         return params;
     },
-    // proxyPath: '/proxy',
     isDev: false
 };
 
@@ -38,6 +37,6 @@ export function initOptions(opts) {
         method: method,
         contentType: contentType?.toLowerCase(),
         transformRequest: method === Method.GET ? undefined : [...transformRequest, transformRequestDefault].map((fn) => transformWrapper(fn, opts)),
-        transformResponse: [transformResponseDefault, ...transformResponse].map((fn) => transformWrapper(fn, opts))
+        transformResponse: [...transformResponse, transformResponseDefault].map((fn) => transformWrapper(fn, opts))
     });
 }

@@ -34,10 +34,11 @@ export function transformResponseDefault(data) {
     if (typeof data === 'string') {
         try {
             data = JSON.parse(data);
-        } catch (e) { 
+        } catch (e) {
             /* Ignore */ 
         }
     }
+    
     return data;
 }
 

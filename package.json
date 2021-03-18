@@ -1,6 +1,6 @@
 {
   "name": "@easytool/http",
-  "version": "0.1.4",
+  "version": "1.0.1",
   "description": "Enhance axios features, use it like axios but more convenient.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
