@@ -1,10 +1,11 @@
 {
   "name": "@easytool/http",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Enhance axios features, use it like axios but more convenient.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "browser": "dist/index.umd.js",
+  "typings": "./index.d.ts",
   "libraryName": "http",
   "license": "MIT",
   "author": "Stephen Liu",
@@ -26,6 +27,7 @@
     "XMLHttpRequest"
   ],
   "files": [
+    "index.d.ts",
     "dist",
     "LICENSE",
     "README.md"
