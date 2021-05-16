@@ -20,7 +20,7 @@ export var defaults = {
     isDev: false
 };
 
-export function initOptions(opts) {
+export function getNormalizedOptions(opts) {
     if (!opts) {
         return;
     }

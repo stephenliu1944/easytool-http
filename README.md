@@ -12,6 +12,7 @@ README: [English](https://github.com/stephenliu1944/beancommons-http/blob/dev/RE
 - onError
 - prepare
 - helpers
+- preventRepeat 
 
 ## Install
 ```
@@ -411,6 +412,7 @@ Extension features
  * @param {function} afterResponse asynchronize process response interceptor, function receive (resolve, reject, response, options) args.
  * @param {function} onError when error was occur, it will be invoked before promise.catch(), function receive a error object which include (config, request, response, message, stack).
  * @param {string | function} proxyPath proxyPath will proxy the request to local server and add the config proxyPath to the top of url, it could be boolean, string or function, function receive (baseURL, options) args and return a string.
+ * @param {boolean} preventRepeat prevent duplicate request when the previous request is pendding(not work for FormData).
  * @param {boolean} isDev dev mode print more log info.
  * @other refer to https://github.com/axios/axios
  * @return {object} - return a promise instance.

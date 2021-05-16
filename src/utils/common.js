@@ -1,56 +1,38 @@
-export function log(data, title) {
-    /* eslint-disable no-console */
-    if (title) {
-        console.log(title + ' start');
-    }
-
-    if (isIE()) {
-        console.log(JSON.stringify(data));
-    } else {
-        console.log(data);
-    }
-
-    if (title) {
-        console.log(title + ' end');
-    }
-    /* eslint-enable no-console */
-}
-
 // 内部函数, 用于判断对象类型
 function _getClass(object) {
-    return Object.prototype.toString.call(object).match(/^\[object\s(.*)\]$/)[1];
+    return Object.prototype.toString.call(object).match(/^\[object\s(.*)\]$/)[1].toLowerCase();
 }
 
 export function isArray(obj) {
-    return _getClass(obj).toLowerCase() === 'array';
+    return _getClass(obj) === 'array';
 }
 
 export function isString(obj) {
-    return _getClass(obj).toLowerCase() === 'string';
+    return _getClass(obj) === 'string';
 }
 
 export function isBoolean(obj) {
-    return _getClass(obj).toLowerCase() === 'boolean';
+    return _getClass(obj) === 'boolean';
 }
 
 export function isDate(obj) {
-    return _getClass(obj).toLowerCase() === 'date';
+    return _getClass(obj) === 'date';
 }
 
 export function isObject(obj) {
-    return _getClass(obj).toLowerCase() === 'object';
+    return _getClass(obj) === 'object';
 }
 
 export function isNumber(obj) {
-    return _getClass(obj).toLowerCase() === 'number';
+    return _getClass(obj) === 'number';
 }
 
 export function isFunction(obj) {
-    return _getClass(obj).toLowerCase() === 'function';
+    return _getClass(obj) === 'function';
 }
 
 export function isFormData(obj) {
-    return typeof FormData !== 'undefined' && obj instanceof FormData;
+    return typeof FormData !== 'undefined' && (obj instanceof FormData || _getClass(obj) === 'formdata');
 }
 
 export function isURLSearchParams(val) {

@@ -1,7 +1,7 @@
 {
   "name": "@easytool/http",
-  "version": "1.0.2",
-  "description": "Enhance axios features, use it like axios but more convenient.",
+  "version": "1.1.1",
+  "description": "Enhance axios features.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "browser": "dist/index.umd.js",
@@ -68,6 +68,7 @@
   "dependencies": {
     "@babel/runtime": "^7.0.0",
     "axios": "^0.18.1",
+    "object-hash": "^2.1.1",
     "qs": "^6.7.0"
   },
   "devDependencies": {
@@ -79,7 +80,7 @@
     "@babel/plugin-transform-runtime": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "@babel/register": "^7.0.0",
-    "@easytool/mock-server": "^0.1.2",
+    "@easytool/mock-server": "^0.2.2",
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^9.0.0",
     "babel-jest": "^23.6.0",

@@ -1,4 +1,4 @@
-import { defaults, initOptions } from './defaults';
+import { defaults, getNormalizedOptions } from './defaults';
 import { handleHeaders, handleCache, handleProxyPath, handleInterceptor } from './handler';
 import { isEmpty, isBlank } from 'utils/common';
 
@@ -19,7 +19,7 @@ export default function(options) {
         options = beforeRequest((opts) => opts, (error) => {throw error;}, options) || options;
     }
 
-    var _opts = initOptions(options);
+    var _opts = getNormalizedOptions(options);
     var { url = '', method, paramsSerializer } = _opts;
     var _url = url;
     
