@@ -1,3 +1,5 @@
+import { isIE } from 'utils/common';
+
 export function log(data, title) {
     /* eslint-disable no-console */
     if (title) {
