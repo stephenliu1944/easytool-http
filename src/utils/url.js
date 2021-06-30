@@ -1,4 +1,4 @@
-import { isBlank } from './common';
+import { isBlank, isString } from './common';
 
 export function withHost(url) {
     // TODO: 处理 www.www.www/abc 的情况
@@ -19,7 +19,7 @@ export function join(...args) {
     return paths.reduce((pre, curr) => pre + curr);
 }
 // url增加起始或末尾斜杠"/"
-function appendSlash(url, suffix) {
+export function addSlash(url, suffix) {
     if (isBlank(url)) {
         return '';
     }
@@ -32,9 +32,8 @@ function appendSlash(url, suffix) {
 
     return url;
 }
-
 // url 移除起始或末尾斜杠"/"
-function removeSlash(url, suffix) {
+export function removeSlash(url, suffix) {
     if (isBlank(url)) {
         return '';
     }
@@ -48,39 +47,6 @@ function removeSlash(url, suffix) {
     return url;
 }
 
-export function appendPrefixSlash(url) {
-    return appendSlash(url);
-}
-
-export function appendSuffixSlash(url) {
-    return appendSlash(url, true);
-}
-
-export function removePrefixSlash(url) {
-    return removeSlash(url);
-}
-
-export function removeSuffixSlash(url) {
-    return removeSlash(url, true);
-}
-
-export function adjustBaseURL(baseURL) {
-    if (baseURL) {
-        baseURL = baseURL.trim();
-        baseURL = removeSuffixSlash(baseURL);
-    // 解决 baseURL 为 0, false, ''的情况
-    } else {
-        baseURL = null;
-    }
-    
-    return baseURL;
-}
-
-export function adjustURL(url) {
-    if (url) {
-        url = url.trim();
-        url = appendPrefixSlash(url);
-    }
-
-    return url;
+export function trimURL(url) {
+    return isString(url) ? url.trim() : null;
 }

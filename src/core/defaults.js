@@ -1,7 +1,7 @@
 import qs from 'qs';
 import { transformRequestDefault, transformResponseDefault, transformWrapper } from './transformData';
 import { Method, ContentType } from 'enums/common';
-import { adjustBaseURL, adjustURL } from 'utils/url';
+import { trimURL } from 'utils/url';
 import { isArray, isObject } from 'utils/common';
 
 // global settings
@@ -32,8 +32,8 @@ export function getNormalizedOptions(opts) {
     transformResponse = isArray(transformResponse) ? transformResponse : [transformResponse];
 
     return Object.assign({}, opts, {
-        baseURL: adjustBaseURL(baseURL),
-        url: adjustURL(url),
+        baseURL: trimURL(baseURL),
+        url: trimURL(url),
         method: method,
         contentType: contentType?.toLowerCase(),
         transformRequest: method === Method.GET ? undefined : [...transformRequest, transformRequestDefault].map((fn) => transformWrapper(fn, opts)),

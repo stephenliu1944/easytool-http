@@ -1,6 +1,7 @@
 import { defaults, getNormalizedOptions } from './defaults';
 import { handleHeaders, handleCache, handleProxyPath, handleInterceptor } from './handler';
 import { isEmpty, isBlank } from 'utils/common';
+import { addSlash, removeSlash } from 'utils/url';
 
 export default function(options) {
     if (isEmpty(options)) {
@@ -47,6 +48,14 @@ export default function(options) {
     // 序列化 params
     if (paramsSerializer) {
         _opts.params = paramsSerializer(_opts.params);
+    }
+
+    // url包含host, 优先使用url地址, 与axios行为一致
+    if (_url.startsWith('http') || _url.startsWith('//')) {
+        _baseURL = '';
+    } else {
+        _baseURL = removeSlash(_baseURL, true);
+        _url = addSlash(_url);
     }
 
     return {

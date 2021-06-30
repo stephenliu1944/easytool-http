@@ -53,7 +53,7 @@ httpRequest.settings({
 
 var abort;
 httpRequest({
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:1234',
     url: '/user/123',
     contentType: ContentType.APPLICATION_JSON,
     method: 'post',
@@ -99,8 +99,9 @@ httpRequest({
 // setTimeout(() => abort());
 
 var url = prepareRequest({
-    // baseURL: 'http://ip.taobao.com/service/',
-    url: '/getIpInfo.php',
+    baseURL: 'http://ip.taobao.com/service/',
+    url: '/user/getIpInfo.php',
+    proxyPath: true,
     method: 'post',
     contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED,
     cache: true,
