@@ -2,6 +2,14 @@ interface Proxy {
     proxyBaseURL(url: string): string;
 }
 
+function http<T = any>(options: object): Promise<T>;
+
+http.settings = function(options: object): void {};
+
+http.instance = function(options: object): void {};
+
+export default http;
+
 export let helpers: {
     proxy: Proxy;
     qs: any;
@@ -33,9 +41,3 @@ export const ContentType: {
 }};
 
 export function prepare(options: object): object;
-
-export default {
-    settings(options: object): void;
-    instance(options: object): void;
-    (options: object): Promise<any>;
-};
