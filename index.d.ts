@@ -38,6 +38,6 @@ export const ContentType: {
     IMAGE_JPEG: 'image/jpeg';
     IMAGE_GIF: 'image/gif';
     IMAGE_PNG: 'image/png';
-}};
+};
 
 export function prepare(options: object): object;
