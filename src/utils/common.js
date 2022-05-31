@@ -3,6 +3,10 @@ function _getClass(object) {
     return Object.prototype.toString.call(object).match(/^\[object\s(.*)\]$/)[1].toLowerCase();
 }
 
+export function isUndefined(val) {
+    return typeof val === 'undefined';
+}
+
 export function isArray(obj) {
     return _getClass(obj) === 'array';
 }
@@ -35,10 +39,26 @@ export function isFormData(obj) {
     return typeof FormData !== 'undefined' && (obj instanceof FormData || _getClass(obj) === 'formdata');
 }
 
+export function isFile(val) {
+    return _getClass(val) === 'file';
+}
+
+export function isBlob(val) {
+    return _getClass(val) === 'blob';
+}
+
+export function isStream(val) {
+    return isObject(val) && isFunction(val.pipe);
+}
+
 export function isURLSearchParams(val) {
     return typeof URLSearchParams !== 'undefined' && val instanceof URLSearchParams;
 }
 
+export function isArrayBuffer(val) {
+    return _getClass(val) === 'arraybuffer';
+}
+  
 export function isArrayBufferView(val) {
     var result;
     if ((typeof ArrayBuffer !== 'undefined') && (ArrayBuffer.isView)) {
@@ -110,6 +130,12 @@ export function isBlank(str) {
  */
 export function isNotBlank(obj) {
     return !isBlank(obj);
+}
+
+export function setContentTypeIfUnset(headers, value) {
+    if (!isUndefined(headers) && isUndefined(headers['Content-Type'])) {
+        headers['Content-Type'] = value;
+    }
 }
 
 /**
