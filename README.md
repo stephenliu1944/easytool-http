@@ -36,12 +36,12 @@ http({
 });
 ```
 
-### settings
-settings is used for setup global options.
+### defaults
+defaults is used for setup global options.
 ```js
 import http, { Method, ContentType } from '@easytool/http';
 // need setup before invoke http()
-http.settings({
+http.defaults({
     baseURL: 'http://api.xxx.com',
     method: Method.POST,                                        // default is 'GET'
     contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED  // default is 'json'
@@ -57,7 +57,7 @@ instance method is used for set instance options and it will inherit global opti
 ```js
 import http, { Method, ContentType } from '@easytool/http';
 
-var instance = http.instance({
+var instance = http.create({
     baseURL: 'http://api.xxx.com',
     method: Method.POST,
     contentType: ContentType.MULTIPART_FORM_DATA
@@ -420,14 +420,14 @@ Extension features
 http(options)
 
 /**
- * @desc set global options
+ * @desc set defaults options
  */
-http.settings(options)
+http.defaults(options)
 
 /**
  * @desc create a new instance
  */
-http.instance(options)
+http.create(options)
 
 /**
  * @desc return a preproccess object, includes { method, url, headers, params, data } properties.

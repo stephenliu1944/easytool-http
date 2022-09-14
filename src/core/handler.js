@@ -20,13 +20,9 @@ export function handleBeforeRequest(options) {
     return promise;
 }
 
-export function handleHeaders(options, isXHR) {
+export function handleHeaders(options) {
     var { headers, method, contentType } = options;
     var _headers = Object.assign({}, headers);
-    
-    // if (isXHR) {
-    //     _headers['X-Requested-With'] = 'XMLHttpRequest';
-    // }
     
     if (hasEntityBody(method) && contentType) {
         _headers['Content-Type'] = contentType;

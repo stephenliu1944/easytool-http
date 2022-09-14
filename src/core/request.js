@@ -1,4 +1,4 @@
-import xhr from 'utils/xhr';
+import axios from 'axios';
 import { log } from 'utils/log';
 import { hashObject } from 'utils/hash';
 import { isEmpty, isBlank, isFormData } from 'utils/common';
@@ -95,9 +95,6 @@ export function httpRequest(rawOptions) {
             let requestInterceptorInstance;
             let responseInterceptorInstance;
 
-            // 创建一个 axios 实例
-            const instance = xhr.create();
-
             if (isDev) {
                 log({ url, baseURL, method, data, params }, 'Request');
             }
@@ -106,17 +103,17 @@ export function httpRequest(rawOptions) {
             if (requestInterceptor) {
                 let use = handleInterceptor(requestInterceptor);
                 // 该实例在注销 interceptor 时使用
-                requestInterceptorInstance = instance.interceptors.request.use(use.success, use.error);
+                requestInterceptorInstance = axios.interceptors.request.use(use.success, use.error);
             }
             // 处理响应拦截器 responseInterceptor = function or [success, error]
             if (responseInterceptor) {
                 let use = handleInterceptor(responseInterceptor);
                 // 该实例在注销 interceptor 时使用
-                responseInterceptorInstance = instance.interceptors.response.use(use.success, use.error);
+                responseInterceptorInstance = axios.interceptors.response.use(use.success, use.error);
             }
             
             // 调用 axios 库
-            instance.request({
+            axios.request({
                 headers: handleHeaders(_opts, true),
                 method,
                 baseURL: handleProxyPath(_opts),
@@ -124,7 +121,7 @@ export function httpRequest(rawOptions) {
                 params: handleCache(_opts),
                 paramsSerializer,
                 data,
-                cancelToken: cancel && new xhr.CancelToken(cancel),
+                cancelToken: cancel && new axios.CancelToken(cancel),
                 ...other
             }).then(function(response) {
                 let { config, request, headers, status, statusText, data } = response;
@@ -164,8 +161,8 @@ export function httpRequest(rawOptions) {
     
                 reject(error);
             }).finally(function() {
-                requestInterceptorInstance && instance.interceptors.request.eject(requestInterceptorInstance);
-                responseInterceptorInstance && instance.interceptors.response.eject(responseInterceptorInstance);
+                requestInterceptorInstance && axios.interceptors.request.eject(requestInterceptorInstance);
+                responseInterceptorInstance && axios.interceptors.response.eject(responseInterceptorInstance);
                 // 请求结束后则删除缓存, 主要解决第一次请求还未得到响应时又发出相同的请求.
                 delete pendingRequests[rawOptionsHash];
             });
@@ -182,7 +179,17 @@ export function httpRequest(rawOptions) {
 
     return request;
 }
-
+// 关联 axios 对象
+httpRequest.axios = axios;
+// 与axios保持一致, 用 httpRequest.defaults 配置默认值
+httpRequest.defaults = function(options) {
+    httpRequest.settings(defaults, options);
+};
+// 与axios保持一致, 用 create 方法创建实例, 但与 axios 不同在于该方法创建的实例还是用 axios 对象做请求, 不会重新创建一个 instance 实例.
+httpRequest.create = function(defaultOpts) {
+    return httpRequest.instance(defaultOpts);
+};
+// 设置全局配置属性
 httpRequest.settings = function(options) {
     Object.assign(defaults, options);
 };

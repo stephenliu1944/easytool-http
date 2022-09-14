@@ -36,7 +36,8 @@ export function getNormalizedOptions(opts) {
         url: trimURL(url),
         method: method,
         contentType: contentType?.toLowerCase(),
-        transformRequest: method === Method.GET ? undefined : [...transformRequest, transformRequestDefault].map((fn) => transformWrapper(fn, opts)),
+        // transformRequest: method === Method.GET ? undefined : [...transformRequest, transformRequestDefault].map((fn) => transformWrapper(fn, opts)),
+        transformRequest: [...transformRequest, transformRequestDefault].map((fn) => transformWrapper(fn, opts)),
         transformResponse: [...transformResponse, transformResponseDefault].map((fn) => transformWrapper(fn, opts))
     });
 }

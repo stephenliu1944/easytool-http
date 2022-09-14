@@ -53,7 +53,7 @@ httpRequest.settings({
 
 var abort;
 httpRequest({
-    baseURL: 'http://localhost:1234',
+    baseURL: 'http://localhost:3000',
     url: '/user/123',
     contentType: ContentType.APPLICATION_JSON,
     method: 'post',
