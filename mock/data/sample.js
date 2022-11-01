@@ -3,6 +3,7 @@ module.exports = [{
         url: '/user/123'
     },
     response: {
+        status: 200,
         body: {
             id: 123,
             name: 'Stephen',

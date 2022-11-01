@@ -138,22 +138,24 @@ export function httpRequest(rawOptions) {
                     resolve(response);
                 }
             }).catch(function(error) {
-                let { config, request, response, message, stack } = error;
-              
+                let { config, request, response, message = '', stack = '' } = error;
+                let errorType;
+
                 if (response) {
                     // The request was made and the server responded with a status code
                     // that falls out of the range of 2xx
-                    console.error('Response Error:', message);
+                    errorType = '[Response Error]';
                 } else if (request) {
                     // The request was made but no response was received
                     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-                    console.error('Nonresponse Error:', message);
+                    errorType = '[Nonresponse Error]';
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    console.error('Error:', message);
+                    errorType = '[Error]';
                 } 
 
                 if (isDev) {
+                    console.error(errorType);
                     console.error(error);
                 }
 

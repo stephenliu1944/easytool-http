@@ -115,6 +115,8 @@ export function handleInterceptor(interceptor) {
 
     if (isFunction(interceptor)) {
         use.success = interceptor;
+        // use.error = (error) => {throw error;};
+        // use.error = (error) => {return Promise.reject(error);};
     } else if (isArray(interceptor)) {
         use.success = interceptor[0];
         use.error = interceptor[1];
