@@ -1,8 +1,12 @@
 // 该类用于测试模块
 import 'core-js';
-import httpRequest, { prepareRequest, helpers, ContentType } from '../src/index';
+import axios from 'axios';
+import http from '../src/index';
+import { testPrepareRequest } from './prepareRequest';
+import { testGetRequest, testAbortRequest } from './request';
+import { testRequestInterceptor, testResponseInterceptor } from './interceptor';
 
-httpRequest.settings({
+http.defaults({
     baseURL: '//192.232.222.3333:8888/service',
     // contentType: 'application/json',
     // paramsSerializer(params) {
@@ -18,6 +22,7 @@ httpRequest.settings({
     // },
     beforeRequest(resolve, reject, options) {
         console.log('------beforeRequest------:', options);
+        options.a = 1111;
         resolve(options);
     },
     requestInterceptor: [(config) => {
@@ -25,7 +30,7 @@ httpRequest.settings({
         config.headers['token'] = 1;
         config.params.token = 'aaaaaaaaaaaaaaaa';
         return config;
-    }, () => {}],
+    }],
     transformRequest(data, headers, options) {
         console.log('------transformRequest------', this, headers);
         
@@ -51,76 +56,27 @@ httpRequest.settings({
     }
 });
 
-var abort;
-httpRequest({
-    baseURL: 'http://localhost:3000',
-    url: '/user/123',
-    contentType: ContentType.APPLICATION_JSON,
-    method: 'post',
-    // proxyPath: true,
-    // params: {
-    //     ip: '210.75.225.254'
-    // }, 
-    params: {
-        t1: 'a',
-        t2: '大米',
-        t3: {
-            t4: 't4'
-        },
-        t5: [1, 2, 3]
-    },
-    data: [{
-        d1: 'a',
-        d2: 'aa/d.fe',
-        d3: [1, 2, 3]
-    }],
-    log: {
-        a: 1,
-        b: 2,
-        c: 3
-    },    
-    cancel(c) {
-        console.log('------cancel------', c);
-        abort = c;
-    }
-    // paramsSerializer: null
-    // paramsSerializer: function(params) {
-    //     return helpers.qs.stringify(params, { 
-    //         arrayFormat: 'brackets',
-    //         allowDots: true
-    //     });
-    // }
-}).then((data) => {
-    console.log('data: ', data);
-}, (e) => {
-    console.log('fail->>', e);
-});
+testRequestInterceptor();
+testResponseInterceptor();
 
-// setTimeout(() => abort());
+testGetRequest();
+testGetRequest();
+testGetRequest();
 
-var url = prepareRequest({
-    baseURL: 'http://ip.taobao.com/service/',
-    url: '/user/getIpInfo.php',
-    proxyPath: true,
-    method: 'post',
-    contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED,
-    cache: true,
-    params: {
-        t1: 'a',
-        t2: '大米',
-        t3: {
-            t4: 't4'
-        },
-        t5: [1, 2, 3]
-    },
-    data: {
-        d1: 'a',
-        d2: [1, 2, 3]
-    },
-    headers: {
-        a: 1,
-        b: 2
-    }
-});
+// httpRequest.abortAll();
+// testAbortRequest();
+// testAbortRequest();
+// testAbortRequest();
+// testAbortRequest();
+// testAbortRequest();
+// testAbortRequest();
 
-console.log('url ', url.toURL());
+// httpRequest.abortAll('Operation canceled All.');
+
+testPrepareRequest();
+
+// axios.get('/user/123', {
+//     cancelToken: source.token
+// });
+
+// source.cancel('Operation canceled by the user.');

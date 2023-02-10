@@ -47,20 +47,20 @@ export function handleCache(options) {
     return _params;
 }
 
-export function handleProxyPath(options) {
+export function handleProxyURL(options) {
     if (!options) {
         return '';
     }
 
-    var { baseURL, proxyPath } = options;
+    var { baseURL, proxyURL } = options;
     var _baseURL;
     
     // 为 url 增加代理服务拦截的path
-    if (proxyPath) {
-        if (isFunction(proxyPath)) {                // 如果是方法则交给方法处理 
-            _baseURL = proxyPath(baseURL, options);
+    if (proxyURL) {
+        if (isFunction(proxyURL)) {                // 如果是方法则交给方法处理 
+            _baseURL = proxyURL(baseURL, options);
         } else {    // string or boolean
-            let prefix = isString(proxyPath) ? proxyPath : '/';
+            let prefix = isString(proxyURL) ? proxyURL : '/';
 
             if (isBlank(baseURL)) {
                 _baseURL = prefix;
@@ -110,18 +110,48 @@ export function handleReject(reject, response, options) {
     };
 }
 
-export function handleInterceptor(interceptor) {
-    let use = {};
+export function handleDefaultInterceptors(options = {}, interceptors) {
+    const { requestInterceptor, responseInterceptor } = options;
 
-    if (isFunction(interceptor)) {
-        use.success = interceptor;
-        // use.error = (error) => {throw error;};
-        // use.error = (error) => {return Promise.reject(error);};
-    } else if (isArray(interceptor)) {
-        use.success = interceptor[0];
-        use.error = interceptor[1];
-    }
-
-    return use;
+    requestInterceptor && handleInterceptor(requestInterceptor, interceptors.request);
+    responseInterceptor && handleInterceptor(responseInterceptor, interceptors.response);
 }
 
+export function handleInterceptor(interceptor = [], handler) {
+    const args = isFunction(interceptor) ? [interceptor] : interceptor;
+
+    handler.defaultInterceptor && handler.eject(handler.defaultInterceptor);
+    handler.defaultInterceptor = handler.use(...args); 
+}
+
+export function handleCancelToken(CancelToken, sourceList) {
+    if (!CancelToken) {
+        return;
+    }
+    
+    return {
+        source() {
+            let source = CancelToken.source();
+            // 将 source 加入到终止列表
+            sourceList.push(source);
+
+            return {
+                token: source.token,
+                // 用户手动调用的 cancel()
+                cancel(message) {
+                    // abortAll() 方法已经调用过了, 不再重复调用
+                    if (source.canceled) {
+                        return;
+                    }
+
+                    // 从终止列表中移除即将中止的网络请求
+                    const index = sourceList.findIndex(s => s === source);
+                    index !== -1 && sourceList.splice(index, 1);
+
+                    // 中止网络请求
+                    source.cancel(message);
+                }
+            };
+        }
+    };
+}

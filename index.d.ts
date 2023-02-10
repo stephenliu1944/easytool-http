@@ -4,9 +4,11 @@ interface Proxy {
 
 function http<T = any>(options: object): Promise<T>;
 
-http.settings = function(options: object): void {};
+http.defaults = function(options: object): void {};
 
-http.instance = function(options: object): void {};
+http.create = function(options: object): void {};
+
+http.abortAll = function(message: string): void {};
 
 export default http;
 
@@ -40,4 +42,4 @@ export const ContentType: {
     IMAGE_PNG: 'image/png';
 };
 
-export function prepare(options: object): object;
+export function prepareRequest(options: object): object;

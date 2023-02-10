@@ -1,18 +1,17 @@
 # @easytool/http
-Enhance axios features, use it like axios but more convenient.  
-
-README: [English](https://github.com/stephenliu1944/beancommons-http/blob/dev/README.md) | [简体中文](https://github.com/stephenliu1944/beancommons-http/blob/dev/README-zh_CN.md)
+Enhance axios features.
 
 ## Extension features
 - cache
 - contentType
 - beforeRequest
 - afterResponse
-- proxyPath
+- proxyURL
+- preventDuplicate
 - onError
-- prepare
+- prepareRequest
+- abortAll
 - helpers
-- preventRepeat 
 
 ## Install
 ```
@@ -25,7 +24,7 @@ npm install --save @easytool/http
 import http from '@easytool/http';
 http({
     baseURL: 'http://api.xxx.com',
-    url: '/getUser',
+    url: '/user/123',
     params: {
         id: 1
     }
@@ -47,7 +46,7 @@ http.defaults({
     contentType: ContentType.APPLICATION_X_WWW_FORM_URLENCODED  // default is 'json'
     withCredentials: true,                                      // default is false
     cache: false,                                               // default is true
-    proxyPath: __DEV__ && '/api',                               // default is false
+    proxyURL: __DEV__ && '/api',                               // default is false
     isDev: __DEV__
 });
 ```
@@ -64,17 +63,17 @@ var instance = http.create({
 });
 
 instance({
-    url: '/getUser'
+    url: '/user/123'
 });
 // or
-var request = instance.prepare({
-    url: '/getUser'
+var request = instance.prepareRequest({
+    url: '/user/123'
 });
 ```
 
-### prepare
-prepare is used for preproccess request options, it will not send request but still execute below method:
-beforeRequest() > proxyPath() > requestInterceptor() > transformRequest() > paramsSerializer(), and return a preproccess object:  
+### prepareRequest
+prepareRequest is used for preproccess request options, it will not send request but still execute below method:
+beforeRequest() > proxyURL() > requestInterceptor() > transformRequest() > paramsSerializer(), and return a preproccess object:  
 ```js
 {
     url,
@@ -85,13 +84,13 @@ beforeRequest() > proxyPath() > requestInterceptor() > transformRequest() > para
     toURL()
 }
 ```
-Demo
+#### Example
 ```js
-import { prepare } from '@easytool/http';
+import { prepareRequest } from '@easytool/http';
 
-var request = prepare({
+var request = prepareRequest({
     baseURL: 'http://api.xxx.com',
-    url: '/getUser',
+    url: '/user/123',
     params: {
         id: 1
     }
@@ -101,7 +100,7 @@ var request = prepare({
 
 Use for open or download file URL.
 ```js
-var request = prepare({
+var request = prepareRequest({
     baseURL: 'http://file.xxx.com',
     url: '/file',
     params: {
@@ -128,9 +127,9 @@ $.get({
 Use Antd Upload Component.
 ```js
 import { Upload } from 'antd';
-import { prepare, Method } from '@easytool/http';
+import { prepareRequest, Method } from '@easytool/http';
 
-var request = prepare({
+var request = prepareRequest({
     baseURL: 'http://file.xxx.com',
     url: '/api/file/upload',
     method: Method.POST,
@@ -147,6 +146,8 @@ var request = prepare({
 
 ### Handle file stream
 ```js
+import http from '@easytool/http';
+
 http({
     baseURL: 'http://api.xxx.com',
     url: '/assets/images/cat.png',
@@ -168,107 +169,126 @@ http({
 });
 ```
 
-### proxyPath
-proxyPath will proxy the request to local server and add the config proxyPath to the top of url.
+### proxyURL
+proxyURL will proxy the request to local server and add the config proxyURL to the top of url.
 
-proxyPath is true.
+proxyURL is true.
 ```js
+import http from '@easytool/http';
+
 var promise = http({
     baseURL: 'http://api.xxx.com',
-    url: '/users',
-    proxyPath: true
+    url: '/user/123',
+    proxyURL: true
 });
-// will request ' http://localhost/users'
+// will request ' http://localhost/user/123'
 ```
 
-proxyPath is String.
+proxyURL is String.
 ```js
+import http from '@easytool/http';
+
 var promise = http({
     baseURL: 'http://api.xxx.com',
-    url: '/users',
-    proxyPath: '/api'  
+    url: '/user/123',
+    proxyURL: '/api'  
 });
-// will request 'http://localhost/api/users'
+// will request 'http://localhost/api/user/123'
 ```
 
-proxyPath is Function.
+proxyURL is Function.
 ```js
+import http from '@easytool/http';
+
 var promise = http({
     baseURL: 'http://api.xxx.com',
-    url: '/users',
-    proxyPath: (baseURL, options) => '/proxy'
+    url: '/user/123',
+    proxyURL: (baseURL, options) => '/proxy'
 });
-// will request 'http://localhost/proxy/users'
+// will request 'http://localhost/proxy/user/123'
 ```
 
 Use internal Function 'proxyBaseURL' to proxy baseURL.
 ```js
-import { helpers } from '@easytool/http';
+import http, { helpers } from '@easytool/http';
 
 var promise = http({
     baseURL: 'http://api.xxx.com',
-    url: '/users',
-    proxyPath: helpers.proxy.proxyBaseURL
+    url: '/user/123',
+    proxyURL: helpers.proxy.proxyBaseURL
 });
-// will request 'http://localhost/http://api.xxx.com/users'
+// will request 'http://localhost/http://api.xxx.com/user/123'
 ```
 
 ### Interceptors
-request interceptor
+#### defaultInterceptor
 ```js
-http({
-    baseURL: 'http://api.xxx.com',
-    url: '/getUser',
+import http from '@easytool/http';
+
+http.defaults({
     requestInterceptor(config) {
         // Do something before request is sent
         config.headers.TOKEN = 'xxxxxx';
         return config;
+    },
+    responseInterceptor(response) {
+        // Any status code that lie within the range of 2xx cause this function to trigger
+        // Do something with response data
+        return response;
     }
 });
 // or
-http({
-    baseURL: 'http://api.xxx.com',
-    url: '/getUser',
-    requestInterceptor: [(config) => {
+http.defaults({
+    requestInterceptor: [function(config) {
         // Do something before request is sent
         return config;
-    }, (error) => {
+    }, function(error) {
         // Do something with request error
         return Promise.reject(error);
-    }]
-});
-```
-
-response interceptor
-```js
-http({
-    baseURL: 'http://api.xxx.com',
-    url: '/getUser',
-    requestInterceptor(response) {
+    }],
+    responseInterceptor: [function(response) {
+        // Any status code that lie within the range of 2xx cause this function to trigger
         // Do something with response data
         return response;
-    }
-});
-// or
-http({
-    baseURL: 'http://api.xxx.com',
-    url: '/getUser',
-    requestInterceptor: [(response) => {
-        // Do something with response data
-        return response;
-    }, (error) => {
+    }, function(error) {
+        // Any status codes that falls outside the range of 2xx cause this function to trigger
         // Do something with response error
         return Promise.reject(error);
     }]
 });
 ```
+#### customInterceptor
+```js
+import http from '@easytool/http';
+
+// Add a request interceptor
+http.interceptors.request.use(function (config) {
+    // Do something before request is sent
+    return config;
+}, function (error) {
+    // Do something with request error
+    return Promise.reject(error);
+});
+
+// Add a response interceptor
+http.interceptors.response.use(function (response) {
+    // Any status code that lie within the range of 2xx cause this function to trigger
+    // Do something with response data
+    return response;
+}, function (error) {
+    // Any status codes that falls outside the range of 2xx cause this function to trigger
+    // Do something with response error
+    return Promise.reject(error);
+});
+```
 
 ### Asynchronize Interceptors
-beforeRequest
+#### beforeRequest
 ```js
+import http from '@easytool/http';
+
 http({
-    baseURL: 'http://api.xxx.com',
-    url: '/getUser',
+    url: '/user/123',
     beforeRequest(resolve, reject, options) {
         // Do something before request is sent
         setTimeout(() => {
@@ -279,13 +299,12 @@ http({
     }
 });
 ```
-
-afterResponse
+#### afterResponse
 ```js
+import http from '@easytool/http';
 
 http({
-    baseURL: 'http://api.xxx.com',
-    url: '/getUser',
+    url: '/user/123',
     afterResponse(resolve, reject, response, options) {
         var { data, status } = response;
         switch (status) {
@@ -307,13 +326,13 @@ http({
 ```
 
 ### Transform
-transformRequest  
+#### transformRequest  
 ```js
 import http, { Method, ContentType, helpers } from '@easytool/http';
 
 http({
     baseURL: 'http://api.xxx.com',
-    url: '/getUser',
+    url: '/user/123',
     transformRequest(data, headers, options) {     // extra argument 'options'
         // serialize data form URL encoded.
         if (headers['Content-Type'] === ContentType.APPLICATION_X_WWW_FORM_URLENCODED) {
@@ -329,11 +348,11 @@ http({
 });
 ```
 
-transformResponse
+#### transformResponse
 ```js
 http({
     baseURL: 'http://api.xxx.com',
-    url: '/getUser',
+    url: '/user/123',
     transformResponse: [function (data, headers, options) {     // extra arguments headers and options args
         // same with axios
         return data;
@@ -344,11 +363,11 @@ http({
 ### paramsSerializer
 Serialize parameters.
 ```js
-import http, { prepare, Method, ContentType, helpers } from '@easytool/http';
+import http, { prepareRequest, Method, ContentType, helpers } from '@easytool/http';
 
 http({
     baseURL: 'http://api.xxx.com',
-    url: '/getUser',
+    url: '/user/123',
     paramsSerializer(params) {
         return helpers.qs.stringify(params, {   // e.g. https://www.npmjs.com/package/qs
             arrayFormat: 'brackets',
@@ -357,9 +376,9 @@ http({
     }
 });
 // or
-prepare({
+let request = prepareRequest({
     baseURL: 'http://api.xxx.com',
-    url: '/getUser',
+    url: '/user/123',
     paramsSerializer(params) {
         return helpers.qs.stringify(params, {   // e.g. https://www.npmjs.com/package/qs
             arrayFormat: 'brackets',
@@ -379,20 +398,35 @@ paramsSerializer(params) {
 }
 ```
 
-### cancel
-simplify cancelToken.
+### Cancellation
+#### abortAll
+abort all request without create cancelToken.
 ```js
-var abort;
-
+import http from '@easytool/http';
+// first request
 http({
-    baseURL: 'http://api.xxx.com',
-    url: '/getUser',
-    cancel(c) {
-        abort = c;
-    }
+    url: '/user/123',
+});
+// second request
+http({
+    url: '/user/321',
 });
 
-setTimeout(() => abort());
+http.abortAll('Operation all canceled.');
+```
+#### CancelToken
+```js
+import http from '@easytool/http';
+
+const CancelToken = http.CancelToken;
+const source = CancelToken.source();
+
+http({
+    url: '/user/123',
+    cancelToken: source.token
+});
+
+source.cancel('Operation canceled by the user.');
 ```
 
 ## API
@@ -401,18 +435,15 @@ Extension features
 /**
  * @desc wrap and extension axios lib, suport all options with axios.
  * @param {boolean} cache enable cache, default true.
- * @param {function} cancel wrap CancelToken of axios, function receive a cancel argument.
  * @param {function} paramsSerializer same with axios options. false to disable default handler.
  * @param {string} contentType HTTP request header Content-Type, default 'application/json'.
  * @param {function|array} transformRequest wrap axios's transformRequest and extend arguments with (data, headers, options).
  * @param {function|array} transformResponse wrap axios's transformResponse and extend arguments with (data, headers, options).
- * @param {function|array} requestInterceptor wrap axios.interceptors.request.use(success, error) method.
- * @param {function|array} responseInterceptor wrap axios.interceptors.response.use(success, error) method.
  * @param {function} beforeRequest asynchronize process request interceptor, function receive (resolve, reject, options) args.
  * @param {function} afterResponse asynchronize process response interceptor, function receive (resolve, reject, response, options) args.
  * @param {function} onError when error was occur, it will be invoked before promise.catch(), function receive a error object which include (config, request, response, message, stack).
- * @param {string | function} proxyPath proxyPath will proxy the request to local server and add the config proxyPath to the top of url, it could be boolean, string or function, function receive (baseURL, options) args and return a string.
- * @param {boolean} preventRepeat prevent duplicate request when the previous request is pendding(not work for FormData).
+ * @param {string | function} proxyURL proxyURL will proxy the request to local server and add the config proxyURL to the top of url, it could be boolean, string or function, function receive (baseURL, options) args and return a string.
+ * @param {boolean} preventDuplicate prevent duplicate request when the previous request is pendding(not work for FormData).
  * @param {boolean} isDev dev mode print more log info.
  * @other refer to https://github.com/axios/axios
  * @return {object} - return a promise instance.
@@ -421,6 +452,9 @@ http(options)
 
 /**
  * @desc set defaults options
+ * ...
+ * @param {function|array} requestInterceptor wrap axios.interceptors.request.use(success, error) method.
+ * @param {function|array} responseInterceptor wrap axios.interceptors.response.use(success, error) method.
  */
 http.defaults(options)
 
@@ -430,11 +464,16 @@ http.defaults(options)
 http.create(options)
 
 /**
+ * @desc abort all request
+ */
+http.abortAll(message)
+
+/**
  * @desc return a preproccess object, includes { method, url, headers, params, data } properties.
  * @param {object} options same with http(options).
  * @return {object} - return a preprocess options.
  */
-prepare(options)
+prepareRequest(options)
 
 /**
  * @desc general http method
@@ -473,7 +512,7 @@ ContentType
 /**
  * @desc rewrite baseURL like 'http://api.xxx.com' to '/http://api.xxx.com' for proxy matching
  * @param {string} baseURL when baseURL is null, will use location.host.
- * @return {string} proxyPath
+ * @return {string} proxyURL
  */
 proxyBaseURL(baseURL)
 ```

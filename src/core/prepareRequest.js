@@ -1,6 +1,6 @@
 import { defaults, getNormalizedOptions } from './defaults';
-import { handleHeaders, handleCache, handleProxyPath, handleInterceptor } from './handler';
-import { isEmpty, isBlank } from 'utils/common';
+import { handleHeaders, handleCache, handleProxyURL } from './handler';
+import { isEmpty, isBlank, isFunction } from 'utils/common';
 import { addSlash, removeSlash } from 'utils/url';
 
 export default function(options) {
@@ -16,10 +16,13 @@ export default function(options) {
     var beforeRequest = options.beforeRequest;
     
     if (beforeRequest) {
-        // TODO: httpRequest是通过resolve(opts)接收的参数, 这里行为不一致
-        options = beforeRequest((opts) => opts, (error) => {throw error;}, options) || options;
+        // httpRequest 是异步, 这里是同步.
+        beforeRequest((opts) => {
+            options = opts || options;
+        }, (error) => {
+            throw error;
+        }, options);
     }
-
     var _opts = getNormalizedOptions(options);
     var { url = '', method, paramsSerializer } = _opts;
     var _url = url;
@@ -28,14 +31,18 @@ export default function(options) {
     _opts.headers = handleHeaders(_opts);
 
     // 处理代理路径
-    var _baseURL = handleProxyPath(_opts) || '';
+    var _baseURL = handleProxyURL(_opts) || '';
     
     // 处理缓存
     _opts.params = handleCache(_opts);
     
+    // 处理 requestInterceptor
     if (_opts.requestInterceptor) {
-        let use = handleInterceptor(_opts.requestInterceptor);
-        _opts = use.success && use.success(_opts) || _opts;
+        let requestInterceptor = Array.isArray(_opts.requestInterceptor) ? _opts.requestInterceptor[0] : _opts.requestInterceptor;
+        
+        if (isFunction(requestInterceptor)) {
+            _opts = requestInterceptor(_opts) || _opts;
+        }
     }
 
     // 处理 transformRequest(data, header)

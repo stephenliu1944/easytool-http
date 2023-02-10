@@ -1,0 +1,1 @@
+npm run publish:current & pause

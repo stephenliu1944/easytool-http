@@ -4,37 +4,94 @@ import { hashObject } from 'utils/hash';
 import { isEmpty, isBlank, isFormData } from 'utils/common';
 import prepareRequest from './prepareRequest';
 import { defaults, getNormalizedOptions } from './defaults';
-import { handleHeaders, handleCache, handleProxyPath, handleReject, handleBeforeRequest, handleInterceptor } from './handler';
+import { handleHeaders, handleCache, handleProxyURL, handleReject, handleBeforeRequest, handleDefaultInterceptors, handleCancelToken } from './handler';
 
-Promise.prototype.done = function(onFulfilled, onRejected) {
-    this.then(onFulfilled, onRejected)
-        .catch(function(reason) {
-            // 抛出一个全局错误
-            setTimeout(() => {
-                throw reason;
-            }, 0);
-        });
-};
-
-Promise.prototype.finally = function(callback) {
-    let P = this.constructor;
-    return this.then(
-        value => P.resolve(callback(value)).then(() => value),
-        reason => P.resolve(callback(reason)).then(() => {
-            throw reason;
-        })
-    );
-};
-
+// TODO: sourceList未设置上限, 可能有内存问题, 如果用户调用了 CancelToken.source() 又没有配置 cancelToken 的情况下, 无法清除.
+const sourceList = [];
 const pendingRequests = {};
+const CancelToken = axios.CancelToken;
 
 function preventable(options) {
-    let { preventRepeat, data } = options;
+    let { preventDuplicate, data } = options;
 
-    return preventRepeat && !isFormData(data);
+    return preventDuplicate && !isFormData(data);
 }
 
-export function httpRequest(rawOptions) {
+function removeSourceByCancelToken(token) {
+    const index = sourceList.findIndex(source => source.token === token);
+    index !== -1 && sourceList.splice(index, 1);
+}
+
+function createSource() {
+    return HTTPRequest.CancelToken.source();
+}
+
+// 关联 axios 对象
+HTTPRequest.axios = axios;
+// 封装 CancelToken
+HTTPRequest.CancelToken = handleCancelToken(CancelToken, sourceList);
+// 与axios保持一致, 设置全局配置属性, 用 httpRequest.defaults 配置默认值
+HTTPRequest.defaults = function(options) {
+    Object.assign(defaults, options);
+    // 配置默认的拦截器, 只能配一个.
+    handleDefaultInterceptors(defaults, HTTPRequest.interceptors);
+};
+// 与axios保持一致, 用 create 方法创建实例, 但与 axios 不同在于该方法创建的实例还是用 axios 对象做请求, 不会重新创建一个 instance 实例.
+// TODO: instance实例有很多缺陷, 方法不全, 需要较大重构.
+HTTPRequest.create = function(defaultOpts) {
+    function _instance(opts) {
+        let _opts = Object.assign({}, defaultOpts, opts);
+        return HTTPRequest(_opts);
+    }
+
+    _instance.prepareRequest = function(opts) {
+        let _opts = Object.assign({}, defaultOpts, opts);
+        return prepareRequest(_opts);
+    };
+ 
+    return _instance;
+};
+// interceptors 封装
+HTTPRequest.interceptors = {
+    request: {
+        use(resolve, reject, options) {
+            return axios.interceptors.request.use(resolve, reject, options); 
+        },
+        eject(interceptor) {
+            axios.interceptors.request.eject(interceptor);
+        },
+        // 新版本才有该方法
+        clear() {
+            axios.interceptors.request?.clear();
+        }
+    },
+    response: {
+        use(resolve, reject, options) {
+            return axios.interceptors.response.use(resolve, reject, options); 
+        },
+        eject(interceptor) {
+            axios.interceptors.response.eject(interceptor);
+        },
+        // 新版本才有该方法
+        clear() {
+            axios.interceptors.response?.clear();
+        }
+    }
+};
+
+HTTPRequest.getPendingRequests = function() {
+    return pendingRequests;
+};
+// 终止所有网络请求
+HTTPRequest.abortAll = function(message) {
+    sourceList.forEach(source => {
+        source.cancel(message);
+        source.canceled = true;
+    });
+    sourceList.length = 0;
+};
+
+export function HTTPRequest(rawOptions) {
     if (isEmpty(rawOptions)) {
         throw 'options is required.';
     }
@@ -43,6 +100,7 @@ export function httpRequest(rawOptions) {
         throw 'url is required.';
     }
     
+    // 合并默认配置选项
     let applyDefaultOptions = Object.assign({}, defaults, rawOptions);
     // TODO: repeat模式: first, last, throttle, debounce
     let rawOptionsHash;
@@ -57,8 +115,9 @@ export function httpRequest(rawOptions) {
             return pendingRequest;
         }
     }
-    // last 需要 abort 之前发出的未响应的请求
 
+    // 每次请求都需要 cancelToken, 没有则生成一个, 否则无法获取所有请求的 source.
+    let _cancelToken = applyDefaultOptions.cancelToken || createSource().token;
     let request = new Promise(function(resolve, reject) {
         // 请求前预处理
         let beforeRequest = handleBeforeRequest(applyDefaultOptions);
@@ -80,48 +139,32 @@ export function httpRequest(rawOptions) {
                 paramsSerializer,
                 // 扩展的参数
                 cache,
-                cancel,
+                cancelToken = _cancelToken,
                 contentType,
-                requestInterceptor,
-                responseInterceptor,
                 afterResponse,
                 onError,
-                proxyPath,
+                proxyURL,
                 isDev,
-                preventRepeat,
+                preventDuplicate,
                 // axios其他参数
                 ...other            
             } = _opts;
-            let requestInterceptorInstance;
-            let responseInterceptorInstance;
 
             if (isDev) {
                 log({ url, baseURL, method, data, params }, 'Request');
             }
-            
-            // 处理请求拦截器 requestInterceptor = function or [success, error]
-            if (requestInterceptor) {
-                let use = handleInterceptor(requestInterceptor);
-                // 该实例在注销 interceptor 时使用
-                requestInterceptorInstance = axios.interceptors.request.use(use.success, use.error);
-            }
-            // 处理响应拦截器 responseInterceptor = function or [success, error]
-            if (responseInterceptor) {
-                let use = handleInterceptor(responseInterceptor);
-                // 该实例在注销 interceptor 时使用
-                responseInterceptorInstance = axios.interceptors.response.use(use.success, use.error);
-            }
-            
+
             // 调用 axios 库
             axios.request({
                 headers: handleHeaders(_opts, true),
                 method,
-                baseURL: handleProxyPath(_opts),
+                baseURL: handleProxyURL(_opts),
                 url,
                 params: handleCache(_opts),
                 paramsSerializer,
                 data,
-                cancelToken: cancel && new axios.CancelToken(cancel),
+                // TODO: signal: new AbortController().signal             // Starting from v0.22.0 Axios supports AbortController 
+                cancelToken, 
                 ...other
             }).then(function(response) {
                 let { config, request, headers, status, statusText, data } = response;
@@ -163,8 +206,8 @@ export function httpRequest(rawOptions) {
     
                 reject(error);
             }).finally(function() {
-                requestInterceptorInstance && axios.interceptors.request.eject(requestInterceptorInstance);
-                responseInterceptorInstance && axios.interceptors.response.eject(responseInterceptorInstance);
+                // 从 sourceList 中移除已经响应的网络请求
+                removeSourceByCancelToken(cancelToken);
                 // 请求结束后则删除缓存, 主要解决第一次请求还未得到响应时又发出相同的请求.
                 delete pendingRequests[rawOptionsHash];
             });
@@ -181,48 +224,3 @@ export function httpRequest(rawOptions) {
 
     return request;
 }
-// 关联 axios 对象
-httpRequest.axios = axios;
-// 与axios保持一致, 用 httpRequest.defaults 配置默认值
-httpRequest.defaults = function(options) {
-    httpRequest.settings(defaults, options);
-};
-// 与axios保持一致, 用 create 方法创建实例, 但与 axios 不同在于该方法创建的实例还是用 axios 对象做请求, 不会重新创建一个 instance 实例.
-httpRequest.create = function(defaultOpts) {
-    return httpRequest.instance(defaultOpts);
-};
-// 设置全局配置属性
-httpRequest.settings = function(options) {
-    Object.assign(defaults, options);
-};
-// instance 共享同一个 pendingRequests
-httpRequest.instance = function(defaultOpts) {
-    function _instance(opts) {
-        let _opts = Object.assign({}, defaultOpts, opts);
-        return httpRequest(_opts);
-    }
-
-    _instance.prepareRequest = function(opts) {
-        let _opts = Object.assign({}, defaultOpts, opts);
-        return prepareRequest(_opts);
-    };
- 
-    return _instance;
-};
-
-httpRequest.getPendingRequests = function() {
-    return pendingRequests;
-};
-
-httpRequest.ejectRequestInterceptor = function(interceptor) {
-    // let instance = requestInterceptors[interceptor];
-    // instance && instance.interceptors.request.eject(interceptor);
-    // TODO: 
-};
-
-httpRequest.ejectResponseInterceptor = function(interceptor) {
-    // let instance = responseInterceptors[interceptor];
-    // instance && instance.interceptors.request.eject(interceptor);
-    // TODO: 
-};
-
