@@ -6,6 +6,30 @@ import prepareRequest from './prepareRequest';
 import { defaults, getNormalizedOptions } from './defaults';
 import { handleHeaders, handleCache, handleProxyURL, handleReject, handleBeforeRequest, handleDefaultInterceptors, handleCancelToken } from './handler';
 
+if (typeof Promise.prototype.done !== 'function') {
+    Promise.prototype.done = function(onFulfilled, onRejected) {
+        this.then(onFulfilled, onRejected)
+            .catch(function(reason) {
+            // 抛出一个全局错误
+                setTimeout(() => {
+                    throw reason;
+                }, 0);
+            });
+    };
+}
+
+if (typeof Promise.prototype.finally !== 'function') {
+    Promise.prototype.finally = function(callback) {
+        let P = this.constructor;
+        return this.then(
+            value => P.resolve(callback(value)).then(() => value),
+            reason => P.resolve(callback(reason)).then(() => {
+                throw reason;
+            })
+        );
+    };
+}
+
 // TODO: sourceList未设置上限, 可能有内存问题, 如果用户调用了 CancelToken.source() 又没有配置 cancelToken 的情况下, 无法清除.
 const sourceList = [];
 const pendingRequests = {};
